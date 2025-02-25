@@ -16,6 +16,10 @@
     "schema": "prisma/schema.prisma"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.5",
+    "@mui/material": "^6.4.5",
     "@neondatabase/serverless": "^0.10.4",
     "@prisma/client": "^6.4.1",
     "@prisma/extension-accelerate": "^1.2.2",
