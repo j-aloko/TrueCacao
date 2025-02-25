@@ -2,8 +2,63 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// prisma/schema.prisma
 datasource db {
-  provider  = "postgresql"
-  url  	    = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// ENUMS
+enum USER_ROLE {
+  CUSTOMER
+  ADMIN
+}
+
+enum ORDER_STATUS {
+  CONFIRMED
+  PROCESSING
+  PACKAGING_DISPATCH
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELED // Added for order cancellations
+}
+
+enum CATEGORY_TYPE {
+  COCOA_BAR
+  COCOA_POWDER
+}
+
+enum COCOA_POWDER_VARIANT {
+  SINGLE_SACHET
+  CARTON_OF_SACHETS
+  JAR_CONTAINER
+  CARTON_OF_JARS
+}
+
+enum COCOA_BAR_VARIANT {
+  BOX_70_PERCENT
+  CARTON_70_PERCENT
+  BOX_80_PERCENT
+  CARTON_80_PERCENT
+  BOX_90_PERCENT
+  CARTON_90_PERCENT
+}
+
+enum DISCOUNT_TYPE {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum PAYMENT_STATUS {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PAYMENT_METHOD {
+  SHOP_PAY
+  CREDIT_CARD
+  PAYPAL
+  BANK_TRANSFER
 }

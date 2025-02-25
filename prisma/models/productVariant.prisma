@@ -1,0 +1,14 @@
+/// PRODUCT VARIANTS
+model ProductVariant {
+  id            String      @id @default(uuid())
+  productId     String
+  product       Product    @relation(fields: [productId], references: [id])
+  powderVariant COCOA_POWDER_VARIANT?
+  barVariant    COCOA_BAR_VARIANT?
+  price         Decimal
+  stock         Int
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+}

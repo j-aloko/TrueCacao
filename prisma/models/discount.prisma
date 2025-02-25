@@ -1,0 +1,15 @@
+/// DISCOUNTS AND PROMOTIONS
+model Discount {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  type        DISCOUNT_TYPE
+  value       Decimal
+  startDate   DateTime
+  endDate     DateTime
+  maxUses     Int?
+  usedCount   Int        @default(0)
+  products    Product[]
+  orders      Order[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}

@@ -1,0 +1,10 @@
+/// ORDER STATUS LOGS
+model TrackingLog {
+  id        String       @id @default(uuid())
+  orderId   String
+  order     Order        @relation(fields: [orderId], references: [id])
+  status    ORDER_STATUS
+  details   String?
+  location  String?
+  timestamp DateTime     @default(now())
+}

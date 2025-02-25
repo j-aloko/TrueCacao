@@ -10,6 +10,7 @@
     "prisma:merge": "npx prisma-merge -b prisma/base.prisma -s 'prisma/models/*.prisma' -o prisma/schema.prisma",
     "prisma:merge-win": "npx prisma-merge -b prisma/base.prisma -s prisma/models/*.prisma -o prisma/schema.prisma",
     "prisma:migrate": "npx prisma migrate dev",
+    "prisma:validate": "npx prisma validate",
     "prisma:generate": "prisma generate"
   },
   "prisma": {

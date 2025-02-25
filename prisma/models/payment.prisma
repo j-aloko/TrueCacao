@@ -1,0 +1,13 @@
+/// PAYMENT TRACKING (WITH SHOP PAY INTEGRATION)
+model Payment {
+  id            String     @id @default(uuid())
+  orderId       String
+  order         Order      @relation(fields: [orderId], references: [id])
+  amount        Decimal
+  status        PAYMENT_STATUS
+  method        PAYMENT_METHOD
+  transactionId String?
+  shopPayTransaction ShopPayTransaction?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}

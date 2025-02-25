@@ -4,8 +4,335 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// prisma/schema.prisma
 datasource db {
-  provider  = "postgresql"
-  url  	    = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// ENUMS
+enum USER_ROLE {
+  CUSTOMER
+  ADMIN
+}
+
+enum ORDER_STATUS {
+  CONFIRMED
+  PROCESSING
+  PACKAGING_DISPATCH
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELED // Added for order cancellations
+}
+
+enum CATEGORY_TYPE {
+  COCOA_BAR
+  COCOA_POWDER
+}
+
+enum COCOA_POWDER_VARIANT {
+  SINGLE_SACHET
+  CARTON_OF_SACHETS
+  JAR_CONTAINER
+  CARTON_OF_JARS
+}
+
+enum COCOA_BAR_VARIANT {
+  BOX_70_PERCENT
+  CARTON_70_PERCENT
+  BOX_80_PERCENT
+  CARTON_80_PERCENT
+  BOX_90_PERCENT
+  CARTON_90_PERCENT
+}
+
+enum DISCOUNT_TYPE {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum PAYMENT_STATUS {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PAYMENT_METHOD {
+  SHOP_PAY
+  CREDIT_CARD
+  PAYPAL
+  BANK_TRANSFER
+}
+
+
+/// ABANDONED CART TRACKING
+model AbandonedCart {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  cartItems   CartItem[]
+  lastUpdated DateTime   @default(now())
+}
+
+
+/// ADDRESS MANAGEMENT
+model Address {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  type        String
+  street      String
+  city        String
+  state       String
+  postalCode  String
+  country     String
+  isDefault   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  shippingOrders Order[] @relation("OrderShippingAddress")
+  billingOrders  Order[] @relation("OrderBillingAddress")
+}
+
+
+/// AUDIT LOGS
+model AuditLog {
+  id          String     @id @default(uuid())
+  action      String
+  model       String
+  modelId     String
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id])
+  details     Json?
+  createdAt   DateTime   @default(now())
+}
+
+
+/// CART & RELATED ITEMS
+model CartItem {
+  id              String         @id @default(uuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id])
+  productVariantId String
+  productVariant  ProductVariant @relation(fields: [productVariantId], references: [id])
+  quantity        Int
+  price           Decimal
+  addedAt         DateTime       @default(now())
+  abandonedCartId String?
+  abandonedCart   AbandonedCart? @relation(fields: [abandonedCartId], references: [id])
+}
+
+
+/// CATEGORIES
+model Category {
+  id          String       @id @default(uuid())
+  name        CATEGORY_TYPE @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+
+/// DISCOUNTS AND PROMOTIONS
+model Discount {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  type        DISCOUNT_TYPE
+  value       Decimal
+  startDate   DateTime
+  endDate     DateTime
+  maxUses     Int?
+  usedCount   Int        @default(0)
+  products    Product[]
+  orders      Order[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+
+/// CUSTOMER NOTIFICATIONS
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  orderId   String?
+  order     Order?    @relation(fields: [orderId], references: [id])
+  message   String
+  sentAt    DateTime  @default(now())
+  read      Boolean   @default(false)
+}
+
+
+/// ORDER TRACKING
+model Order {
+  id              String        @id @default(uuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  status          ORDER_STATUS  @default(CONFIRMED)
+  trackingCode    String?       @unique
+  carrier         String?
+  trackingUrl     String?
+  items           OrderItem[]
+  trackingLogs    TrackingLog[]
+  notifications   Notification[]
+  shippingAddressId String
+  shippingAddress Address       @relation(name: "OrderShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddressId String
+  billingAddress  Address       @relation(name: "OrderBillingAddress", fields: [billingAddressId], references: [id])
+  discountId      String?
+  discount        Discount?     @relation(fields: [discountId], references: [id])
+  payments        Payment[]
+  shippingCost    Decimal?
+  taxRate         Decimal?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+
+/// ORDER ITEMS
+model OrderItem {
+  id              String         @id @default(uuid())
+  orderId         String
+  order           Order          @relation(fields: [orderId], references: [id])
+  productVariantId String
+  productVariant  ProductVariant @relation(fields: [productVariantId], references: [id])
+  quantity        Int
+  price           Decimal
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+
+/// PAYMENT TRACKING (WITH SHOP PAY INTEGRATION)
+model Payment {
+  id            String     @id @default(uuid())
+  orderId       String
+  order         Order      @relation(fields: [orderId], references: [id])
+  amount        Decimal
+  status        PAYMENT_STATUS
+  method        PAYMENT_METHOD
+  transactionId String?
+  shopPayTransaction ShopPayTransaction?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+
+/// PRODUCT MODEL
+model Product {
+  id              String       @id @default(uuid())
+  name            String
+  description     String?
+  price           Decimal
+  stock           Int
+  lowStockThreshold Int?       @default(10)
+  categoryId      String
+  category        Category     @relation(fields: [categoryId], references: [id])
+  variants        ProductVariant[]
+  images          String[]
+  reviews         Review[]
+  discounts       Discount[]
+  wishlistItems   Wishlist[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  deletedAt       DateTime?
+}
+
+
+/// PRODUCT VARIANTS
+model ProductVariant {
+  id            String      @id @default(uuid())
+  productId     String
+  product       Product    @relation(fields: [productId], references: [id])
+  powderVariant COCOA_POWDER_VARIANT?
+  barVariant    COCOA_BAR_VARIANT?
+  price         Decimal
+  stock         Int
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+}
+
+
+/// REVIEWS AND RATINGS
+model Review {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  productId   String
+  product     Product    @relation(fields: [productId], references: [id])
+  rating      Int
+  comment     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+
+/// USER SESSION TRACKING
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+
+/// SHOP PAY TRANSACTIONS
+model ShopPayTransaction {
+  id              String   @id @default(uuid())
+  paymentId       String   @unique
+  payment         Payment  @relation(fields: [paymentId], references: [id])
+  shopPayOrderId  String   @unique
+  responseData    Json
+  createdAt       DateTime @default(now())
+}
+
+
+/// ORDER STATUS LOGS
+model TrackingLog {
+  id        String       @id @default(uuid())
+  orderId   String
+  order     Order        @relation(fields: [orderId], references: [id])
+  status    ORDER_STATUS
+  details   String?
+  location  String?
+  timestamp DateTime     @default(now())
+}
+
+
+/// USER AUTHENTICATION
+model User {
+  id            String        @id @default(uuid())
+  email         String        @unique
+  passwordHash  String
+  name          String
+  role          USER_ROLE     @default(CUSTOMER)
+  sessions      Session[]
+  orders        Order[]
+  cartItems     CartItem[]
+  abandonedCarts AbandonedCart[]
+  auditLogs     AuditLog[]
+  reviews       Review[]
+  wishlistItems Wishlist[]
+  addresses     Address[]
+  notifications Notification[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+
+/// WISHLIST
+model Wishlist {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  productId   String
+  product     Product    @relation(fields: [productId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }

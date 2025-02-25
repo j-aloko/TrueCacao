@@ -1,0 +1,11 @@
+/// AUDIT LOGS
+model AuditLog {
+  id          String     @id @default(uuid())
+  action      String
+  model       String
+  modelId     String
+  userId      String?
+  user        User?      @relation(fields: [userId], references: [id])
+  details     Json?
+  createdAt   DateTime   @default(now())
+}

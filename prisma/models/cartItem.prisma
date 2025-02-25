@@ -1,0 +1,13 @@
+/// CART & RELATED ITEMS
+model CartItem {
+  id              String         @id @default(uuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id])
+  productVariantId String
+  productVariant  ProductVariant @relation(fields: [productVariantId], references: [id])
+  quantity        Int
+  price           Decimal
+  addedAt         DateTime       @default(now())
+  abandonedCartId String?
+  abandonedCart   AbandonedCart? @relation(fields: [abandonedCartId], references: [id])
+}

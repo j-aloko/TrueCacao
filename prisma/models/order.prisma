@@ -1,0 +1,24 @@
+/// ORDER TRACKING
+model Order {
+  id              String        @id @default(uuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  status          ORDER_STATUS  @default(CONFIRMED)
+  trackingCode    String?       @unique
+  carrier         String?
+  trackingUrl     String?
+  items           OrderItem[]
+  trackingLogs    TrackingLog[]
+  notifications   Notification[]
+  shippingAddressId String
+  shippingAddress Address       @relation(name: "OrderShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddressId String
+  billingAddress  Address       @relation(name: "OrderBillingAddress", fields: [billingAddressId], references: [id])
+  discountId      String?
+  discount        Discount?     @relation(fields: [discountId], references: [id])
+  payments        Payment[]
+  shippingCost    Decimal?
+  taxRate         Decimal?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}

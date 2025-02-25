@@ -1,0 +1,8 @@
+/// ABANDONED CART TRACKING
+model AbandonedCart {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  cartItems   CartItem[]
+  lastUpdated DateTime   @default(now())
+}
