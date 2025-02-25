@@ -6,16 +6,29 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prisma:merge": "npx prisma-merge -b prisma/base.prisma -s 'prisma/models/*.prisma' -o prisma/schema.prisma",
+    "prisma:merge-win": "npx prisma-merge -b prisma/base.prisma -s prisma/models/*.prisma -o prisma/schema.prisma",
+    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:generate": "prisma generate"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "@prisma/client": "^6.4.1",
+    "@prisma/extension-accelerate": "^1.2.2",
+    "next": "15.1.7",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.1.7"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3",
     "eslint": "^9",
     "eslint-config-next": "15.1.7",
-    "@eslint/eslintrc": "^3"
+    "prisma": "^6.4.1",
+    "prisma-merge": "^0.2.0",
+    "tsx": "^4.19.3"
   }
 }

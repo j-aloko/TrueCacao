@@ -1,0 +1,11 @@
+//******** AUTO GENERATED FILE, DO NOT EDIT.  *********
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// prisma/schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+}
