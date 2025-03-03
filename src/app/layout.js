@@ -1,27 +1,53 @@
-import * as React from 'react';
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
-import { ThemeProvider } from '@mui/material/styles';
+import React from 'react';
+
+import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
-import theme from '@/theme';
+import { ThemeProvider } from '@mui/material/styles';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import PropTypes from 'prop-types';
+
+import Footer from './components/footer/Footer';
+import Navbar from './components/navbar/Navbar';
+import theme from './theme';
 
 export const metadata = {
-  title:
-    'TrueCacao | Premium Ghanaian Cocoa Powder & Dark Chocolate – Pure & Authentic',
   description:
     'Discover the rich taste of premium Ghanaian cocoa with TrueCacao. We offer 100% pure, high-quality raw cacao powder and dark chocolate, sourced from Ghana’s finest cocoa beans. Perfect for baking, beverages, and healthy indulgence. Shop now for the true cacao experience!',
+  title:
+    'TrueCacao | Premium Ghanaian Cocoa Powder & Dark Chocolate – Pure & Authentic',
 };
 
-export default function RootLayout(props) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            {props.children}
+            <Container
+              maxWidth="xl"
+              disableGutters
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '100vh',
+              }}
+            >
+              <nav>
+                <Navbar />
+              </nav>
+              <main>{children}</main>
+              <footer style={{ marginTop: 'auto' }}>
+                <Footer />
+              </footer>
+            </Container>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>
     </html>
   );
 }
+
+RootLayout.propTypes = {
+  children: PropTypes.node.isRequired,
+};
