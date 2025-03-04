@@ -37,6 +37,7 @@ const eslintConfig = [
       'comma-dangle': ['error', 'only-multiline'],
       'import/imports-first': ['error', 'absolute-first'],
       'import/newline-after-import': 'error',
+      'import/no-cycle': 'error',
       'import/no-dynamic-require': 'warn',
       'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
       'import/no-named-as-default': 0,
@@ -74,18 +75,45 @@ const eslintConfig = [
       ],
       'jsx-a11y/label-has-for': 'warn',
       'jsx-a11y/no-static-element-interactions': 'warn',
+      'linebreak-style': 0,
+      'max-len': ['error', { code: 2000 }],
+      'no-await-in-loop': 0,
+      'no-empty': 'warn',
+      'no-nested-ternary': 'warn',
+      'no-param-reassign': [
+        'error',
+        {
+          props: false,
+        },
+      ],
+      'no-plusplus': 0,
       'no-underscore-dangle': [
         'error',
         {
           allow: ['__filename', '__dirname'],
         },
       ],
-      'no-unused-vars': 'off',
+      'no-unsafe-optional-chaining': 'warn',
+      'no-unused-expressions': 'off',
+      'no-unused-vars': 'warn',
+      'no-use-before-define': [
+        'error',
+        { classes: true, functions: true, variables: false },
+      ],
       'react/jsx-filename-extension': [
         'error',
         { extensions: ['.js', '.jsx'] },
       ],
+      'react/prop-types': 'off',
       'sort-keys-fix/sort-keys-fix': 'warn',
+    },
+    settings: {
+      'import/resolver': {
+        alias: {
+          extensions: ['.js', '.jsx', '.json'],
+          map: [['@', './src']],
+        },
+      },
     },
   },
 ];

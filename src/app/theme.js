@@ -1,9 +1,9 @@
 'use client';
 
 import { createTheme } from '@mui/material/styles';
-import { Roboto } from 'next/font/google';
+import { Open_Sans as openSansFont } from 'next/font/google';
 
-const roboto = Roboto({
+const openSans = openSansFont({
   display: 'swap',
   subsets: ['latin'],
   weight: ['300', '400', '500', '700'],
@@ -22,6 +22,20 @@ const theme = createTheme({
               },
             },
           ],
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'capitalize',
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          textTransform: 'capitalize',
         },
       },
     },
@@ -75,7 +89,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: roboto.style.fontFamily,
+    fontFamily: openSans.style.fontFamily,
   },
 });
 

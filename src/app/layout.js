@@ -7,7 +7,7 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import PropTypes from 'prop-types';
 
 import Footer from './components/footer/Footer';
-import Navbar from './components/navbar/Navbar';
+import NavbarContainer from './containers/navbar-container/NavbarContainer';
 import theme from './theme';
 
 export const metadata = {
@@ -34,7 +34,7 @@ export default function RootLayout({ children }) {
               }}
             >
               <nav>
-                <Navbar />
+                <NavbarContainer />
               </nav>
               <main>{children}</main>
               <footer style={{ marginTop: 'auto' }}>
