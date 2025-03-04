@@ -6,7 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import PropTypes from 'prop-types';
 
-import Footer from './components/footer/Footer';
+import FooterContainer from './containers/footer-container/FooterContainer';
 import NavbarContainer from './containers/navbar-container/NavbarContainer';
 import theme from './theme';
 
@@ -38,7 +38,7 @@ export default function RootLayout({ children }) {
               </nav>
               <main>{children}</main>
               <footer style={{ marginTop: 'auto' }}>
-                <Footer />
+                <FooterContainer />
               </footer>
             </Container>
           </ThemeProvider>
