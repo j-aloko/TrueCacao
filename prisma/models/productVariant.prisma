@@ -1,14 +1,16 @@
 /// PRODUCT VARIANTS
 model ProductVariant {
-  id            String      @id @default(uuid())
+  id            String             @id @default(uuid())
   productId     String
-  product       Product    @relation(fields: [productId], references: [id])
-  powderVariant COCOA_POWDER_VARIANT?
-  barVariant    COCOA_BAR_VARIANT?
+  product       Product            @relation(fields: [productId], references: [id])
+  weight        Int                // Weight in grams (e.g., 100g, 200g, etc.)
+  packaging     Json               // Packaging type (e.g., SACHET, JAR, BOX_70_PERCENT, etc.)
   price         Decimal
   stock         Int
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  images        String[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
   cartItems     CartItem[]
   orderItems    OrderItem[]
+  wishlistItems Wishlist[]
 }

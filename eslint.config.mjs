@@ -34,6 +34,7 @@ const eslintConfig = [
       'sort-keys-fix': sortKeysFix,
     },
     rules: {
+      '@typescript-eslint/no-require-imports': 'off',
       'comma-dangle': ['error', 'only-multiline'],
       'implicit-arrow-linebreak': 'off',
       'import/imports-first': ['error', 'absolute-first'],
