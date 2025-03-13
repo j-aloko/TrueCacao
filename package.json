@@ -21,15 +21,20 @@
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.0",
     "@mui/icons-material": "6.4.5",
-    "@mui/material": "6.4.5",
+    "@mui/material": "^6.4.5",
     "@mui/material-nextjs": "6.4.3",
+    "@mui/x-date-pickers": "^7.27.1",
     "@neondatabase/serverless": "0.10.4",
     "@prisma/client": "6.4.1",
     "@prisma/extension-accelerate": "1.2.2",
+    "final-form": "^4.20.10",
+    "mui-rff": "^8.0.1",
     "next": "15.1.7",
     "prop-types": "15.8.1",
     "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "react-dom": "19.0.0",
+    "react-final-form": "^6.5.9",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/compat": "1.2.7",

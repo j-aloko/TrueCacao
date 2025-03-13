@@ -35,11 +35,12 @@ const eslintConfig = [
     },
     rules: {
       'comma-dangle': ['error', 'only-multiline'],
+      'implicit-arrow-linebreak': 'off',
       'import/imports-first': ['error', 'absolute-first'],
       'import/newline-after-import': 'error',
       'import/no-cycle': 'error',
       'import/no-dynamic-require': 'warn',
-      'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
+      'import/no-extraneous-dependencies': 'off',
       'import/no-named-as-default': 0,
       'import/no-unresolved': [2, { ignore: ['react'] }],
       'import/order': [
@@ -104,6 +105,7 @@ const eslintConfig = [
         'error',
         { extensions: ['.js', '.jsx'] },
       ],
+      'react/jsx-props-no-spreading': 'off',
       'react/prop-types': 'off',
       'sort-keys-fix/sort-keys-fix': 'warn',
     },
