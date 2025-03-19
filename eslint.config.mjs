@@ -102,6 +102,7 @@ const eslintConfig = [
         'error',
         { classes: true, functions: true, variables: false },
       ],
+      'operator-linebreak': 'off',
       'react/jsx-filename-extension': [
         'error',
         { extensions: ['.js', '.jsx'] },

@@ -3,7 +3,11 @@ import React from 'react';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 
-function RenderProductButtons({ submitting, onAddToCart, onBuyNow }) {
+function RenderProductButtons({
+  submitting = false,
+  onAddToCart = null,
+  onBuyNow = null,
+}) {
   return (
     <Stack direction="column" spacing={2} mt={2}>
       <Button
