@@ -36,6 +36,7 @@ const eslintConfig = [
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       'comma-dangle': ['error', 'only-multiline'],
+      'function-paren-newline': 'off',
       'implicit-arrow-linebreak': 'off',
       'import/imports-first': ['error', 'absolute-first'],
       'import/newline-after-import': 'error',

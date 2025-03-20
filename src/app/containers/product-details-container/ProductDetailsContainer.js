@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useReducer, useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -11,187 +11,121 @@ import Stack from '@mui/material/Stack';
 import CounterField from '@/app/components/counter-field/CounterField';
 import RenderProductButtons from '@/app/components/render-product-buttons/RenderProductButtons';
 import TextBlock from '@/app/components/text-block/TextBlock';
-import { getLocalStorageData } from '@/app/util/get-local-storage-data';
-
-// Helper function to validate savedVariant
-const validateSavedVariant = (savedVariant, productVariants) => {
-  if (
-    savedVariant &&
-    typeof savedVariant === 'object' &&
-    savedVariant.packaging &&
-    savedVariant.packaging.type &&
-    savedVariant.weight &&
-    productVariants.some((v) => v.id === savedVariant.id)
-  ) {
-    return savedVariant;
-  }
-  return null;
-};
-
-const initialState = {
-  allPackagings: [],
-  allWeights: [],
-  availablePackagings: [],
-  availableWeights: [],
-  quantity: 1,
-  selectedPackaging: null,
-  selectedVariant: null,
-  selectedWeight: null,
-};
-
-function reducer(state, action) {
-  switch (action.type) {
-    case 'SET_INITIAL':
-      return {
-        ...state,
-        allPackagings: action.packagings,
-        allWeights: action.weights,
-        availablePackagings: action.availablePackagings,
-        availableWeights: action.availableWeights,
-        quantity: action.quantity || 1,
-        selectedPackaging: action.defaultVariant?.packaging?.type || null,
-        selectedVariant: action.defaultVariant,
-        selectedWeight: action.defaultVariant?.weight || null, // Initialize quantity from localStorage
-      };
-    case 'SELECT_PACKAGING':
-      return {
-        ...state,
-        availableWeights: action.weights,
-        selectedPackaging: action.payload,
-        selectedVariant: action.variant,
-        selectedWeight: action.variant?.weight || null,
-      };
-    case 'SELECT_WEIGHT':
-      return {
-        ...state,
-        availablePackagings: action.packagings,
-        selectedPackaging: action.variant?.packaging?.type || null,
-        selectedVariant: action.variant,
-        selectedWeight: action.payload,
-      };
-    case 'INCREMENT_QUANTITY':
-      return {
-        ...state,
-        quantity: state.quantity + 1,
-      };
-    case 'DECREMENT_QUANTITY':
-      return {
-        ...state,
-        quantity: Math.max(1, state.quantity - 1), // Ensure quantity doesn't go below 1
-      };
-    default:
-      return state;
-  }
-}
+import {
+  decrementQuantity,
+  incrementQuantity,
+  selectPackaging,
+  selectWeight,
+  setInitialState,
+} from '@/app/services/redux/features/product-selection/productSelectionSlice';
+import { useAppDispatch, useAppSelector } from '@/app/services/redux/store';
 
 function ProductDetailsContainer({ product }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const dispatch = useAppDispatch();
+  const {
+    allPackagings,
+    allWeights,
+    selectedPackaging,
+    selectedVariant,
+    selectedWeight,
+    quantity,
+    availableWeights,
+  } = useAppSelector((state) => state.productSelection);
 
-  // Save selected variant and quantity to localStorage whenever they change
+  // Initialize state on component mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(
-        'selectedVariant',
-        JSON.stringify(state.selectedVariant)
-      );
-      localStorage.setItem('quantity', JSON.stringify(state.quantity));
-    }
-  }, [state.selectedVariant, state.quantity]);
-
-  // Initialize state from localStorage on component mount
-  useEffect(() => {
-    if (product.variants.length) {
-      const packagings = [
+    if (product.variants.length && !selectedVariant) {
+      // Only initialize if selectedVariant is not already set (i.e., no persisted state)
+      const initialPackagings = [
         ...new Set(product.variants.map((v) => v.packaging.type)),
       ];
-      const weights = [...new Set(product.variants.map((v) => v.weight))];
+      const initialWeights = [
+        ...new Set(product.variants.map((v) => v.weight)),
+      ];
       const defaultVariant =
         product.variants.find((v) => v.stock > 0) || product.variants[0];
 
-      // Retrieve saved data from localStorage
-      const savedVariant = validateSavedVariant(
-        getLocalStorageData('selectedVariant', defaultVariant),
-        product.variants
-      );
-      const savedQuantity = getLocalStorageData('quantity', 1);
-
-      // Calculate available weights and packagings based on the saved variant
-      const availableWeights = product.variants
-        .filter(
-          (v) =>
-            v.packaging.type === (savedVariant || defaultVariant).packaging.type
-        )
+      // Calculate available weights and packagings based on the default variant
+      const initialAvailableWeights = product.variants
+        .filter((v) => v.packaging.type === defaultVariant.packaging.type)
         .map((v) => v.weight);
-      const availablePackagings = product.variants
-        .filter((v) => v.weight === (savedVariant || defaultVariant).weight)
+      const initialAvailablePackagings = product.variants
+        .filter((v) => v.weight === defaultVariant.weight)
         .map((v) => v.packaging.type);
 
-      dispatch({
-        availablePackagings,
-        availableWeights,
-        defaultVariant: savedVariant || defaultVariant,
-        packagings,
-        quantity: savedQuantity,
-        type: 'SET_INITIAL',
-        weights,
-      });
+      // Dispatch the initial state to Redux
+      dispatch(
+        setInitialState({
+          allPackagings: initialPackagings,
+          allWeights: initialWeights,
+          availablePackagings: initialAvailablePackagings,
+          availableWeights: initialAvailableWeights,
+          quantity: 1,
+          selectedPackaging: defaultVariant.packaging.type,
+          selectedVariant: defaultVariant,
+          selectedWeight: defaultVariant.weight,
+        })
+      );
     }
-  }, [product]);
+  }, [dispatch, product, selectedVariant]);
 
   const handlePackagingSelect = (packaging) => {
     const validWeights = product.variants
       .filter((v) => v.packaging.type === packaging)
       .map((v) => v.weight);
-    const selectedVariant = product.variants.find(
+    const foundVariant = product.variants.find(
       (v) => v.packaging.type === packaging && validWeights.includes(v.weight)
     );
-    dispatch({
-      payload: packaging,
-      type: 'SELECT_PACKAGING',
-      variant: selectedVariant,
-      weights: validWeights,
-    });
+    dispatch(
+      selectPackaging({
+        availableWeights: validWeights,
+        packaging,
+        variant: foundVariant,
+      })
+    );
   };
 
   const handleWeightSelect = (weight) => {
     const validPackagings = product.variants
       .filter((v) => v.weight === weight)
       .map((v) => v.packaging.type);
-    const selectedVariant = product.variants.find(
+    const foundVariant = product.variants.find(
       (v) => v.weight === weight && validPackagings.includes(v.packaging.type)
     );
-    dispatch({
-      packagings: validPackagings,
-      payload: weight,
-      type: 'SELECT_WEIGHT',
-      variant: selectedVariant,
-    });
+    dispatch(
+      selectWeight({
+        availablePackagings: validPackagings,
+        variant: foundVariant,
+        weight,
+      })
+    );
   };
 
   const handleIncrement = () => {
-    dispatch({ type: 'INCREMENT_QUANTITY' });
+    dispatch(incrementQuantity());
   };
 
   const handleDecrement = () => {
-    dispatch({ type: 'DECREMENT_QUANTITY' });
+    dispatch(decrementQuantity());
   };
 
   const onAddToCart = () => {
     console.log('Adding to cart:', {
-      quantity: state.quantity,
-      variant: state.selectedVariant,
+      quantity,
+      variant: selectedVariant,
     });
   };
 
   const onBuyNow = () => {
     console.log('Buying now:', {
-      quantity: state.quantity,
-      variant: state.selectedVariant,
+      quantity,
+      variant: selectedVariant,
     });
   };
 
+  // Determine if a weight is disabled
   const isWeightDisabled = (weight) =>
-    state.selectedPackaging && !state.availableWeights.includes(weight);
+    selectedPackaging && !availableWeights.includes(weight);
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -204,37 +138,33 @@ function ProductDetailsContainer({ product }) {
           <Box flexGrow={1}>
             <Stack spacing={3}>
               <TextBlock text={product?.name} variant="h6" />
-              <TextBlock text={`GH₵${state.selectedVariant?.price || 0}`} />
+              <TextBlock text={`GH₵${selectedVariant?.price || 0}`} />
               <Divider />
               <Box direction="row" spacing={1}>
-                {state.allPackagings.map((packaging) => (
+                {allPackagings.map((packaging) => (
                   <Chip
                     key={packaging}
                     label={packaging.replace('_', ' ')}
                     color={
-                      state.selectedPackaging === packaging
-                        ? 'primary'
-                        : 'default'
+                      selectedPackaging === packaging ? 'primary' : 'default'
                     }
                     onClick={() => handlePackagingSelect(packaging)}
                   />
                 ))}
               </Box>
               <Box direction="row" spacing={1} sx={{ mt: 2 }}>
-                {state.allWeights.map((weight) => (
+                {allWeights.map((weight) => (
                   <Chip
                     key={weight}
                     label={`${weight}g`}
-                    color={
-                      state.selectedWeight === weight ? 'primary' : 'default'
-                    }
+                    color={selectedWeight === weight ? 'primary' : 'default'}
                     onClick={() => handleWeightSelect(weight)}
                     disabled={isWeightDisabled(weight)}
                   />
                 ))}
               </Box>
               <CounterField
-                value={state.quantity}
+                value={quantity}
                 onIncrement={handleIncrement}
                 onDecrement={handleDecrement}
               />
