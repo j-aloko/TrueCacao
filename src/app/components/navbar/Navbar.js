@@ -97,7 +97,6 @@ function Navbar({
           </Typography>
           <Box
             sx={{
-              border: '10px solid black',
               display: { md: 'flex', xs: 'none' },
               flexGrow: 1,
               gap: 2,
