@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import CounterField from '@/app/components/counter-field/CounterField';
 import RenderProductButtons from '@/app/components/render-product-buttons/RenderProductButtons';
 import TextBlock from '@/app/components/text-block/TextBlock';
+import { VARIANT_LABELS } from '@/app/constants/variantLabels';
 import {
   decrementQuantity,
   incrementQuantity,
@@ -19,6 +20,7 @@ import {
   setInitialState,
 } from '@/app/services/redux/features/product-selection/productSelectionSlice';
 import { useAppDispatch, useAppSelector } from '@/app/services/redux/store';
+import { formatString } from '@/app/util/formatString';
 
 function ProductDetailsContainer({ product }) {
   const dispatch = useAppDispatch();
@@ -128,41 +130,65 @@ function ProductDetailsContainer({ product }) {
     selectedPackaging && !availableWeights.includes(weight);
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Grid container spacing={2} m={3}>
+    <Box sx={{ flexGrow: 1, p: 2 }}>
+      <Grid container spacing={2}>
         <Grid size={7} p={3} border="2px solid red">
           <Box flexGrow={1}>{/* Display first product image */}</Box>
         </Grid>
 
         <Grid size={5} p={3} border="2px solid yellow">
           <Box flexGrow={1}>
-            <Stack spacing={3}>
-              <TextBlock text={product?.name} variant="h6" />
-              <TextBlock text={`GH₵${selectedVariant?.price || 0}`} />
+            <Stack spacing={3.5}>
+              <TextBlock
+                text={product?.name}
+                variant="h5"
+                component="h1"
+                sx={(theme) => ({
+                  color: theme.palette.primary.dark,
+                  fontWeight: 500,
+                })}
+              />
+              <TextBlock
+                text={`GH₵${selectedVariant?.price || 0}`}
+                variant="h6"
+                component="h2"
+              />
               <Divider />
-              <Box direction="row" spacing={1}>
-                {allPackagings.map((packaging) => (
-                  <Chip
-                    key={packaging}
-                    label={packaging.replace('_', ' ')}
-                    color={
-                      selectedPackaging === packaging ? 'primary' : 'default'
-                    }
-                    onClick={() => handlePackagingSelect(packaging)}
-                  />
-                ))}
-              </Box>
-              <Box direction="row" spacing={1} sx={{ mt: 2 }}>
-                {allWeights.map((weight) => (
-                  <Chip
-                    key={weight}
-                    label={`${weight}g`}
-                    color={selectedWeight === weight ? 'primary' : 'default'}
-                    onClick={() => handleWeightSelect(weight)}
-                    disabled={isWeightDisabled(weight)}
-                  />
-                ))}
-              </Box>
+              <Stack spacing={2}>
+                <TextBlock
+                  text={VARIANT_LABELS.packaging.label}
+                  variant="subtitle2"
+                />
+                <Box direction="row" spacing={1}>
+                  {allPackagings.map((packaging) => (
+                    <Chip
+                      key={packaging}
+                      label={formatString(packaging)}
+                      color={
+                        selectedPackaging === packaging ? 'primary' : 'default'
+                      }
+                      onClick={() => handlePackagingSelect(packaging)}
+                    />
+                  ))}
+                </Box>
+              </Stack>
+              <Stack spacing={2}>
+                <TextBlock
+                  text={VARIANT_LABELS.weight.label}
+                  variant="subtitle2"
+                />
+                <Box direction="row" spacing={1} sx={{ mt: 2 }}>
+                  {allWeights.map((weight) => (
+                    <Chip
+                      key={weight}
+                      label={`${weight}g`}
+                      color={selectedWeight === weight ? 'primary' : 'default'}
+                      onClick={() => handleWeightSelect(weight)}
+                      disabled={isWeightDisabled(weight)}
+                    />
+                  ))}
+                </Box>
+              </Stack>
               <CounterField
                 value={quantity}
                 onIncrement={handleIncrement}

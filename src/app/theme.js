@@ -25,20 +25,6 @@ const theme = createTheme({
         },
       },
     },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'capitalize',
-        },
-      },
-    },
-    MuiTypography: {
-      styleOverrides: {
-        root: {
-          textTransform: 'capitalize',
-        },
-      },
-    },
   },
   cssVariables: true,
   palette: {

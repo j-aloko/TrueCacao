@@ -8,7 +8,13 @@ import Typography from '@mui/material/Typography';
 
 function CounterField({ value, onIncrement, onDecrement }) {
   return (
-    <Box display="flex" alignItems="center" gap={2}>
+    <Box
+      flexGrow={1}
+      display="flex"
+      justifyContent="space-between"
+      alignItems="center"
+      gap={2}
+    >
       <Fab
         color="primary"
         size="small"

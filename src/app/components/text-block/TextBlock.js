@@ -5,20 +5,22 @@ import Typography from '@mui/material/Typography';
 function TextBlock({
   text = null,
   variant = 'body1',
+  color = 'primary',
   align = 'left',
   gutterBottom = true,
   noWrap = false,
-  customStyle = null,
+  sx = null,
   component = null,
 }) {
   return (
     <Typography
       variant={variant}
+      color={color}
       component={component}
       align={align}
       gutterBottom={gutterBottom}
       noWrap={noWrap}
-      sx={customStyle}
+      sx={sx}
     >
       {text}
     </Typography>
