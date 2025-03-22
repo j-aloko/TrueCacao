@@ -1,8 +1,10 @@
 import React from 'react';
 
 import MenuIcon from '@mui/icons-material/Menu';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
+import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
@@ -114,7 +116,17 @@ function Navbar({
               </Typography>
             ))}
           </Box>
-          <Box sx={{ flexGrow: 0 }}>
+          <Box sx={{ display: 'flex', flexGrow: 0, gap: 2 }}>
+            <IconButton aria-label="cart">
+              <Badge badgeContent={4} color="secondary">
+                <ShoppingCartIcon
+                  fontSize="medium"
+                  sx={(theme) => ({
+                    color: theme.palette.primary.contrastText,
+                  })}
+                />
+              </Badge>
+            </IconButton>
             <Tooltip title="Open settings">
               <IconButton onClick={onOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar>RS</Avatar>
