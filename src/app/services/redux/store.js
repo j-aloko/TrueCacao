@@ -1,30 +1,22 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import Cookies from 'js-cookie';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { persistReducer, persistStore } from 'redux-persist';
-import createWebStorage from 'redux-persist/lib/storage/createWebStorage';
+import { CookieStorage } from 'redux-persist-cookie-storage';
 
 import { productSelectionReducer } from './features/product-selection/productSelectionSlice';
 
-const createNoopStorage = () => ({
-  getItem() {
-    return Promise.resolve(null);
+const cookieStorage = new CookieStorage(Cookies, {
+  expiration: {
+    default: 60 * 60, // 1hour
   },
-  removeItem() {
-    return Promise.resolve();
-  },
-  setItem(_key, value) {
-    return Promise.resolve(value);
-  },
+  httpOnly: false,
+  secure: process.env.NODE_ENV === 'production', // Allow client-side access (set to true if you want server-side only)
 });
-
-const storage =
-  typeof window !== 'undefined'
-    ? createWebStorage('local')
-    : createNoopStorage();
 
 const productSelectionPersistConfig = {
   key: 'productSelection',
-  storage,
+  storage: cookieStorage,
 };
 
 const persistedReducer = persistReducer(

@@ -1,14 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  allPackagings: [],
-  allWeights: [],
-  availablePackagings: [],
-  availableWeights: [],
+  allVariantProperties: {},
+  availableVariantProperties: {},
   quantity: 1,
-  selectedPackaging: null,
   selectedVariant: null,
-  selectedWeight: null,
+  selectedVariantProperties: {},
 };
 
 export const productSelectionSlice = createSlice({
@@ -21,50 +18,35 @@ export const productSelectionSlice = createSlice({
     incrementQuantity: (state) => {
       state.quantity += 1;
     },
-    selectPackaging: (state, action) => {
-      const { packaging, variant, availableWeights } = action.payload;
-      state.selectedPackaging = packaging;
+    selectVariantProperty: (state, action) => {
+      const { property, value, variant, availableValues } = action.payload;
+      state.selectedVariantProperties[property] = value;
       state.selectedVariant = variant;
-      state.selectedWeight = variant?.weight || null;
-      state.availableWeights = availableWeights;
-    },
-    selectWeight: (state, action) => {
-      const { weight, variant, availablePackagings } = action.payload;
-      state.selectedWeight = weight;
-      state.selectedVariant = variant;
-      state.selectedPackaging = variant?.packaging?.type || null;
-      state.availablePackagings = availablePackagings;
+      state.availableVariantProperties = availableValues;
     },
     setInitialState: (state, action) => {
       const {
-        allPackagings,
-        allWeights,
-        selectedPackaging,
+        allVariantProperties,
+        availableVariantProperties,
         selectedVariant,
-        selectedWeight,
+        selectedVariantProperties,
         quantity,
-        availablePackagings,
-        availableWeights,
       } = action.payload;
 
-      state.allPackagings = allPackagings;
-      state.allWeights = allWeights;
-      state.selectedPackaging = selectedPackaging;
+      state.allVariantProperties = allVariantProperties;
+      state.availableVariantProperties = availableVariantProperties;
       state.selectedVariant = selectedVariant;
-      state.selectedWeight = selectedWeight;
+      state.selectedVariantProperties = selectedVariantProperties;
       state.quantity = quantity;
-      state.availablePackagings = availablePackagings;
-      state.availableWeights = availableWeights;
     },
   },
 });
 
 export const {
-  setInitialState,
-  selectPackaging,
-  selectWeight,
-  incrementQuantity,
   decrementQuantity,
+  incrementQuantity,
+  selectVariantProperty,
+  setInitialState,
 } = productSelectionSlice.actions;
 
 export const productSelectionReducer = productSelectionSlice.reducer;

@@ -103,6 +103,7 @@ const eslintConfig = [
         'error',
         { classes: true, functions: true, variables: false },
       ],
+      'object-curly-newline': 'off',
       'operator-linebreak': 'off',
       'react/jsx-filename-extension': [
         'error',

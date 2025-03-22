@@ -11,94 +11,121 @@ import Stack from '@mui/material/Stack';
 import CounterField from '@/app/components/counter-field/CounterField';
 import RenderProductButtons from '@/app/components/render-product-buttons/RenderProductButtons';
 import TextBlock from '@/app/components/text-block/TextBlock';
-import { VARIANT_LABELS } from '@/app/constants/variantLabels';
 import {
   decrementQuantity,
   incrementQuantity,
-  selectPackaging,
-  selectWeight,
+  selectVariantProperty,
   setInitialState,
 } from '@/app/services/redux/features/product-selection/productSelectionSlice';
 import { useAppDispatch, useAppSelector } from '@/app/services/redux/store';
 import { formatString } from '@/app/util/formatString';
 
-function ProductDetailsContainer({ product }) {
+function ProductDetailsContainer({
+  product,
+  variantProps,
+  labels,
+  disableOptions = {},
+}) {
   const dispatch = useAppDispatch();
   const {
-    allPackagings,
-    allWeights,
-    selectedPackaging,
+    allVariantProperties,
     selectedVariant,
-    selectedWeight,
     quantity,
-    availableWeights,
+    availableVariantProperties,
   } = useAppSelector((state) => state.productSelection);
 
   // Initialize state on component mount
   useEffect(() => {
     if (product.variants.length && !selectedVariant) {
-      // Only initialize if selectedVariant is not already set (i.e., no persisted state)
-      const initialPackagings = [
-        ...new Set(product.variants.map((v) => v.packaging.type)),
-      ];
-      const initialWeights = [
-        ...new Set(product.variants.map((v) => v.weight)),
-      ];
+      // Extract all unique values for each variant property
+      const initialVariantProperties = variantProps.reduce((acc, prop) => {
+        acc[prop] = [
+          ...new Set(product.variants.map((v) => getNestedProperty(v, prop))),
+        ];
+        return acc;
+      }, {});
+
       const defaultVariant =
         product.variants.find((v) => v.stock > 0) || product.variants[0];
 
-      // Calculate available weights and packagings based on the default variant
-      const initialAvailableWeights = product.variants
-        .filter((v) => v.packaging.type === defaultVariant.packaging.type)
-        .map((v) => v.weight);
-      const initialAvailablePackagings = product.variants
-        .filter((v) => v.weight === defaultVariant.weight)
-        .map((v) => v.packaging.type);
+      // Calculate available variant properties based on the default variant
+      const initialAvailableVariantProperties = variantProps.reduce(
+        (acc, prop) => {
+          acc[prop] = product.variants
+            .filter((v) =>
+              // Check if the variant matches all other selected properties
+              variantProps.every((p) => {
+                if (p === prop) return true; // Skip the current property
+                return (
+                  getNestedProperty(v, p) ===
+                  getNestedProperty(defaultVariant, p)
+                );
+              })
+            )
+            .map((v) => getNestedProperty(v, prop));
+          return acc;
+        },
+        {}
+      );
 
       // Dispatch the initial state to Redux
       dispatch(
         setInitialState({
-          allPackagings: initialPackagings,
-          allWeights: initialWeights,
-          availablePackagings: initialAvailablePackagings,
-          availableWeights: initialAvailableWeights,
+          allVariantProperties: initialVariantProperties,
+          availableVariantProperties: initialAvailableVariantProperties,
           quantity: 1,
-          selectedPackaging: defaultVariant.packaging.type,
           selectedVariant: defaultVariant,
-          selectedWeight: defaultVariant.weight,
+          selectedVariantProperties: variantProps.reduce((acc, prop) => {
+            acc[prop] = getNestedProperty(defaultVariant, prop);
+            return acc;
+          }, {}),
         })
       );
     }
-  }, [dispatch, product, selectedVariant]);
+  }, [dispatch, product, selectedVariant, variantProps]);
 
-  const handlePackagingSelect = (packaging) => {
-    const validWeights = product.variants
-      .filter((v) => v.packaging.type === packaging)
-      .map((v) => v.weight);
-    const foundVariant = product.variants.find(
-      (v) => v.packaging.type === packaging && validWeights.includes(v.weight)
+  const handleVariantPropertySelect = (property, value) => {
+    // Find all variants that match the new property value
+    const validVariants = product.variants.filter(
+      (v) => getNestedProperty(v, property) === value
     );
-    dispatch(
-      selectPackaging({
-        availableWeights: validWeights,
-        packaging,
-        variant: foundVariant,
-      })
-    );
-  };
 
-  const handleWeightSelect = (weight) => {
-    const validPackagings = product.variants
-      .filter((v) => v.weight === weight)
-      .map((v) => v.packaging.type);
-    const foundVariant = product.variants.find(
-      (v) => v.weight === weight && validPackagings.includes(v.packaging.type)
-    );
+    // Find the variant that matches the new property value and other selected properties
+    const foundVariant =
+      validVariants.find((v) =>
+        variantProps.every((p) => {
+          if (p === property) return true; // Skip the current property
+          return (
+            getNestedProperty(v, p) === getNestedProperty(selectedVariant, p)
+          );
+        })
+      ) || validVariants[0]; // Fallback to the first valid variant if no exact match is found
+
+    // Calculate available values for each property based on the found variant
+    const availableValues = variantProps.reduce((acc, prop) => {
+      acc[prop] = [
+        ...new Set(
+          product.variants
+            .filter((v) =>
+              variantProps.every((p) => {
+                if (p === prop) return true; // Skip the current property
+                return (
+                  getNestedProperty(v, p) === getNestedProperty(foundVariant, p)
+                );
+              })
+            )
+            .map((v) => getNestedProperty(v, prop))
+        ),
+      ];
+      return acc;
+    }, {});
+
     dispatch(
-      selectWeight({
-        availablePackagings: validPackagings,
+      selectVariantProperty({
+        availableValues,
+        property,
+        value,
         variant: foundVariant,
-        weight,
       })
     );
   };
@@ -125,9 +152,9 @@ function ProductDetailsContainer({ product }) {
     });
   };
 
-  // Determine if a weight is disabled
-  const isWeightDisabled = (weight) =>
-    selectedPackaging && !availableWeights.includes(weight);
+  // Helper function to get nested properties (e.g., 'packaging.type')
+  const getNestedProperty = (obj, path) =>
+    path.split('.').reduce((acc, part) => acc?.[part], obj);
 
   return (
     <Box sx={{ flexGrow: 1, p: 2 }}>
@@ -154,41 +181,36 @@ function ProductDetailsContainer({ product }) {
                 component="h2"
               />
               <Divider />
-              <Stack spacing={2}>
-                <TextBlock
-                  text={VARIANT_LABELS.packaging.label}
-                  variant="subtitle2"
-                />
-                <Box direction="row" spacing={1}>
-                  {allPackagings.map((packaging) => (
-                    <Chip
-                      key={packaging}
-                      label={formatString(packaging)}
-                      color={
-                        selectedPackaging === packaging ? 'primary' : 'default'
-                      }
-                      onClick={() => handlePackagingSelect(packaging)}
-                    />
-                  ))}
-                </Box>
-              </Stack>
-              <Stack spacing={2}>
-                <TextBlock
-                  text={VARIANT_LABELS.weight.label}
-                  variant="subtitle2"
-                />
-                <Box direction="row" spacing={1} sx={{ mt: 2 }}>
-                  {allWeights.map((weight) => (
-                    <Chip
-                      key={weight}
-                      label={`${weight}g`}
-                      color={selectedWeight === weight ? 'primary' : 'default'}
-                      onClick={() => handleWeightSelect(weight)}
-                      disabled={isWeightDisabled(weight)}
-                    />
-                  ))}
-                </Box>
-              </Stack>
+              {variantProps.map((prop) => (
+                <Stack key={prop} spacing={2}>
+                  <TextBlock
+                    text={labels[prop.split('.')[0]] || prop}
+                    variant="subtitle2"
+                  />
+                  <Box direction="row" spacing={1}>
+                    {allVariantProperties[prop]?.map((value) => (
+                      <Chip
+                        key={value}
+                        label={
+                          typeof value === 'string'
+                            ? formatString(value)
+                            : `${value}g`
+                        }
+                        color={
+                          getNestedProperty(selectedVariant, prop) === value
+                            ? 'primary'
+                            : 'default'
+                        }
+                        onClick={() => handleVariantPropertySelect(prop, value)}
+                        disabled={
+                          disableOptions[prop.split('.')[0]] && // Check if disabling is enabled for this property
+                          !availableVariantProperties[prop]?.includes(value) // Check if the option is unavailable
+                        }
+                      />
+                    ))}
+                  </Box>
+                </Stack>
+              ))}
               <CounterField
                 value={quantity}
                 onIncrement={handleIncrement}

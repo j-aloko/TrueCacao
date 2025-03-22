@@ -11,7 +11,7 @@ const product = {
   images: ['image1.jpg', 'image2.jpg'],
   lowStockThreshold: 10,
   name: 'Raw Cocoa Powder',
-  stock: 150,
+  stock: 280,
   variants: [
     {
       id: 'variant-1',
@@ -71,19 +71,61 @@ const product = {
     },
     {
       id: 'variant-8',
+      images: ['variant1-image1.jpg', 'variant1-image2.jpg'],
+      packaging: { type: 'JAR' },
+      price: 5.99,
+      stock: 50,
+      weight: 500,
+    },
+    {
+      id: 'variant-9',
       images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
       packaging: { type: 'CARTON_OF_JARS' },
       price: 45.99,
       stock: 30,
       weight: 400,
     },
+    {
+      id: 'variant-10',
+      images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
+      packaging: { type: 'CARTON_OF_JARS' },
+      price: 45.99,
+      stock: 30,
+      weight: 500,
+    },
+    {
+      id: 'variant-11',
+      images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
+      packaging: { type: 'CARTON_OF_JARS' },
+      price: 45.99,
+      stock: 30,
+      weight: 200,
+    },
   ],
+};
+
+// Define the variant properties and labels
+const variantProps = ['packaging.type', 'weight']; // Dynamic variant properties
+
+const labels = {
+  packaging: 'Packaging',
+  weight: 'Weight',
+};
+
+const disableOptions = {
+  packaging: false, // Do not disable packaging options
+  weight: true, // Disable unavailable weight options
 };
 
 function Home() {
   return (
     <Container maxWidth="xl" disableGutters>
-      <ProductDetailsContainer product={product} />
+      <ProductDetailsContainer
+        product={product}
+        variantProps={variantProps}
+        labels={labels}
+        disableOptions={disableOptions}
+      />
     </Container>
   );
 }
