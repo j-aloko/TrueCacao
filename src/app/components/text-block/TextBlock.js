@@ -2,15 +2,18 @@ import React from 'react';
 
 import Typography from '@mui/material/Typography';
 
+import { clean } from '@/app/util/cleanHtml';
+
 function TextBlock({
   text = null,
+  isHtmlString = false,
   variant = 'body1',
   color = 'primary',
   align = 'left',
-  gutterBottom = true,
+  gutterBottom = false,
   noWrap = false,
   sx = null,
-  component = null,
+  component = 'div',
 }) {
   return (
     <Typography
@@ -21,9 +24,10 @@ function TextBlock({
       gutterBottom={gutterBottom}
       noWrap={noWrap}
       sx={sx}
-    >
-      {text}
-    </Typography>
+      {...(isHtmlString
+        ? { dangerouslySetInnerHTML: { __html: clean(text) } }
+        : { children: text })}
+    />
   );
 }
 

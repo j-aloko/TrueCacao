@@ -9,7 +9,12 @@ import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
 
 import CounterField from '@/app/components/counter-field/CounterField';
+import ProductDescription from '@/app/components/product-description/ProductDescription';
+import ProductImage from '@/app/components/product-image/ProductImage';
+import ProductName from '@/app/components/product-name/ProductName';
+import ProductPrice from '@/app/components/product-price/ProductPrice';
 import RenderProductButtons from '@/app/components/render-product-buttons/RenderProductButtons';
+import StorePickupInfo from '@/app/components/store-pickup-info/StorePickupInfo';
 import TextBlock from '@/app/components/text-block/TextBlock';
 import {
   decrementQuantity,
@@ -19,6 +24,18 @@ import {
 } from '@/app/services/redux/features/product-selection/productSelectionSlice';
 import { useAppDispatch, useAppSelector } from '@/app/services/redux/store';
 import { formatString } from '@/app/util/formatString';
+
+const pickupInfo = `
+<div>
+  <p>Usually ready in 4 hours. Pickup available at <strong>27 Okodan Road</strong></p>
+</div>
+`;
+
+const productDescription = `
+<div>
+  <p>Appreciated for its unmistakably bold taste, this bar is loved by cocoa enthusiasts. Made with traceable cocoa beans, Panela or Turbinado sugar, and cocoa butter. </p>
+</div>
+`;
 
 function ProductDetailsContainer({
   product,
@@ -159,27 +176,14 @@ function ProductDetailsContainer({
   return (
     <Box sx={{ flexGrow: 1, p: 2 }}>
       <Grid container spacing={2}>
-        <Grid size={7} p={3} border="2px solid red">
-          <Box flexGrow={1}>{/* Display first product image */}</Box>
+        <Grid size={7} p={3}>
+          <ProductImage image="/product-images/royale-cocoa-powder-3.jpg" />
         </Grid>
-
-        <Grid size={5} p={3} border="2px solid yellow">
+        <Grid size={5} p={3}>
           <Box flexGrow={1}>
             <Stack spacing={3.5}>
-              <TextBlock
-                text={product?.name}
-                variant="h5"
-                component="h1"
-                sx={(theme) => ({
-                  color: theme.palette.primary.dark,
-                  fontWeight: 500,
-                })}
-              />
-              <TextBlock
-                text={`GH₵${selectedVariant?.price || 0}`}
-                variant="h6"
-                component="h2"
-              />
+              <ProductName name={product?.name} />
+              <ProductPrice price={`GH₵${selectedVariant?.price || 0}`} />
               <Divider />
               {variantProps.map((prop) => (
                 <Stack key={prop} spacing={2}>
@@ -220,6 +224,10 @@ function ProductDetailsContainer({
                 onAddToCart={onAddToCart}
                 onBuyNow={onBuyNow}
               />
+              <Stack>
+                <StorePickupInfo pickupInfo={pickupInfo} />
+                <ProductDescription productDescription={productDescription} />
+              </Stack>
             </Stack>
           </Box>
         </Grid>
