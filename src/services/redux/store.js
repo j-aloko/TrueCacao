@@ -4,14 +4,15 @@ import { useDispatch, useSelector, useStore } from 'react-redux';
 import { persistReducer, persistStore } from 'redux-persist';
 import { CookieStorage } from 'redux-persist-cookie-storage';
 
+import { cartDrawerReducer } from './features/cart-drawer/cartDrawerSlice';
 import { productSelectionReducer } from './features/product-selection/productSelectionSlice';
 
 const cookieStorage = new CookieStorage(Cookies, {
   expiration: {
-    default: 60 * 60, // 1hour
+    default: 60 * 60, // 1 hour
   },
   httpOnly: false,
-  secure: process.env.NODE_ENV === 'production', // Allow client-side access (set to true if you want server-side only)
+  secure: process.env.NODE_ENV === 'production',
 });
 
 const productSelectionPersistConfig = {
@@ -25,6 +26,7 @@ const persistedReducer = persistReducer(
 );
 
 const rootReducer = combineReducers({
+  cartDrawer: cartDrawerReducer,
   productSelection: persistedReducer,
 });
 
@@ -36,6 +38,6 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-export const useAppDispatch = useDispatch.withTypes();
-export const useAppSelector = useSelector.withTypes();
-export const useAppStore = useStore.withTypes();
+export const useAppDispatch = useDispatch;
+export const useAppSelector = useSelector;
+export const useAppStore = useStore;

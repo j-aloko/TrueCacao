@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 
 import Navbar from '@/components/navbar/Navbar';
+import { toggleDrawer } from '@/services/redux/features/cart-drawer/cartDrawerSlice';
+import { useAppDispatch } from '@/services/redux/store';
 
 const pages = ['Contact Us', 'Track Your Order'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -10,6 +12,8 @@ const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 function NavbarContainer() {
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
+
+  const dispatch = useAppDispatch();
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -36,6 +40,7 @@ function NavbarContainer() {
       onOpenUserMenu={handleOpenUserMenu}
       onCloseNavMenu={handleCloseNavMenu}
       onCloseUserMenu={handleCloseUserMenu}
+      onToggleCartDrawer={() => dispatch(toggleDrawer())}
     />
   );
 }

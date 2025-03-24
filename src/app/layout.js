@@ -27,28 +27,28 @@ export default function RootLayout({ children }) {
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Container
-              maxWidth="xl"
-              disableGutters
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                minHeight: '100vh',
-              }}
-            >
-              <nav>
-                <NavbarContainer />
-              </nav>
-              <main>
-                <StoreProvider>{children}</StoreProvider>
-              </main>
-              <footer style={{ marginTop: 'auto' }}>
-                <FooterContainer />
-              </footer>
-            </Container>
-            <Suspense fallback={<p>Loading cart...</p>}>
-              <CartDrawerContainer />
-            </Suspense>
+            <StoreProvider>
+              <Container
+                maxWidth="xl"
+                disableGutters
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: '100vh',
+                }}
+              >
+                <nav>
+                  <NavbarContainer />
+                </nav>
+                <main>{children}</main>
+                <footer style={{ marginTop: 'auto' }}>
+                  <FooterContainer />
+                </footer>
+              </Container>
+              <Suspense fallback={<p>Loading cart...</p>}>
+                <CartDrawerContainer />
+              </Suspense>
+            </StoreProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>

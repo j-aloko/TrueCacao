@@ -23,6 +23,7 @@ function Navbar({
   onOpenUserMenu,
   onCloseNavMenu,
   onCloseUserMenu,
+  onToggleCartDrawer,
 }) {
   return (
     <AppBar position="static">
@@ -117,7 +118,7 @@ function Navbar({
             ))}
           </Box>
           <Box sx={{ display: 'flex', flexGrow: 0, gap: 2 }}>
-            <IconButton aria-label="cart">
+            <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
               <Badge badgeContent={4} color="secondary">
                 <ShoppingCartIcon
                   fontSize="medium"

@@ -9,6 +9,7 @@ function SwipeDrawer({
   anchor = 'right',
   onOpen = null,
   onClose = null,
+  transitionDuration = { enter: 300, exit: 200 },
 }) {
   return (
     <SwipeableDrawer
@@ -16,6 +17,7 @@ function SwipeDrawer({
       open={open}
       onClose={onClose}
       onOpen={onOpen}
+      transitionDuration={transitionDuration}
       sx={(theme) => ({
         '& .MuiDrawer-paper': {
           maxWidth: '400px',
