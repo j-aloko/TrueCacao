@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -6,6 +6,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import PropTypes from 'prop-types';
 
+import CartDrawerContainer from '@/containers/cart-drawer-container/CartDrawerContainer';
 import FooterContainer from '@/containers/footer-container/FooterContainer';
 import NavbarContainer from '@/containers/navbar-container/NavbarContainer';
 
@@ -45,6 +46,9 @@ export default function RootLayout({ children }) {
                 <FooterContainer />
               </footer>
             </Container>
+            <Suspense fallback={<p>Loading cart...</p>}>
+              <CartDrawerContainer />
+            </Suspense>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>
