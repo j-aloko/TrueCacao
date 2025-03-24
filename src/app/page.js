@@ -2,7 +2,7 @@ import React from 'react';
 
 import Container from '@mui/material/Container';
 
-import ProductDetailsContainer from './containers/product-details-container/ProductDetailsContainer';
+import ProductDetailsContainer from '@/containers/product-details-container/ProductDetailsContainer';
 
 const product = {
   categoryId: 'category-1',

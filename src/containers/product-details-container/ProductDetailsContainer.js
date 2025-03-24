@@ -8,22 +8,22 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
 
-import CounterField from '@/app/components/counter-field/CounterField';
-import ProductDescription from '@/app/components/product-description/ProductDescription';
-import ProductImage from '@/app/components/product-image/ProductImage';
-import ProductName from '@/app/components/product-name/ProductName';
-import ProductPrice from '@/app/components/product-price/ProductPrice';
-import RenderProductButtons from '@/app/components/render-product-buttons/RenderProductButtons';
-import StorePickupInfo from '@/app/components/store-pickup-info/StorePickupInfo';
-import TextBlock from '@/app/components/text-block/TextBlock';
+import CounterField from '@/components/counter-field/CounterField';
+import ProductDescription from '@/components/product-description/ProductDescription';
+import ProductImage from '@/components/product-image/ProductImage';
+import ProductName from '@/components/product-name/ProductName';
+import ProductPrice from '@/components/product-price/ProductPrice';
+import RenderProductButtons from '@/components/render-product-buttons/RenderProductButtons';
+import StorePickupInfo from '@/components/store-pickup-info/StorePickupInfo';
+import TextBlock from '@/components/text-block/TextBlock';
 import {
   decrementQuantity,
   incrementQuantity,
   selectVariantProperty,
   setInitialState,
-} from '@/app/services/redux/features/product-selection/productSelectionSlice';
-import { useAppDispatch, useAppSelector } from '@/app/services/redux/store';
-import { formatString } from '@/app/util/formatString';
+} from '@/services/redux/features/product-selection/productSelectionSlice';
+import { useAppDispatch, useAppSelector } from '@/services/redux/store';
+import { formatString } from '@/util/formatString';
 
 const pickupInfo = `
 <div>

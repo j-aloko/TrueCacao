@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import Navbar from '@/app/components/navbar/Navbar';
+import Navbar from '@/components/navbar/Navbar';
 
 const pages = ['Contact Us', 'Track Your Order'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];

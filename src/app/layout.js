@@ -6,8 +6,9 @@ import { ThemeProvider } from '@mui/material/styles';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import PropTypes from 'prop-types';
 
-import FooterContainer from './containers/footer-container/FooterContainer';
-import NavbarContainer from './containers/navbar-container/NavbarContainer';
+import FooterContainer from '@/containers/footer-container/FooterContainer';
+import NavbarContainer from '@/containers/navbar-container/NavbarContainer';
+
 import StoreProvider from './StoreProvider';
 import theme from './theme';
 

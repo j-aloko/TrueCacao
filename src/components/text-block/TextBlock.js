@@ -2,7 +2,7 @@ import React from 'react';
 
 import Typography from '@mui/material/Typography';
 
-import { clean } from '@/app/util/cleanHtml';
+import { clean } from '@/util/cleanHtml';
 
 function TextBlock({
   text = null,

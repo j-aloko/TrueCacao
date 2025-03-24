@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Footer from '@/app/components/footer/Footer';
+import Footer from '@/components/footer/Footer';
 
 function FooterContainer() {
   return <Footer />;
