@@ -1,0 +1,15 @@
+model AppliedGiftCard {
+  id                      String   @id @default(uuid())
+  cartId                  String
+  cart                    Cart     @relation(fields: [cartId], references: [id])
+  giftCardId              String
+  giftCard                GiftCard @relation(fields: [giftCardId], references: [id])
+  amountUsed              Money    @relation("AmountUsedMoney", fields: [amountUsedId], references: [id])
+  amountUsedId            String
+  balance                 Money    @relation("BalanceMoney", fields: [balanceId], references: [id])
+  balanceId               String
+  lastCharacters          String
+  presentmentAmountUsed   Money    @relation("PresentmentAmountMoney", fields: [presentmentAmountUsedId], references: [id])
+  presentmentAmountUsedId String
+  createdAt               DateTime @default(now())
+}

@@ -1,9 +1,9 @@
 /// CATEGORIES
 model Category {
-  id          String       @id @default(uuid())
+  id          String        @id @default(uuid())
   name        CATEGORY_TYPE @unique
   description String?
   products    Product[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }

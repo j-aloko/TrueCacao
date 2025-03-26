@@ -65,193 +65,344 @@ enum PAYMENT_METHOD {
   BANK_TRANSFER
 }
 
+enum CURRENCY_CODE {
+  GHS
+  NGN
+  USD
+}
+
 
 /// ABANDONED CART TRACKING
 model AbandonedCart {
-  id          String     @id @default(uuid())
-  userId      String
-  user        User       @relation(fields: [userId], references: [id])
-  cartItems   CartItem[]
-  lastUpdated DateTime   @default(now())
+  id          String    @id @default(uuid())
+  cartId      String    @unique
+  cart        Cart      @relation(fields: [cartId], references: [id])
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+  lastUpdated DateTime  @default(now())
+  recovered   Boolean   @default(false)
+  recoveredAt DateTime?
 }
 
 
 /// ADDRESS MANAGEMENT
 model Address {
-  id          String     @id @default(uuid())
-  userId      String
-  user        User       @relation(fields: [userId], references: [id])
-  type        String
-  street      String
-  city        String
-  state       String
-  postalCode  String
-  country     String
-  isDefault   Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  shippingOrders Order[] @relation("OrderShippingAddress")
-  billingOrders  Order[] @relation("OrderBillingAddress")
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  type           String
+  street         String
+  city           String
+  state          String
+  postalCode     String
+  country        String
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  shippingOrders Order[]  @relation("OrderShippingAddress")
+  billingOrders  Order[]  @relation("OrderBillingAddress")
+}
+
+
+model AppliedGiftCard {
+  id                      String   @id @default(uuid())
+  cartId                  String
+  cart                    Cart     @relation(fields: [cartId], references: [id])
+  giftCardId              String
+  giftCard                GiftCard @relation(fields: [giftCardId], references: [id])
+  amountUsed              Money    @relation("AmountUsedMoney", fields: [amountUsedId], references: [id])
+  amountUsedId            String
+  balance                 Money    @relation("BalanceMoney", fields: [balanceId], references: [id])
+  balanceId               String
+  lastCharacters          String
+  presentmentAmountUsed   Money    @relation("PresentmentAmountMoney", fields: [presentmentAmountUsedId], references: [id])
+  presentmentAmountUsedId String
+  createdAt               DateTime @default(now())
 }
 
 
 /// AUDIT LOGS
 model AuditLog {
-  id          String     @id @default(uuid())
-  action      String
-  model       String
-  modelId     String
-  userId      String?
-  user        User?      @relation(fields: [userId], references: [id])
-  details     Json?
-  createdAt   DateTime   @default(now())
+  id        String   @id @default(uuid())
+  action    String
+  model     String
+  modelId   String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  details   Json?
+  createdAt DateTime @default(now())
 }
 
 
-/// CART & RELATED ITEMS
-model CartItem {
-  id              String         @id @default(uuid())
-  userId          String
-  user            User           @relation(fields: [userId], references: [id])
-  productVariantId String
-  productVariant  ProductVariant @relation(fields: [productVariantId], references: [id])
-  quantity        Int
-  price           Decimal
-  addedAt         DateTime       @default(now())
-  abandonedCartId String?
-  abandonedCart   AbandonedCart? @relation(fields: [abandonedCartId], references: [id])
+/// CART SYSTEM
+model Cart {
+  id            String             @id @default(uuid())
+  userId        String?
+  user          User?              @relation("UserCarts", fields: [userId], references: [id])
+  checkoutUrl   String             @unique
+  lines         CartLine[]
+  giftCards     AppliedGiftCard[]
+  discountCodes CartDiscountCode[]
+  note          String?
+  totalQuantity Int                @default(0)
+  abandonedCart AbandonedCart?
+  cost          CartCost?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+}
+
+
+model CartCost {
+  id             String   @id @default(uuid())
+  cartId         String   @unique
+  cart           Cart     @relation(fields: [cartId], references: [id])
+  subtotal       Money    @relation("SubtotalMoney", fields: [subtotalId], references: [id])
+  subtotalId     String
+  subtotalAmount Decimal
+  totalTax       Money    @relation("TotalTaxMoney", fields: [totalTaxId], references: [id])
+  totalTaxId     String
+  totalTaxAmount Decimal
+  total          Money    @relation("TotalMoney", fields: [totalId], references: [id])
+  totalId        String
+  totalAmount    Decimal
+  shipping       Money?   @relation("ShippingMoney", fields: [shippingId], references: [id])
+  shippingId     String?
+  shippingAmount Decimal?
+  discount       Money?   @relation("DiscountMoney", fields: [discountId], references: [id])
+  discountId     String?
+  discountAmount Decimal?
+  createdAt      DateTime @default(now())
+}
+
+
+model CartDiscountCode {
+  id         String   @id @default(uuid())
+  cartId     String
+  cart       Cart     @relation(fields: [cartId], references: [id])
+  code       String
+  applicable Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+
+model CartLine {
+  id                  String               @id @default(uuid())
+  cartId              String
+  cart                Cart                 @relation(fields: [cartId], references: [id])
+  productVariantId    String
+  productVariant      ProductVariant       @relation(fields: [productVariantId], references: [id])
+  quantity            Int                  @default(1)
+  price               Money                @relation("LinePriceMoney", fields: [priceId], references: [id])
+  priceId             String
+  discountAllocations DiscountAllocation[]
+  attributes          Json?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 }
 
 
 /// CATEGORIES
 model Category {
-  id          String       @id @default(uuid())
+  id          String        @id @default(uuid())
   name        CATEGORY_TYPE @unique
   description String?
   products    Product[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 
 /// DISCOUNTS AND PROMOTIONS
 model Discount {
-  id          String     @id @default(uuid())
-  code        String     @unique
+  id          String               @id @default(uuid())
+  code        String               @unique
   type        DISCOUNT_TYPE
-  value       Decimal
+  value       Money                @relation("DiscountValue", fields: [valueId], references: [id])
+  valueId     String
+  minAmount   Money?               @relation("DiscountMinAmount", fields: [minAmountId], references: [id])
+  minAmountId String?
   startDate   DateTime
   endDate     DateTime
   maxUses     Int?
-  usedCount   Int        @default(0)
+  usedCount   Int                  @default(0)
   products    Product[]
   orders      Order[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  allocations DiscountAllocation[]
+}
+
+
+model DiscountAllocation {
+  id         String   @id @default(uuid())
+  cartLineId String
+  cartLine   CartLine @relation(fields: [cartLineId], references: [id])
+  discountId String
+  discount   Discount @relation(fields: [discountId], references: [id])
+  amount     Money    @relation("DiscountAllocationMoney", fields: [amountId], references: [id])
+  amountId   String
+  createdAt  DateTime @default(now())
+}
+
+
+model GiftCard {
+  id             String            @id @default(uuid())
+  code           String            @unique
+  initialValue   Money             @relation("InitialValueMoney", fields: [initialValueId], references: [id])
+  initialValueId String
+  balance        Money             @relation("GiftCardBalanceMoney", fields: [balanceId], references: [id])
+  balanceId      String
+  expiresAt      DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  appliedToCarts AppliedGiftCard[]
+}
+
+
+/// MONEY OBJECT
+model Money {
+  id                     String               @id @default(uuid())
+  amount                 Decimal
+  currencyCode           CURRENCY_CODE
+  createdAt              DateTime             @default(now())
+  cartCosts              CartCost[]           @relation("SubtotalMoney")
+  giftCards              GiftCard[]           @relation("GiftCardBalanceMoney")
+  appliedGiftCards       AppliedGiftCard[]    @relation("AmountUsedMoney")
+  cartLines              CartLine[]           @relation("LinePriceMoney")
+  payments               Payment[]            @relation("PaymentAmount")
+  orders                 Order[]              @relation("OrderSubtotal")
+  orderItems             OrderItem[]          @relation("OrderItemPrice")
+  productVariants        ProductVariant[]     @relation("VariantPrice")
+  discounts              Discount[]           @relation("DiscountValue")
+  discountAllocations    DiscountAllocation[] @relation("DiscountAllocationMoney")
+  balanceMoney           AppliedGiftCard[]    @relation("BalanceMoney")
+  presentmentAmountMoney AppliedGiftCard[]    @relation("PresentmentAmountMoney")
+  totalTaxMoney          CartCost[]           @relation("TotalTaxMoney")
+  totalMoney             CartCost[]           @relation("TotalMoney")
+  shippingMoney          CartCost[]           @relation("ShippingMoney")
+  discountMoney          CartCost[]           @relation("DiscountMoney")
+  minAmountMoney         Discount[]           @relation("DiscountMinAmount")
+  initialValueMoney      GiftCard[]           @relation("InitialValueMoney")
+  shippingCostMoney      Order[]              @relation("OrderShippingCost")
+  taxAmountMoney         Order[]              @relation("OrderTaxAmount")
+  totalOrderMoney        Order[]              @relation("OrderTotal")
+  lineTotalMoney         OrderItem[]          @relation("OrderItemTotal")
 }
 
 
 /// CUSTOMER NOTIFICATIONS
 model Notification {
-  id        String    @id @default(uuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
-  orderId   String?
-  order     Order?    @relation(fields: [orderId], references: [id])
-  message   String
-  sentAt    DateTime  @default(now())
-  read      Boolean   @default(false)
+  id      String   @id @default(uuid())
+  userId  String
+  user    User     @relation(fields: [userId], references: [id])
+  orderId String?
+  order   Order?   @relation(fields: [orderId], references: [id])
+  message String
+  sentAt  DateTime @default(now())
+  read    Boolean  @default(false)
 }
 
 
 /// ORDER TRACKING
 model Order {
-  id              String        @id @default(uuid())
-  userId          String
-  user            User          @relation(fields: [userId], references: [id])
-  status          ORDER_STATUS  @default(CONFIRMED)
-  trackingCode    String?       @unique
-  carrier         String?
-  trackingUrl     String?
-  items           OrderItem[]
-  trackingLogs    TrackingLog[]
-  notifications   Notification[]
+  id                String         @id @default(uuid())
+  userId            String
+  user              User           @relation(fields: [userId], references: [id])
+  status            ORDER_STATUS   @default(CONFIRMED)
+  trackingCode      String?        @unique
+  carrier           String?
+  trackingUrl       String?
+  items             OrderItem[]
+  trackingLogs      TrackingLog[]
+  notifications     Notification[]
   shippingAddressId String
-  shippingAddress Address       @relation(name: "OrderShippingAddress", fields: [shippingAddressId], references: [id])
-  billingAddressId String
-  billingAddress  Address       @relation(name: "OrderBillingAddress", fields: [billingAddressId], references: [id])
-  discountId      String?
-  discount        Discount?     @relation(fields: [discountId], references: [id])
-  payments        Payment[]
-  shippingCost    Decimal?
-  taxRate         Decimal?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  shippingAddress   Address        @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddressId  String
+  billingAddress    Address        @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
+  discountId        String?
+  discount          Discount?      @relation(fields: [discountId], references: [id])
+  payments          Payment[]
+  shippingCost      Money?         @relation("OrderShippingCost", fields: [shippingCostId], references: [id])
+  shippingCostId    String?
+  taxRate           Decimal?
+  taxAmount         Money?         @relation("OrderTaxAmount", fields: [taxAmountId], references: [id])
+  taxAmountId       String?
+  subtotal          Money          @relation("OrderSubtotal", fields: [subtotalId], references: [id])
+  subtotalId        String
+  total             Money          @relation("OrderTotal", fields: [totalId], references: [id])
+  totalId           String
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 }
 
 
 /// ORDER ITEMS
 model OrderItem {
-  id              String         @id @default(uuid())
-  orderId         String
-  order           Order          @relation(fields: [orderId], references: [id])
+  id               String         @id @default(uuid())
+  orderId          String
+  order            Order          @relation(fields: [orderId], references: [id])
   productVariantId String
-  productVariant  ProductVariant @relation(fields: [productVariantId], references: [id])
-  quantity        Int
-  price           Decimal
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+  quantity         Int
+  price            Money          @relation("OrderItemPrice", fields: [priceId], references: [id])
+  priceId          String
+  lineTotal        Money          @relation("OrderItemTotal", fields: [lineTotalId], references: [id])
+  lineTotalId      String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 }
 
 
 /// PAYMENT TRACKING (WITH SHOP PAY INTEGRATION)
 model Payment {
-  id            String     @id @default(uuid())
-  orderId       String
-  order         Order      @relation(fields: [orderId], references: [id])
-  amount        Decimal
-  status        PAYMENT_STATUS
-  method        PAYMENT_METHOD
-  transactionId String?
+  id                 String              @id @default(uuid())
+  orderId            String
+  order              Order               @relation(fields: [orderId], references: [id])
+  amount             Money               @relation("PaymentAmount", fields: [amountId], references: [id])
+  amountId           String
+  status             PAYMENT_STATUS
+  method             PAYMENT_METHOD
+  transactionId      String?
   shopPayTransaction ShopPayTransaction?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 }
 
 
 /// PRODUCT MODEL
 model Product {
-  id              String           @id @default(uuid())
-  name            String
-  description     String?
-  stock           Int              @default(0) // Total stock across all variants
-  lowStockThreshold Int?           @default(10)
-  categoryId      String
-  category        Category         @relation(fields: [categoryId], references: [id])
-  variants        ProductVariant[] // Array of variants for this product
-  images          String[]
-  reviews         Review[]
-  discounts       Discount[]
-  wishlistItems   Wishlist[]       // Add this line
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  deletedAt       DateTime?
+  id                String           @id @default(uuid())
+  name              String
+  description       String?
+  stock             Int              @default(0) // Total stock across all variants
+  lowStockThreshold Int?             @default(10)
+  categoryId        String
+  category          Category         @relation(fields: [categoryId], references: [id])
+  variants          ProductVariant[]
+  images            String[]
+  reviews           Review[]
+  discounts         Discount[]
+  wishlistItems     Wishlist[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  deletedAt         DateTime?
 }
 
 
 /// PRODUCT VARIANTS
 model ProductVariant {
-  id            String             @id @default(uuid())
+  id            String      @id @default(uuid())
   productId     String
-  product       Product            @relation(fields: [productId], references: [id])
-  weight        Int                // Weight in grams (e.g., 100g, 200g, etc.)
-  packaging     Json               // Packaging type (e.g., SACHET, JAR, BOX_70_PERCENT, etc.)
-  price         Decimal
+  product       Product     @relation(fields: [productId], references: [id])
+  weight        Int
+  packaging     Json
+  price         Money       @relation("VariantPrice", fields: [priceId], references: [id])
+  priceId       String
   stock         Int
   images        String[]
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  cartItems     CartItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  cartLines     CartLine[]
   orderItems    OrderItem[]
   wishlistItems Wishlist[]
 }
@@ -259,15 +410,15 @@ model ProductVariant {
 
 /// REVIEWS AND RATINGS
 model Review {
-  id          String     @id @default(uuid())
-  userId      String
-  user        User       @relation(fields: [userId], references: [id])
-  productId   String
-  product     Product    @relation(fields: [productId], references: [id])
-  rating      Int
-  comment     String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 
@@ -285,12 +436,12 @@ model Session {
 
 /// SHOP PAY TRANSACTIONS
 model ShopPayTransaction {
-  id              String   @id @default(uuid())
-  paymentId       String   @unique
-  payment         Payment  @relation(fields: [paymentId], references: [id])
-  shopPayOrderId  String   @unique
-  responseData    Json
-  createdAt       DateTime @default(now())
+  id             String   @id @default(uuid())
+  paymentId      String   @unique
+  payment        Payment  @relation(fields: [paymentId], references: [id])
+  shopPayOrderId String   @unique
+  responseData   Json
+  createdAt      DateTime @default(now())
 }
 
 
@@ -308,34 +459,34 @@ model TrackingLog {
 
 /// USER AUTHENTICATION
 model User {
-  id            String        @id @default(uuid())
-  email         String        @unique
-  passwordHash  String
-  name          String
-  role          USER_ROLE     @default(CUSTOMER)
-  sessions      Session[]
-  orders        Order[]
-  cartItems     CartItem[]
+  id             String          @id @default(uuid())
+  email          String          @unique
+  passwordHash   String
+  name           String
+  role           USER_ROLE       @default(CUSTOMER)
+  sessions       Session[]
+  orders         Order[]
+  carts          Cart[]          @relation("UserCarts")
   abandonedCarts AbandonedCart[]
-  auditLogs     AuditLog[]
-  reviews       Review[]
-  wishlistItems Wishlist[]
-  addresses     Address[]
-  notifications Notification[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  auditLogs      AuditLog[]
+  reviews        Review[]
+  wishlistItems  Wishlist[]
+  addresses      Address[]
+  notifications  Notification[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }
 
 
 /// WISHLIST
 model Wishlist {
-  id              String         @id @default(uuid())
-  userId          String
-  user            User           @relation(fields: [userId], references: [id])
-  productId       String         // Optional: Reference to the product
-  product         Product?       @relation(fields: [productId], references: [id])
-  productVariantId String        // Reference to the specific variant
-  productVariant  ProductVariant @relation(fields: [productVariantId], references: [id])
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id               String         @id @default(uuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  productId        String
+  product          Product?       @relation(fields: [productId], references: [id])
+  productVariantId String
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 }

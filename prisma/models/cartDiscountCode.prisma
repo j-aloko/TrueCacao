@@ -1,0 +1,8 @@
+model CartDiscountCode {
+  id         String   @id @default(uuid())
+  cartId     String
+  cart       Cart     @relation(fields: [cartId], references: [id])
+  code       String
+  applicable Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}

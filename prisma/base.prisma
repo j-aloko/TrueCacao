@@ -62,3 +62,9 @@ enum PAYMENT_METHOD {
   PAYPAL
   BANK_TRANSFER
 }
+
+enum CURRENCY_CODE {
+  GHS
+  NGN
+  USD
+}

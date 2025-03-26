@@ -1,19 +1,19 @@
 /// USER AUTHENTICATION
 model User {
-  id            String        @id @default(uuid())
-  email         String        @unique
-  passwordHash  String
-  name          String
-  role          USER_ROLE     @default(CUSTOMER)
-  sessions      Session[]
-  orders        Order[]
-  cartItems     CartItem[]
+  id             String          @id @default(uuid())
+  email          String          @unique
+  passwordHash   String
+  name           String
+  role           USER_ROLE       @default(CUSTOMER)
+  sessions       Session[]
+  orders         Order[]
+  carts          Cart[]          @relation("UserCarts")
   abandonedCarts AbandonedCart[]
-  auditLogs     AuditLog[]
-  reviews       Review[]
-  wishlistItems Wishlist[]
-  addresses     Address[]
-  notifications Notification[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  auditLogs      AuditLog[]
+  reviews        Review[]
+  wishlistItems  Wishlist[]
+  addresses      Address[]
+  notifications  Notification[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }

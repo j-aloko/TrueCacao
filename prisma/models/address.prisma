@@ -1,17 +1,17 @@
 /// ADDRESS MANAGEMENT
 model Address {
-  id          String     @id @default(uuid())
-  userId      String
-  user        User       @relation(fields: [userId], references: [id])
-  type        String
-  street      String
-  city        String
-  state       String
-  postalCode  String
-  country     String
-  isDefault   Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  shippingOrders Order[] @relation("OrderShippingAddress")
-  billingOrders  Order[] @relation("OrderBillingAddress")
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  type           String
+  street         String
+  city           String
+  state          String
+  postalCode     String
+  country        String
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  shippingOrders Order[]  @relation("OrderShippingAddress")
+  billingOrders  Order[]  @relation("OrderBillingAddress")
 }

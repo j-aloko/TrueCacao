@@ -1,0 +1,29 @@
+/// MONEY OBJECT
+model Money {
+  id                     String               @id @default(uuid())
+  amount                 Decimal
+  currencyCode           CURRENCY_CODE
+  createdAt              DateTime             @default(now())
+  cartCosts              CartCost[]           @relation("SubtotalMoney")
+  giftCards              GiftCard[]           @relation("GiftCardBalanceMoney")
+  appliedGiftCards       AppliedGiftCard[]    @relation("AmountUsedMoney")
+  cartLines              CartLine[]           @relation("LinePriceMoney")
+  payments               Payment[]            @relation("PaymentAmount")
+  orders                 Order[]              @relation("OrderSubtotal")
+  orderItems             OrderItem[]          @relation("OrderItemPrice")
+  productVariants        ProductVariant[]     @relation("VariantPrice")
+  discounts              Discount[]           @relation("DiscountValue")
+  discountAllocations    DiscountAllocation[] @relation("DiscountAllocationMoney")
+  balanceMoney           AppliedGiftCard[]    @relation("BalanceMoney")
+  presentmentAmountMoney AppliedGiftCard[]    @relation("PresentmentAmountMoney")
+  totalTaxMoney          CartCost[]           @relation("TotalTaxMoney")
+  totalMoney             CartCost[]           @relation("TotalMoney")
+  shippingMoney          CartCost[]           @relation("ShippingMoney")
+  discountMoney          CartCost[]           @relation("DiscountMoney")
+  minAmountMoney         Discount[]           @relation("DiscountMinAmount")
+  initialValueMoney      GiftCard[]           @relation("InitialValueMoney")
+  shippingCostMoney      Order[]              @relation("OrderShippingCost")
+  taxAmountMoney         Order[]              @relation("OrderTaxAmount")
+  totalOrderMoney        Order[]              @relation("OrderTotal")
+  lineTotalMoney         OrderItem[]          @relation("OrderItemTotal")
+}

@@ -1,0 +1,10 @@
+model DiscountAllocation {
+  id         String   @id @default(uuid())
+  cartLineId String
+  cartLine   CartLine @relation(fields: [cartLineId], references: [id])
+  discountId String
+  discount   Discount @relation(fields: [discountId], references: [id])
+  amount     Money    @relation("DiscountAllocationMoney", fields: [amountId], references: [id])
+  amountId   String
+  createdAt  DateTime @default(now())
+}

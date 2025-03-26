@@ -1,9 +1,9 @@
 /// SHOP PAY TRANSACTIONS
 model ShopPayTransaction {
-  id              String   @id @default(uuid())
-  paymentId       String   @unique
-  payment         Payment  @relation(fields: [paymentId], references: [id])
-  shopPayOrderId  String   @unique
-  responseData    Json
-  createdAt       DateTime @default(now())
+  id             String   @id @default(uuid())
+  paymentId      String   @unique
+  payment        Payment  @relation(fields: [paymentId], references: [id])
+  shopPayOrderId String   @unique
+  responseData   Json
+  createdAt      DateTime @default(now())
 }

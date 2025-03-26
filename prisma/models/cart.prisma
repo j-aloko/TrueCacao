@@ -1,0 +1,16 @@
+/// CART SYSTEM
+model Cart {
+  id            String             @id @default(uuid())
+  userId        String?
+  user          User?              @relation("UserCarts", fields: [userId], references: [id])
+  checkoutUrl   String             @unique
+  lines         CartLine[]
+  giftCards     AppliedGiftCard[]
+  discountCodes CartDiscountCode[]
+  note          String?
+  totalQuantity Int                @default(0)
+  abandonedCart AbandonedCart?
+  cost          CartCost?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+}

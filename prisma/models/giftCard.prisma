@@ -1,0 +1,12 @@
+model GiftCard {
+  id             String            @id @default(uuid())
+  code           String            @unique
+  initialValue   Money             @relation("InitialValueMoney", fields: [initialValueId], references: [id])
+  initialValueId String
+  balance        Money             @relation("GiftCardBalanceMoney", fields: [balanceId], references: [id])
+  balanceId      String
+  expiresAt      DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  appliedToCarts AppliedGiftCard[]
+}

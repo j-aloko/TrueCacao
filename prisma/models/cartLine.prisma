@@ -1,0 +1,14 @@
+model CartLine {
+  id                  String               @id @default(uuid())
+  cartId              String
+  cart                Cart                 @relation(fields: [cartId], references: [id])
+  productVariantId    String
+  productVariant      ProductVariant       @relation(fields: [productVariantId], references: [id])
+  quantity            Int                  @default(1)
+  price               Money                @relation("LinePriceMoney", fields: [priceId], references: [id])
+  priceId             String
+  discountAllocations DiscountAllocation[]
+  attributes          Json?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+}

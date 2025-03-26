@@ -1,15 +1,19 @@
 /// DISCOUNTS AND PROMOTIONS
 model Discount {
-  id          String     @id @default(uuid())
-  code        String     @unique
+  id          String               @id @default(uuid())
+  code        String               @unique
   type        DISCOUNT_TYPE
-  value       Decimal
+  value       Money                @relation("DiscountValue", fields: [valueId], references: [id])
+  valueId     String
+  minAmount   Money?               @relation("DiscountMinAmount", fields: [minAmountId], references: [id])
+  minAmountId String?
   startDate   DateTime
   endDate     DateTime
   maxUses     Int?
-  usedCount   Int        @default(0)
+  usedCount   Int                  @default(0)
   products    Product[]
   orders      Order[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  allocations DiscountAllocation[]
 }
