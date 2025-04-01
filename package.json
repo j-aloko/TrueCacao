@@ -70,6 +70,7 @@
     "eslint-plugin-sort-keys-fix": "1.1.2",
     "husky": "9.1.7",
     "prettier": "3.5.2",
+    "prettier-plugin-prisma": "5.0.0",
     "prisma": "6.4.1",
     "prisma-merge": "0.2.0",
     "tsx": "4.19.3",
