@@ -1,10 +1,12 @@
 /// USER SESSION TRACKING
 model Session {
   id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
   ipAddress String?
   userAgent String?
   expiresAt DateTime
   createdAt DateTime @default(now())
+  cart      Cart?    @relation("CartSessions", fields: [cartId], references: [id]) // Updated relation
+  cartId    String?  @unique
 }

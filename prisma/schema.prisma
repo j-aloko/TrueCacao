@@ -139,6 +139,7 @@ model Cart {
   id            String             @id @default(uuid())
   userId        String?
   user          User?              @relation("UserCarts", fields: [userId], references: [id])
+  sessionId     String?            @unique
   checkoutUrl   String             @unique
   lines         CartLine[]
   giftCards     AppliedGiftCard[]
@@ -149,6 +150,7 @@ model Cart {
   cost          CartCost?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
+  sessions      Session[]          @relation("CartSessions") // Add this
 }
 
 
@@ -425,12 +427,14 @@ model Review {
 /// USER SESSION TRACKING
 model Session {
   id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
   ipAddress String?
   userAgent String?
   expiresAt DateTime
   createdAt DateTime @default(now())
+  cart      Cart?    @relation("CartSessions", fields: [cartId], references: [id]) // Updated relation
+  cartId    String?  @unique
 }
 
 
