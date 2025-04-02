@@ -81,6 +81,7 @@ const eslintConfig = [
       'linebreak-style': 0,
       'max-len': ['error', { code: 2000 }],
       'no-await-in-loop': 0,
+      'no-confusing-arrow': 'off',
       'no-empty': 'warn',
       'no-nested-ternary': 'warn',
       'no-param-reassign': [
@@ -116,7 +117,7 @@ const eslintConfig = [
     settings: {
       'import/resolver': {
         alias: {
-          extensions: ['.js', '.jsx', '.json'],
+          extensions: ['.js', '.jsx', '.json', '.tx'],
           map: [['@', './src']],
         },
       },

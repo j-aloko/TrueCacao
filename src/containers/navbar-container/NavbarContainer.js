@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 
 import Navbar from '@/components/navbar/Navbar';
+import { useCart } from '@/hooks/useCart';
 import { toggleDrawer } from '@/services/redux/features/cart-drawer/cartDrawerSlice';
 import { useAppDispatch } from '@/services/redux/store';
 
@@ -12,6 +13,8 @@ const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 function NavbarContainer() {
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
+
+  const { cart } = useCart();
 
   const dispatch = useAppDispatch();
 
@@ -33,6 +36,7 @@ function NavbarContainer() {
   return (
     <Navbar
       pages={pages}
+      cart={cart}
       settings={settings}
       anchorElNav={anchorElNav}
       anchorElUser={anchorElUser}

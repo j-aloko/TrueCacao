@@ -8,15 +8,19 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "prisma:merge": "npx prisma-merge -b prisma/base.prisma -s 'prisma/models/*.prisma' -o prisma/schema.prisma",
-    "prisma:merge-win": "npx prisma-merge -b prisma/base.prisma -s prisma/models/*.prisma -o prisma/schema.prisma",
+    "prisma:merge": "npx prisma-merge -b src/prisma/base.prisma -s 'src/prisma/models/*.prisma' -o src/prisma/schema.prisma",
+    "prisma:merge-win": "npx prisma-merge -b src/prisma/base.prisma -s src/prisma/models/*.prisma -o src/prisma/schema.prisma",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:validate": "npx prisma validate",
     "prisma:generate": "prisma generate",
-    "seed": "node prisma/seeds/index.js"
+    "prisma:studio": "npx prisma studio",
+    "seed": "node -r module-alias/register src/prisma/seeds/index.js"
   },
   "prisma": {
-    "schema": "prisma/schema.prisma"
+    "schema": "src/prisma/schema.prisma"
+  },
+  "_moduleAliases": {
+    "@": "./src"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -32,8 +36,10 @@
     "final-form": "4.20.10",
     "isomorphic-dompurify": "2.22.0",
     "js-cookie": "3.0.5",
+    "module-alias": "^2.2.3",
     "mui-rff": "8.0.1",
     "next": "15.1.7",
+    "next-auth": "4.24.11",
     "prop-types": "15.8.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
@@ -43,7 +49,9 @@
     "redux-persist": "6.0.0",
     "redux-persist-cookie-storage": "1.0.0",
     "sharp": "0.33.5",
-    "yup": "1.6.1"
+    "uuid": "11.1.0",
+    "yup": "1.6.1",
+    "zod": "3.24.2"
   },
   "devDependencies": {
     "@eslint/compat": "1.2.7",
@@ -70,7 +78,6 @@
     "eslint-plugin-sort-keys-fix": "1.1.2",
     "husky": "9.1.7",
     "prettier": "3.5.2",
-    "prettier-plugin-prisma": "5.0.0",
     "prisma": "6.4.1",
     "prisma-merge": "0.2.0",
     "tsx": "4.19.3",

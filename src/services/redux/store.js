@@ -4,6 +4,7 @@ import { useDispatch, useSelector, useStore } from 'react-redux';
 import { persistReducer, persistStore } from 'redux-persist';
 import { CookieStorage } from 'redux-persist-cookie-storage';
 
+import { cartReducer } from './features/cart/cartSlice';
 import { cartDrawerReducer } from './features/cart-drawer/cartDrawerSlice';
 import { productSelectionReducer } from './features/product-selection/productSelectionSlice';
 
@@ -15,24 +16,32 @@ const cookieStorage = new CookieStorage(Cookies, {
   secure: process.env.NODE_ENV === 'production',
 });
 
+// Persistence configurations at store level
 const productSelectionPersistConfig = {
   key: 'productSelection',
   storage: cookieStorage,
 };
 
-const persistedReducer = persistReducer(
-  productSelectionPersistConfig,
-  productSelectionReducer
-);
+const cartPersistConfig = {
+  blacklist: ['loading', 'error'],
+  key: 'cart',
+  storage: cookieStorage,
+};
 
 const rootReducer = combineReducers({
+  cart: persistReducer(cartPersistConfig, cartReducer),
   cartDrawer: cartDrawerReducer,
-  productSelection: persistedReducer,
+  productSelection: persistReducer(
+    productSelectionPersistConfig,
+    productSelectionReducer
+  ),
 });
 
 export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ serializableCheck: false }),
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
   reducer: rootReducer,
 });
 

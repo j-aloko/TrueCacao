@@ -16,6 +16,7 @@ import Typography from '@mui/material/Typography';
 
 function Navbar({
   pages,
+  cart,
   settings,
   anchorElNav,
   anchorElUser,
@@ -119,7 +120,7 @@ function Navbar({
           </Box>
           <Box sx={{ display: 'flex', flexGrow: 0, gap: 2 }}>
             <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
-              <Badge badgeContent={4} color="secondary">
+              <Badge badgeContent={cart?.lines?.length || 0} color="secondary">
                 <ShoppingCartIcon
                   fontSize="medium"
                   sx={(theme) => ({

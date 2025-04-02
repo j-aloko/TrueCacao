@@ -1,9 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
+const { default: prisma } = require('@/lib/prisma');
 
 const seedCategories = require('./category');
 const seedProducts = require('./products');
-
-const prisma = new PrismaClient();
 
 async function main() {
   await prisma.productVariant.deleteMany();

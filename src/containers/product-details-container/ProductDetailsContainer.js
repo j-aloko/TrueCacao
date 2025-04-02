@@ -16,6 +16,7 @@ import ProductPrice from '@/components/product-price/ProductPrice';
 import RenderProductButtons from '@/components/render-product-buttons/RenderProductButtons';
 import StorePickupInfo from '@/components/store-pickup-info/StorePickupInfo';
 import TextBlock from '@/components/text-block/TextBlock';
+import { useCart } from '@/hooks/useCart';
 import {
   decrementQuantity,
   incrementQuantity,
@@ -50,6 +51,8 @@ function ProductDetailsContainer({
     quantity,
     availableVariantProperties,
   } = useAppSelector((state) => state.productSelection);
+
+  const { addItem } = useCart();
 
   // Initialize state on component mount
   useEffect(() => {
@@ -156,10 +159,7 @@ function ProductDetailsContainer({
   };
 
   const onAddToCart = () => {
-    console.log('Adding to cart:', {
-      quantity,
-      variant: selectedVariant,
-    });
+    addItem({ productVariantId: selectedVariant?.id, quantity });
   };
 
   const onBuyNow = () => {
