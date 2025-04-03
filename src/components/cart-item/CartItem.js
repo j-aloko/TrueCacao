@@ -25,11 +25,10 @@ export default function CartItem({
   onRemove = null,
   imageWidth = 120,
   ImageHeight = 120,
-  sx,
 }) {
   return (
-    <Card sx={{ display: 'flex', ...sx }}>
-      <CardContent>
+    <Card sx={{ boxShadow: 1, display: 'flex' }}>
+      <CardContent sx={{ p: 1 }}>
         <Box
           sx={{
             alignItems: 'center',
@@ -56,8 +55,8 @@ export default function CartItem({
       </CardContent>
 
       <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
-        <CardContent>
-          <Stack>
+        <CardContent sx={{ p: 1 }}>
+          <Stack spacing={0.5}>
             <TextBlock
               text={title}
               variant="caption"
@@ -102,8 +101,9 @@ export default function CartItem({
                     size="small"
                     onClick={onRemove}
                     aria-label="Remove from cart"
+                    sx={{ height: 20, minHeight: 20, width: 20 }}
                   >
-                    <RemoveShoppingCartIcon fontSize="small" />
+                    <RemoveShoppingCartIcon sx={{ fontSize: 15 }} />
                   </Fab>
                 </Tooltip>
               </Box>

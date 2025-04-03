@@ -1,12 +1,18 @@
 'use client';
 
 import { createTheme } from '@mui/material/styles';
-import { Open_Sans as openSansFont } from 'next/font/google';
+import { Inter as interFont, Poppins as poppinsFont } from 'next/font/google';
 
-const openSans = openSansFont({
+const inter = interFont({
   display: 'swap',
   subsets: ['latin'],
   weight: ['300', '400', '500', '700'],
+});
+
+const poppins = poppinsFont({
+  display: 'swap',
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
 });
 
 const theme = createTheme({
@@ -102,7 +108,14 @@ const theme = createTheme({
     '0px 11px 15px -7px rgba(0,0,0,0.2),0px 24px 38px 3px rgba(0,0,0,0.14),0px 9px 46px 8px rgba(0,0,0,0.12)',
   ],
   typography: {
-    fontFamily: openSans.style.fontFamily,
+    fontFamily: inter.style.fontFamily,
+    h1: { fontFamily: poppins.style.fontFamily },
+    h2: { fontFamily: poppins.style.fontFamily },
+    h3: { fontFamily: poppins.style.fontFamily },
+    h4: { fontFamily: poppins.style.fontFamily },
+    h5: { fontFamily: poppins.style.fontFamily },
+    h6: { fontFamily: poppins.style.fontFamily },
+    lineHeight: 1.2,
   },
 });
 

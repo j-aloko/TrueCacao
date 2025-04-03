@@ -22,7 +22,7 @@ function CounterField({
     if (fabSize === 'tiny') {
       return {
         size: 'small',
-        sx: { height: 28, minHeight: 28, width: 28 },
+        sx: { height: 20, minHeight: 20, width: 20 },
       };
     }
     return { size: fabSize, sx: {} };
