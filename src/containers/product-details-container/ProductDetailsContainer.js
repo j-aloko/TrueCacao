@@ -191,7 +191,10 @@ function ProductDetailsContainer({
                     text={labels[prop.split('.')[0]] || prop}
                     variant="subtitle2"
                   />
-                  <Box direction="row" spacing={1}>
+                  <Box
+                    sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}
+                    direction="row"
+                  >
                     {allVariantProperties[prop]?.map((value) => (
                       <Chip
                         key={value}
