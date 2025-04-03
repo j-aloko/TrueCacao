@@ -2,6 +2,11 @@
 
 import React from 'react';
 
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+
+import CartDrawerHeader from '@/components/cart-drawer-header/CartDrawerHeader';
+import CartItem from '@/components/cart-item/CartItem';
 import SwipeDrawer from '@/components/swipe-drawer/SwipeDrawer';
 import {
   openDrawer,
@@ -28,7 +33,16 @@ function CartDrawerContainer() {
       onOpen={handleOpen}
       onClose={handleClose}
     >
-      CartDrawer Items
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <CartDrawerHeader title="Cart" onClose={handleClose} />
+        <Divider />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
+          <CartItem image="/product-images/Alltime-cocoa-powder-1.jpg" />
+          <CartItem image="/product-images/royale-cocoa-powder-3.jpg" />
+        </Box>
+      </Box>
+      <Divider />
+      <Box sx={{ marginTop: 'auto' }}>Checkout</Box>
     </SwipeDrawer>
   );
 }

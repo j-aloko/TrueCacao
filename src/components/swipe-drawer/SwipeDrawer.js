@@ -1,6 +1,5 @@
 import React from 'react';
 
-import Box from '@mui/material/Box';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 
 function SwipeDrawer({
@@ -26,7 +25,7 @@ function SwipeDrawer({
         },
       })}
     >
-      <Box sx={{ p: 2, width: '100%' }}>{children}</Box>
+      {children}
     </SwipeableDrawer>
   );
 }

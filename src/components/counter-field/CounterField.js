@@ -6,26 +6,63 @@ import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import Typography from '@mui/material/Typography';
 
-function CounterField({ value, onIncrement, onDecrement }) {
+function CounterField({
+  value = 1,
+  onIncrement = null,
+  onDecrement = null,
+  fabSize = 'small', // 'small' | 'medium' | 'tiny' (custom)
+  minValue = 1,
+  typographyVariant = 'h6',
+  typographySx = {},
+  disabled = false,
+  sx = {},
+}) {
+  // Handle custom 'tiny' size (smaller than MUI's 'small')
+  const getFabSize = () => {
+    if (fabSize === 'tiny') {
+      return {
+        size: 'small',
+        sx: { height: 28, minHeight: 28, width: 28 },
+      };
+    }
+    return { size: fabSize, sx: {} };
+  };
+
+  const { size: resolvedFabSize, sx: fabSx } = getFabSize();
+
   return (
     <Box
-      flexGrow={1}
-      display="flex"
-      justifyContent="space-between"
-      alignItems="center"
-      gap={2}
+      sx={{
+        alignItems: 'center',
+        display: 'flex',
+        flexGrow: 1,
+        gap: 2,
+        justifyContent: 'space-between',
+        ...sx,
+      }}
     >
       <Fab
         color="primary"
-        size="small"
+        size={resolvedFabSize}
         onClick={onDecrement}
-        disabled={value <= 1}
+        disabled={disabled || value <= minValue}
+        sx={fabSx}
       >
-        <RemoveIcon />
+        <RemoveIcon fontSize={fabSize === 'tiny' ? 'small' : 'medium'} />
       </Fab>
-      <Typography variant="h6">{value}</Typography>
-      <Fab color="secondary" size="small" onClick={onIncrement}>
-        <AddIcon />
+
+      <Typography variant={typographyVariant} sx={typographySx}>
+        {value}
+      </Typography>
+
+      <Fab
+        color="secondary"
+        size={resolvedFabSize}
+        onClick={onIncrement}
+        disabled={disabled}
+        sx={fabSx}
+      >
+        <AddIcon fontSize={fabSize === 'tiny' ? 'small' : 'medium'} />
       </Fab>
     </Box>
   );
