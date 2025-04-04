@@ -20,11 +20,12 @@ export function useCart() {
   const dispatch = useAppDispatch();
   const user = null;
 
-  const { cart, loading, error } = useAppSelector(
+  const { cart, loading, loadingStates, error } = useAppSelector(
     (state) => ({
       cart: state.cart.cart,
       error: state.cart.error,
       loading: state.cart.loading,
+      loadingStates: state.cart.loadingStates,
     }),
     shallowEqual
   );
@@ -43,20 +44,39 @@ export function useCart() {
     }
   }, [dispatch, user, cart?.lines]);
 
-  // Memoized action creators
+  // Memoized action creators with operation-specific loading states
   const addItem = useCallback(
-    (payload) => dispatch(addCartItem(payload)).unwrap(),
-    [dispatch]
+    (payload) => {
+      if (loadingStates.add) {
+        return Promise.reject(new Error('Add operation already in progress'));
+      }
+      return dispatch(addCartItem(payload)).unwrap();
+    },
+    [dispatch, loadingStates.add]
   );
 
   const updateItem = useCallback(
-    (payload) => dispatch(updateCartItem(payload)).unwrap(),
-    [dispatch]
+    (payload) => {
+      if (loadingStates.update) {
+        return Promise.reject(
+          new Error('Update operation already in progress')
+        );
+      }
+      return dispatch(updateCartItem(payload)).unwrap();
+    },
+    [dispatch, loadingStates.update]
   );
 
   const removeItem = useCallback(
-    (payload) => dispatch(removeCartItem(payload)).unwrap(),
-    [dispatch]
+    (payload) => {
+      if (loadingStates.remove) {
+        return Promise.reject(
+          new Error('Remove operation already in progress')
+        );
+      }
+      return dispatch(removeCartItem(payload)).unwrap();
+    },
+    [dispatch, loadingStates.remove]
   );
 
   return {
@@ -64,6 +84,7 @@ export function useCart() {
     cart,
     error,
     loading,
+    loadingStates,
     removeItem,
     updateItem,
   };

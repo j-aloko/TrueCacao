@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 
 function RenderProductButtons({
   submitting = false,
+  addingItem = false,
   onAddToCart = null,
   onBuyNow = null,
 }) {
@@ -14,10 +15,12 @@ function RenderProductButtons({
         type="submit"
         variant="contained"
         color="primary"
+        loading={addingItem}
+        loadingPosition="end"
         disabled={submitting}
         onClick={onAddToCart}
       >
-        Add to Cart
+        {addingItem ? 'Adding...' : 'Add to Cart'}
       </Button>
       <Button
         type="submit"

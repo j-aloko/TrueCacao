@@ -92,6 +92,13 @@ const initialState = {
   error: null,
   lastUpdated: null,
   loading: false,
+  loadingStates: {
+    add: false,
+    fetch: false,
+    merge: false,
+    remove: false,
+    update: false,
+  },
 };
 
 const cartSlice = createSlice({
@@ -100,34 +107,41 @@ const cartSlice = createSlice({
       // Fetch Cart
       .addCase(fetchCart.pending, (state) => {
         state.loading = true;
+        state.loadingStates.fetch = true;
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.cart = action.payload;
         state.loading = false;
+        state.loadingStates.fetch = false;
         state.lastUpdated = Date.now();
       })
       .addCase(fetchCart.rejected, (state, action) => {
         state.loading = false;
+        state.loadingStates.fetch = false;
         state.error = action.error.message;
       })
 
       // Add Item
       .addCase(addCartItem.pending, (state) => {
         state.loading = true;
+        state.loadingStates.add = true;
       })
       .addCase(addCartItem.fulfilled, (state, action) => {
         state.cart = action.payload;
         state.loading = false;
+        state.loadingStates.add = false;
         state.lastUpdated = Date.now();
       })
       .addCase(addCartItem.rejected, (state, action) => {
         state.loading = false;
+        state.loadingStates.add = false;
         state.error = action.error.message;
       })
 
       // Update Item
       .addCase(updateCartItem.pending, (state) => {
         state.loading = true;
+        state.loadingStates.update = true;
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
         if (state.cart) {
@@ -136,16 +150,19 @@ const cartSlice = createSlice({
           );
         }
         state.loading = false;
+        state.loadingStates.update = false;
         state.lastUpdated = Date.now();
       })
       .addCase(updateCartItem.rejected, (state, action) => {
         state.loading = false;
+        state.loadingStates.update = false;
         state.error = action.error.message;
       })
 
       // Remove Item
       .addCase(removeCartItem.pending, (state) => {
         state.loading = true;
+        state.loadingStates.remove = true;
       })
       .addCase(removeCartItem.fulfilled, (state, action) => {
         if (state.cart) {
@@ -154,19 +171,32 @@ const cartSlice = createSlice({
           );
         }
         state.loading = false;
+        state.loadingStates.remove = false;
         state.lastUpdated = Date.now();
       })
       .addCase(removeCartItem.rejected, (state, action) => {
         state.loading = false;
+        state.loadingStates.remove = false;
         state.error = action.error.message;
       })
 
       // Merge Carts
+      .addCase(mergeCarts.pending, (state) => {
+        state.loading = true;
+        state.loadingStates.merge = true;
+      })
       .addCase(mergeCarts.fulfilled, (state, action) => {
         if (action.payload) {
           state.cart = action.payload;
+          state.loading = false;
+          state.loadingStates.merge = false;
           state.lastUpdated = Date.now();
         }
+      })
+      .addCase(mergeCarts.rejected, (state, action) => {
+        state.loading = false;
+        state.loadingStates.merge = false;
+        state.error = action.error.message;
       });
   },
   initialState,

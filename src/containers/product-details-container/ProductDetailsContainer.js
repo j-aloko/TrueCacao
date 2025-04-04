@@ -52,7 +52,11 @@ function ProductDetailsContainer({
     availableVariantProperties,
   } = useAppSelector((state) => state.productSelection);
 
-  const { addItem } = useCart();
+  const {
+    addItem,
+    loading: cartLoading,
+    loadingStates: { add: addingItemToCart },
+  } = useCart();
 
   // Initialize state on component mount
   useEffect(() => {
@@ -226,6 +230,8 @@ function ProductDetailsContainer({
               <RenderProductButtons
                 onAddToCart={onAddToCart}
                 onBuyNow={onBuyNow}
+                submitting={cartLoading}
+                addingItem={addingItemToCart}
               />
               <Stack>
                 <StorePickupInfo pickupInfo={pickupInfo} />
