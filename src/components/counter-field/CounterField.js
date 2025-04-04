@@ -68,4 +68,4 @@ function CounterField({
   );
 }
 
-export default CounterField;
+export default React.memo(CounterField);

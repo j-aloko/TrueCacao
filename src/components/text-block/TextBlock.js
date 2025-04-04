@@ -31,4 +31,4 @@ function TextBlock({
   );
 }
 
-export default TextBlock;
+export default React.memo(TextBlock);
