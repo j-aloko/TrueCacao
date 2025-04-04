@@ -6,6 +6,7 @@ import { CookieStorage } from 'redux-persist-cookie-storage';
 
 import { cartReducer } from './features/cart/cartSlice';
 import { cartDrawerReducer } from './features/cart-drawer/cartDrawerSlice';
+import { productReducer } from './features/product/productSlice';
 import { productSelectionReducer } from './features/product-selection/productSelectionSlice';
 
 const cookieStorage = new CookieStorage(Cookies, {
@@ -31,6 +32,7 @@ const cartPersistConfig = {
 const rootReducer = combineReducers({
   cart: persistReducer(cartPersistConfig, cartReducer),
   cartDrawer: cartDrawerReducer,
+  product: productReducer,
   productSelection: persistReducer(
     productSelectionPersistConfig,
     productSelectionReducer

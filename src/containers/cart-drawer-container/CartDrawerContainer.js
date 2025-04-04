@@ -10,6 +10,7 @@ import CartDrawerHeader from '@/components/cart-drawer-header/CartDrawerHeader';
 import CartItem from '@/components/cart-item/CartItem';
 import SwipeDrawer from '@/components/swipe-drawer/SwipeDrawer';
 import TextBlock from '@/components/text-block/TextBlock';
+import { useCart } from '@/hooks/useCart';
 import {
   openDrawer,
   closeDrawer,
@@ -20,7 +21,7 @@ function CartDrawerContainer() {
   const dispatch = useAppDispatch();
   const { isOpen } = useAppSelector((state) => state.cartDrawer);
 
-  const price = 359.99;
+  const { cart } = useCart();
 
   const handleOpen = () => {
     dispatch(openDrawer());
@@ -60,10 +61,32 @@ function CartDrawerContainer() {
           }}
         >
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <CartItem image="/product-images/Alltime-cocoa-powder-1.jpg" />
-            <CartItem image="/product-images/royale-cocoa-powder-3.jpg" />
-            <CartItem image="/product-images/royale-cocoa-powder-3.jpg" />
-            <CartItem image="/product-images/royale-cocoa-powder-3.jpg" />
+            {cart?.lines?.length > 0
+              ? React.Children.toArray(
+                  cart.lines.map(
+                    ({
+                      id,
+                      productVariant: {
+                        packaging,
+                        weight,
+                        price: { amount, currencyCode },
+                        product: { name },
+                      },
+                      quantity,
+                    }) => (
+                      <CartItem
+                        key={id}
+                        image="/product-images/Alltime-cocoa-powder-1.jpg"
+                        packaging={packaging}
+                        weight={weight}
+                        productName={name}
+                        itemPrice={`${currencyCode}${amount}`}
+                        quantity={quantity}
+                      />
+                    )
+                  )
+                )
+              : null}
           </Box>
         </Box>
 
@@ -89,7 +112,7 @@ function CartDrawerContainer() {
               fullWidth
               onClick={null}
             >
-              {`Checkout \u00A0 . \u00A0 GH₵${price.toFixed(2)}`}
+              {'Checkout \u00A0 . \u00A0 GH₵300'}
             </Button>
           </Box>
         </Box>

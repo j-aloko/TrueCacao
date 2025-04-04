@@ -65,6 +65,7 @@ const eslintConfig = [
         },
       ],
       'import/prefer-default-export': 0,
+      indent: 'off',
       'jsx-a11y/anchor-is-valid': 0,
       'jsx-a11y/click-events-have-key-events': 'warn',
       'jsx-a11y/control-has-associated-label': 'warn',
@@ -102,7 +103,7 @@ const eslintConfig = [
       'no-unused-vars': 'warn',
       'no-use-before-define': [
         'error',
-        { classes: true, functions: true, variables: false },
+        { classes: true, functions: false, variables: false },
       ],
       'object-curly-newline': 'off',
       'operator-linebreak': 'off',

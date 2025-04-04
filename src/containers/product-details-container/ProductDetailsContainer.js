@@ -219,7 +219,7 @@ function ProductDetailsContainer({
                 </Stack>
               ))}
               <CounterField
-                value={quantity}
+                quantity={quantity}
                 onIncrement={handleIncrement}
                 onDecrement={handleDecrement}
               />

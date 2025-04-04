@@ -7,7 +7,7 @@ import Fab from '@mui/material/Fab';
 import Typography from '@mui/material/Typography';
 
 function CounterField({
-  value = 1,
+  quantity = 1,
   onIncrement = null,
   onDecrement = null,
   fabSize = 'small', // 'small' | 'medium' | 'tiny' (custom)
@@ -45,14 +45,14 @@ function CounterField({
         color="primary"
         size={resolvedFabSize}
         onClick={onDecrement}
-        disabled={disabled || value <= minValue}
+        disabled={disabled || quantity <= minValue}
         sx={fabSx}
       >
         <RemoveIcon fontSize={fabSize === 'tiny' ? 'small' : 'medium'} />
       </Fab>
 
       <Typography variant={typographyVariant} sx={typographySx}>
-        {value}
+        {quantity}
       </Typography>
 
       <Fab

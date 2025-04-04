@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
 
+import { toggleDrawer } from '../cart-drawer/cartDrawerSlice';
+
 // Async thunks for API operations
 export const fetchCart = createAsyncThunk('cart/fetchCart', async () => {
   const sessionId = Cookies.get('sessionId') || crypto.randomUUID();
@@ -24,7 +26,7 @@ export const fetchCart = createAsyncThunk('cart/fetchCart', async () => {
 
 export const addCartItem = createAsyncThunk(
   'cart/addItem',
-  async ({ productVariantId, quantity = 1 }) => {
+  async ({ productVariantId, quantity = 1 }, { dispatch }) => {
     const sessionId = Cookies.get('sessionId');
 
     const response = await fetch('/api/cart', {
@@ -36,6 +38,7 @@ export const addCartItem = createAsyncThunk(
       },
       method: 'POST',
     });
+    dispatch(toggleDrawer());
     return response.json();
   }
 );

@@ -16,10 +16,11 @@ import Tooltip from '../tooltip/Tooltip';
 
 export default function CartItem({
   image = '/product-images/royale-cocoa-powder-2.jpg',
-  title = 'Pure, unprocessed cocoa powder',
-  description = `${formatString('CARTON_OF_JARS')} / ${400}g`,
-  price = 359.99,
-  quantity = 0,
+  productName,
+  itemPrice,
+  packaging,
+  weight,
+  quantity = 1,
   onIncrement = null,
   onDecrement = null,
   onRemove = null,
@@ -49,7 +50,7 @@ export default function CartItem({
               width: '100%',
             }}
             image={image}
-            alt={title}
+            alt={productName}
           />
         </Box>
       </CardContent>
@@ -58,7 +59,7 @@ export default function CartItem({
         <CardContent sx={{ p: 1 }}>
           <Stack spacing={0.5}>
             <TextBlock
-              text={title}
+              text={productName}
               variant="caption"
               component="h3"
               sx={{
@@ -67,13 +68,17 @@ export default function CartItem({
               }}
             />
             <TextBlock
-              text={description}
+              text={
+                typeof value === 'string'
+                  ? formatString(packaging.type)
+                  : `${weight}g`
+              }
               variant="caption"
               component="p"
               sx={{ fontWeight: 500, textTransform: 'lowercase' }}
             />
             <TextBlock
-              text={`GH₵${price.toFixed(2)}`}
+              text={itemPrice}
               variant="caption"
               component="p"
               sx={{ fontWeight: 600 }}
