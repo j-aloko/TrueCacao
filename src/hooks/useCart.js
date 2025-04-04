@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { shallowEqual } from 'react-redux';
 
@@ -13,16 +13,14 @@ import {
 } from '../services/redux/features/cart/cartSlice';
 import { useAppDispatch, useAppSelector } from '../services/redux/store';
 
+let cartInitialized = false;
+let mergeAttempted = false;
+
 export function useCart() {
   const dispatch = useAppDispatch();
-  const user = false; // Consider moving this to Redux or context if it changes
+  const user = null;
 
-  // Use shallowEqual to prevent re-renders when cart properties haven't changed
-  const {
-    cart,
-    loading,
-    error: cartError,
-  } = useAppSelector(
+  const { cart, loading, error } = useAppSelector(
     (state) => ({
       cart: state.cart.cart,
       error: state.cart.error,
@@ -31,46 +29,42 @@ export function useCart() {
     shallowEqual
   );
 
-  // Memoize the cart fetch
   useEffect(() => {
-    dispatch(fetchCart());
+    if (!cartInitialized) {
+      cartInitialized = true;
+      dispatch(fetchCart());
+    }
   }, [dispatch]);
 
-  // Memoize the merge carts effect
   useEffect(() => {
-    if (user) {
+    if (user && !mergeAttempted && cart?.lines?.length > 0) {
+      mergeAttempted = true;
       dispatch(mergeCarts());
     }
-  }, [dispatch, user]);
+  }, [dispatch, user, cart?.lines]);
 
-  // Memoize action dispatchers to maintain stable references
+  // Memoized action creators
   const addItem = useCallback(
-    ({ productVariantId, quantity = 1 }) =>
-      dispatch(addCartItem({ productVariantId, quantity })).unwrap(),
+    (payload) => dispatch(addCartItem(payload)).unwrap(),
     [dispatch]
   );
 
   const updateItem = useCallback(
-    ({ itemId, quantity }) =>
-      dispatch(updateCartItem({ itemId, quantity })).unwrap(),
+    (payload) => dispatch(updateCartItem(payload)).unwrap(),
     [dispatch]
   );
 
   const removeItem = useCallback(
-    ({ itemId }) => dispatch(removeCartItem(itemId)).unwrap(),
+    (payload) => dispatch(removeCartItem(payload)).unwrap(),
     [dispatch]
   );
 
-  // Memoize the returned object to prevent unnecessary re-renders
-  return useMemo(
-    () => ({
-      addItem,
-      cart,
-      error: cartError,
-      loading,
-      removeItem,
-      updateItem,
-    }),
-    [addItem, cart, cartError, loading, removeItem, updateItem]
-  );
+  return {
+    addItem,
+    cart,
+    error,
+    loading,
+    removeItem,
+    updateItem,
+  };
 }
