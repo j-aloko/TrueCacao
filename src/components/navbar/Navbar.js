@@ -11,8 +11,9 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+
+import Tooltip from '../tooltip/Tooltip';
 
 function Navbar({
   pages,
@@ -119,16 +120,22 @@ function Navbar({
             ))}
           </Box>
           <Box sx={{ display: 'flex', flexGrow: 0, gap: 2 }}>
-            <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
-              <Badge badgeContent={cart?.lines?.length || 0} color="secondary">
-                <ShoppingCartIcon
-                  fontSize="medium"
-                  sx={(theme) => ({
-                    color: theme.palette.primary.contrastText,
-                  })}
-                />
-              </Badge>
-            </IconButton>
+            <Tooltip title="Remove">
+              <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
+                <Badge
+                  badgeContent={cart?.lines?.length || 0}
+                  color="secondary"
+                >
+                  <ShoppingCartIcon
+                    fontSize="medium"
+                    sx={(theme) => ({
+                      color: theme.palette.primary.contrastText,
+                    })}
+                  />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+
             <Tooltip title="Open settings">
               <IconButton onClick={onOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar>RS</Avatar>

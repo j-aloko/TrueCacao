@@ -3,11 +3,13 @@ import React from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import Fab from '@mui/material/Fab';
 import Typography from '@mui/material/Typography';
 
 function CounterField({
   quantity = 1,
+  loading = false,
   onIncrement = null,
   onDecrement = null,
   fabSize = 'small', // 'small' | 'medium' | 'tiny' (custom)
@@ -50,11 +52,13 @@ function CounterField({
       >
         <RemoveIcon fontSize={fabSize === 'tiny' ? 'small' : 'medium'} />
       </Fab>
-
-      <Typography variant={typographyVariant} sx={typographySx}>
-        {quantity}
-      </Typography>
-
+      {loading ? (
+        <CircularProgress size={15} />
+      ) : (
+        <Typography variant={typographyVariant} sx={typographySx}>
+          {quantity}
+        </Typography>
+      )}
       <Fab
         color="secondary"
         size={resolvedFabSize}

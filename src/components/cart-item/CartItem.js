@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
+import CircularProgress from '@mui/material/CircularProgress';
 import Fab from '@mui/material/Fab';
 import Stack from '@mui/material/Stack';
 
@@ -15,15 +16,17 @@ import TextBlock from '../text-block/TextBlock';
 import Tooltip from '../tooltip/Tooltip';
 
 export default function CartItem({
+  id,
   image = '/product-images/royale-cocoa-powder-2.jpg',
   productName,
   itemPrice,
   packaging,
   weight,
   quantity = 1,
-  onIncrement = null,
-  onDecrement = null,
-  onRemove = null,
+  loading = {},
+  onCartItemIncrement = null,
+  onCartItemDecrement = null,
+  onRemoveCartItem = null,
   imageWidth = 120,
   ImageHeight = 120,
 }) {
@@ -94,21 +97,30 @@ export default function CartItem({
               <Box flex={0.5}>
                 <CounterField
                   quantity={quantity}
-                  onIncrement={onIncrement}
-                  onDecrement={onDecrement}
+                  onIncrement={() =>
+                    !loading.update && onCartItemIncrement(id, quantity)
+                  }
+                  onDecrement={() =>
+                    !loading.update && onCartItemDecrement(id, quantity)
+                  }
                   fabSize="tiny"
                   typographyVariant="body2"
+                  loading={loading.update}
                 />
               </Box>
               <Box flex={0.3}>
-                <Tooltip title="Remove" placement="bottom-start">
+                <Tooltip title="Remove">
                   <Fab
                     size="small"
-                    onClick={onRemove}
+                    onClick={() => !loading.remove && onRemoveCartItem(id)}
+                    disabled={loading.remove}
                     aria-label="Remove from cart"
-                    sx={{ height: 20, minHeight: 20, width: 20 }}
                   >
-                    <RemoveShoppingCartIcon sx={{ fontSize: 15 }} />
+                    {loading.remove ? (
+                      <CircularProgress size={15} />
+                    ) : (
+                      <RemoveShoppingCartIcon sx={{ fontSize: 15 }} />
+                    )}
                   </Fab>
                 </Tooltip>
               </Box>

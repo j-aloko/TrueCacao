@@ -1,95 +1,154 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
+import { omit } from 'lodash';
 
 import { toggleDrawer } from '../cart-drawer/cartDrawerSlice';
 
 // Async thunks for API operations
-export const fetchCart = createAsyncThunk('cart/fetchCart', async () => {
-  const sessionId = Cookies.get('sessionId') || crypto.randomUUID();
-  if (!Cookies.get('sessionId')) {
-    Cookies.set('sessionId', sessionId, {
-      expires: 30,
-      secure: process.env.NODE_ENV === 'production',
-    });
-  }
+export const fetchCart = createAsyncThunk(
+  'cart/fetchCart',
+  async (_, { rejectWithValue }) => {
+    try {
+      const sessionId = Cookies.get('sessionId') || crypto.randomUUID();
+      if (!Cookies.get('sessionId')) {
+        Cookies.set('sessionId', sessionId, {
+          expires: 30,
+          secure: process.env.NODE_ENV === 'production',
+        });
+      }
 
-  const response = await fetch('/api/cart', {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      Cookie: `sessionId=${sessionId}`,
-    },
-    method: 'GET',
-  });
-  return response.json();
-});
+      const response = await fetch('/api/cart', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: `sessionId=${sessionId}`,
+        },
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        return rejectWithValue(error.message || 'Failed to retrieve cart');
+      }
+
+      return response.json();
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 export const addCartItem = createAsyncThunk(
   'cart/addItem',
-  async ({ productVariantId, quantity = 1 }, { dispatch }) => {
-    const sessionId = Cookies.get('sessionId');
+  async ({ productVariantId, quantity = 1 }, { dispatch, rejectWithValue }) => {
+    try {
+      const sessionId = Cookies.get('sessionId');
 
-    const response = await fetch('/api/cart', {
-      body: JSON.stringify({ productVariantId, quantity }),
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(sessionId ? { Cookie: `sessionId=${sessionId}` } : {}),
-      },
-      method: 'POST',
-    });
-    dispatch(toggleDrawer());
-    return response.json();
+      const response = await fetch('/api/cart', {
+        body: JSON.stringify({ productVariantId, quantity }),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(sessionId ? { Cookie: `sessionId=${sessionId}` } : {}),
+        },
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        return rejectWithValue(error.message || 'Failed to add item');
+      }
+
+      dispatch(toggleDrawer());
+      return response.json();
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
 );
 
 export const updateCartItem = createAsyncThunk(
   'cart/updateItem',
-  async ({ itemId, quantity }) => {
-    const response = await fetch(`/api/cart-items/${itemId}`, {
-      body: JSON.stringify({ quantity }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'PUT',
-    });
-    return response.json();
+  async ({ id, quantity }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/cart/cart-items/${id}`, {
+        body: JSON.stringify({ quantity }),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'PUT',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        return rejectWithValue(error.message || 'Failed to update item');
+      }
+      return { data: await response.json(), id };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  },
+  {
+    condition: ({ id }, { getState }) => {
+      const { cart } = getState();
+      // Prevent duplicate updates if already updating this item
+      return !cart.itemLoadingStates[id]?.update;
+    },
   }
 );
 
 export const removeCartItem = createAsyncThunk(
   'cart/removeItem',
-  async (itemId) => {
-    await fetch(`/api/cart-items/${itemId}`, {
-      method: 'DELETE',
-    });
-    return itemId;
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`/api/cart/cart-items/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        return rejectWithValue(error.message || 'Failed to remove item');
+      }
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
 );
 
 export const mergeCarts = createAsyncThunk(
   'cart/merge',
-  async (_, { getState }) => {
-    const { auth } = getState();
-    const sessionId = Cookies.get('sessionId');
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const { auth } = getState();
+      const sessionId = Cookies.get('sessionId');
 
-    if (auth.user?.id && sessionId) {
-      const response = await fetch('/api/cart/merge', {
-        body: JSON.stringify({ sessionId }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      });
-      return response.json();
+      if (auth.user?.id && sessionId) {
+        const response = await fetch('/api/cart/merge', {
+          body: JSON.stringify({ sessionId }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'POST',
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          return rejectWithValue(error.message || 'Failed to merge cart');
+        }
+        return response.json();
+      }
+      return null;
+    } catch (error) {
+      return rejectWithValue(error.message);
     }
-    return null;
   }
 );
 
 const initialState = {
   cart: null,
   error: null,
+  itemLoadingStates: {},
   lastUpdated: null,
   loading: false,
   loadingStates: {
@@ -139,45 +198,81 @@ const cartSlice = createSlice({
       })
 
       // Update Item
-      .addCase(updateCartItem.pending, (state) => {
+      .addCase(updateCartItem.pending, (state, action) => {
+        const { id } = action.meta.arg;
         state.loading = true;
         state.loadingStates.update = true;
+        state.itemLoadingStates = {
+          ...state.itemLoadingStates,
+          [id]: { ...state.itemLoadingStates[id], update: true },
+        };
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
+        const { id, data } = action.payload;
         if (state.cart) {
           state.cart.lines = state.cart.lines.map((line) =>
-            line.id === action.payload.id ? action.payload : line
+            line.id === id ? data : line
           );
         }
         state.loading = false;
         state.loadingStates.update = false;
+        state.itemLoadingStates = {
+          ...state.itemLoadingStates,
+          [id]: { ...state.itemLoadingStates[id], update: false },
+        };
         state.lastUpdated = Date.now();
       })
       .addCase(updateCartItem.rejected, (state, action) => {
+        const { id } = action.meta.arg;
         state.loading = false;
         state.loadingStates.update = false;
+        state.itemLoadingStates = {
+          ...state.itemLoadingStates,
+          [id]: { ...state.itemLoadingStates[id], update: false },
+        };
         state.error = action.error.message;
       })
 
       // Remove Item
-      .addCase(removeCartItem.pending, (state) => {
+      .addCase(removeCartItem.pending, (state, action) => {
+        const { id } = action.meta.arg;
         state.loading = true;
         state.loadingStates.remove = true;
+        state.itemLoadingStates = {
+          ...state.itemLoadingStates,
+          [id]: {
+            ...(state.itemLoadingStates[id] || {}),
+            remove: true,
+          },
+        };
       })
       .addCase(removeCartItem.fulfilled, (state, action) => {
+        const id = action.payload;
         if (state.cart) {
-          state.cart.lines = state.cart.lines.filter(
-            (line) => line.id !== action.payload
-          );
+          state.cart.lines = state.cart.lines.filter((line) => line.id !== id);
         }
         state.loading = false;
         state.loadingStates.remove = false;
+
+        if (state.itemLoadingStates[id]) {
+          state.itemLoadingStates = omit(state.itemLoadingStates, id);
+        }
+
         state.lastUpdated = Date.now();
       })
       .addCase(removeCartItem.rejected, (state, action) => {
+        const { id } = action.meta.arg;
         state.loading = false;
         state.loadingStates.remove = false;
-        state.error = action.error.message;
+
+        // Only clean up the remove operation, preserve other loading states if they exist
+        state.itemLoadingStates = {
+          ...state.itemLoadingStates,
+          [id]: {
+            ...(state.itemLoadingStates[id] || {}),
+            remove: false,
+          },
+        };
       })
 
       // Merge Carts

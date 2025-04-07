@@ -187,6 +187,7 @@ function ProductDetailsContainer({
                   <TextBlock
                     text={labels[prop.split('.')[0]] || prop}
                     variant="subtitle2"
+                    sx={{ fontWeight: 500 }}
                   />
                   <Box
                     sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}

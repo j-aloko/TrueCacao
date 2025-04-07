@@ -7,7 +7,7 @@ import prisma from '@/lib/prisma';
 
 // PUT - Update cart item quantity
 export async function PUT(request, { params }) {
-  const { id } = params;
+  const { id } = await params;
   const { quantity } = await request.json();
 
   try {
@@ -18,7 +18,21 @@ export async function PUT(request, { params }) {
     const line = await prisma.cartLine.findUnique({
       include: {
         cart: true,
-        productVariant: true,
+        productVariant: {
+          include: {
+            price: {
+              select: {
+                amount: true,
+                currencyCode: true,
+              },
+            },
+            product: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
       where: { id },
     });
@@ -40,7 +54,23 @@ export async function PUT(request, { params }) {
     const [updatedLine] = await prisma.$transaction([
       prisma.cartLine.update({
         data: { quantity },
-        include: { productVariant: true },
+        include: {
+          productVariant: {
+            include: {
+              price: {
+                select: {
+                  amount: true,
+                  currencyCode: true,
+                },
+              },
+              product: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
         where: { id },
       }),
       prisma.cart.update({
@@ -61,7 +91,7 @@ export async function PUT(request, { params }) {
 
 // DELETE - Remove item from cart
 export async function DELETE(request, { params }) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     // Get the line and cart first

@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 
 export async function POST(request) {
   const { sessionId } = await request.json();
-  const userId = request.user?.id;
+  const userId = await request.user?.id;
 
   if (!userId || !sessionId) {
     return NextResponse.json(

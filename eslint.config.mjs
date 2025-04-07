@@ -107,6 +107,7 @@ const eslintConfig = [
       ],
       'object-curly-newline': 'off',
       'operator-linebreak': 'off',
+      'react/jsx-curly-newline': 'off',
       'react/jsx-filename-extension': [
         'error',
         { extensions: ['.js', '.jsx'] },

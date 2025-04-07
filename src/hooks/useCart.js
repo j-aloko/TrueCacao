@@ -20,15 +20,17 @@ export function useCart() {
   const dispatch = useAppDispatch();
   const user = null;
 
-  const { cart, loading, loadingStates, error } = useAppSelector(
-    (state) => ({
-      cart: state.cart.cart,
-      error: state.cart.error,
-      loading: state.cart.loading,
-      loadingStates: state.cart.loadingStates,
-    }),
-    shallowEqual
-  );
+  const { cart, loading, loadingStates, itemLoadingStates, error } =
+    useAppSelector(
+      (state) => ({
+        cart: state.cart.cart,
+        error: state.cart.error,
+        itemLoadingStates: state.cart.itemLoadingStates,
+        loading: state.cart.loading,
+        loadingStates: state.cart.loadingStates,
+      }),
+      shallowEqual
+    );
 
   useEffect(() => {
     if (!cartInitialized) {
@@ -83,6 +85,7 @@ export function useCart() {
     addItem,
     cart,
     error,
+    itemLoadingStates,
     loading,
     loadingStates,
     removeItem,
