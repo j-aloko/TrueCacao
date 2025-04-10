@@ -9,4 +9,7 @@ model GiftCard {
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   appliedToCarts AppliedGiftCard[]
+
+  @@index([code])
+  @@index([expiresAt])
 }

@@ -11,4 +11,7 @@ model CartLine {
   attributes          Json?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
+
+  @@index([cartId])
+  @@index([productVariantId])
 }

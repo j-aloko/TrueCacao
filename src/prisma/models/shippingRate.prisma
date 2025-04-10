@@ -1,0 +1,14 @@
+model ShippingRate {
+  id             String        @id @default(uuid())
+  zoneId         String
+  zone           ShippingZone  @relation(fields: [zoneId], references: [id])
+  name           String
+  minOrderAmount Money?        @relation("ShippingRateMinAmount", fields: [minOrderAmountId], references: [id])
+  minOrderAmountId String?
+  price          Money         @relation("ShippingRatePrice", fields: [priceId], references: [id])
+  priceId        String
+  maxDeliveryDays Int?
+  createdAt      DateTime      @default(now())
+
+  @@index([zoneId])
+}

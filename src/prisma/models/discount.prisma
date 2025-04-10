@@ -1,4 +1,3 @@
-/// DISCOUNTS AND PROMOTIONS
 model Discount {
   id          String               @id @default(uuid())
   code        String               @unique
@@ -16,4 +15,7 @@ model Discount {
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
   allocations DiscountAllocation[]
+
+  @@index([code])
+  @@index([startDate, endDate])
 }

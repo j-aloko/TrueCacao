@@ -1,4 +1,3 @@
-/// SHOP PAY TRANSACTIONS
 model ShopPayTransaction {
   id             String   @id @default(uuid())
   paymentId      String   @unique

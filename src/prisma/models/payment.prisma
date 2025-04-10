@@ -1,4 +1,3 @@
-/// PAYMENT TRACKING (WITH SHOP PAY INTEGRATION)
 model Payment {
   id                 String              @id @default(uuid())
   orderId            String
@@ -9,6 +8,12 @@ model Payment {
   method             PAYMENT_METHOD
   transactionId      String?
   shopPayTransaction ShopPayTransaction?
+  refundedAmount     Money?             @relation("RefundedAmount", fields: [refundedAmountId], references: [id])
+  refundedAmountId   String?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+  @@index([transactionId])
 }
