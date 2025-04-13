@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -30,15 +30,6 @@ function CartDrawerContainer() {
     dispatch(closeDrawer());
   }, [dispatch]);
 
-  const totalAmount = useMemo(() => {
-    if (!cart?.lines) return 0;
-    return cart.lines.reduce(
-      (total, line) =>
-        total + parseFloat(line.productVariant.price.amount) * line.quantity,
-      0
-    );
-  }, [cart?.lines]);
-
   const hasItems = cart?.lines?.length > 0;
 
   const handleCartItemIncrement = useCallback(
@@ -61,6 +52,46 @@ function CartDrawerContainer() {
     },
     [removeItem]
   );
+
+  const cartItems = useMemo(() => {
+    if (!hasItems) return null;
+
+    return cart.lines.map((line) => {
+      const lineId = line?.id || '';
+      const variant = line?.productVariant || {};
+      const product = variant?.product || {};
+      const price = variant?.price || {};
+
+      return (
+        <CartItem
+          key={lineId}
+          id={lineId}
+          image="/product-images/Alltime-cocoa-powder-1.jpg"
+          packaging={variant.packaging}
+          weight={variant.weight}
+          productName={product.name}
+          itemPrice={`${price.currencyCode || ''}${price.amount || ''}`}
+          quantity={line.quantity || 0}
+          loading={itemLoadingStates?.[lineId] || {}}
+          onCartItemIncrement={handleCartItemIncrement}
+          onCartItemDecrement={handleCartItemDecrement}
+          onRemoveCartItem={handleRemoveCartItem}
+        />
+      );
+    });
+  }, [
+    cart?.lines,
+    hasItems,
+    itemLoadingStates,
+    handleCartItemIncrement,
+    handleCartItemDecrement,
+    handleRemoveCartItem,
+  ]);
+
+  const checkoutTotal = useMemo(() => {
+    if (!cart?.cost?.subtotal) return 'Checkout';
+    return `Checkout \u00A0 • \u00A0 ${cart.cost.subtotal.currencyCode || ''}${cart.cost.subtotal.amount || ''}`;
+  }, [cart?.cost?.subtotal]);
 
   return (
     <SwipeDrawer
@@ -97,22 +128,7 @@ function CartDrawerContainer() {
               aria-label="Cart items"
             >
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {cart.lines.map((line) => (
-                  <CartItem
-                    key={line.id}
-                    id={line.id}
-                    image="/product-images/Alltime-cocoa-powder-1.jpg"
-                    packaging={line.productVariant.packaging}
-                    weight={line.productVariant.weight}
-                    productName={line.productVariant.product.name}
-                    itemPrice={`${line.productVariant.price.currencyCode}${line.productVariant.price.amount}`}
-                    quantity={line.quantity}
-                    loading={itemLoadingStates?.[line.id] || {}}
-                    onCartItemIncrement={handleCartItemIncrement}
-                    onCartItemDecrement={handleCartItemDecrement}
-                    onRemoveCartItem={handleRemoveCartItem}
-                  />
-                ))}
+                {cartItems}
               </Box>
             </Box>
 
@@ -136,10 +152,10 @@ function CartDrawerContainer() {
                   variant="contained"
                   color="secondary"
                   fullWidth
-                  onClick={handleClose} // TODO: Replace with actual checkout handler
-                  aria-label={`Checkout for ${totalAmount}`}
+                  onClick={handleClose}
+                  aria-label={checkoutTotal}
                 >
-                  {`Checkout \u00A0 • \u00A0 ${cart.lines[0].productVariant.price.currencyCode}${totalAmount.toFixed(2)}`}
+                  {checkoutTotal}
                 </Button>
               </Box>
             </Box>

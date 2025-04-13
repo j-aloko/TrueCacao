@@ -9,12 +9,12 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
+    "studio": "npx prisma studio",
     "prisma:merge": "npx prisma-merge -b src/prisma/base.prisma -s 'src/prisma/models/*.prisma' -o src/prisma/schema.prisma",
     "prisma:merge-win": "npx prisma-merge -b src/prisma/base.prisma -s src/prisma/models/*.prisma -o src/prisma/schema.prisma",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:validate": "npx prisma validate",
     "prisma:generate": "prisma generate",
-    "prisma:studio": "npx prisma studio",
     "seed": "node -r module-alias/register src/prisma/seeds/index.js"
   },
   "prisma": {
@@ -31,8 +31,8 @@
     "@mui/material-nextjs": "6.4.3",
     "@mui/x-date-pickers": "7.27.1",
     "@neondatabase/serverless": "0.10.4",
-    "@prisma/client": "6.4.1",
-    "@prisma/extension-accelerate": "1.2.2",
+    "@prisma/client": "^6.6.0",
+    "@prisma/extension-accelerate": "^1.2.2",
     "@reduxjs/toolkit": "2.6.1",
     "final-form": "4.20.10",
     "isomorphic-dompurify": "2.22.0",
@@ -80,7 +80,7 @@
     "eslint-plugin-sort-keys-fix": "1.1.2",
     "husky": "9.1.7",
     "prettier": "3.5.2",
-    "prisma": "6.4.1",
+    "prisma": "^6.4.1",
     "prisma-merge": "0.2.0",
     "tsx": "4.19.3",
     "typescript": "5.7.3"

@@ -83,7 +83,7 @@ export const updateCartItem = createAsyncThunk(
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to update item');
       }
-      return { data: await response.json(), id };
+      return await response.json();
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -109,7 +109,7 @@ export const removeCartItem = createAsyncThunk(
         const error = await response.json();
         return rejectWithValue(error.message || 'Failed to remove item');
       }
-      return id;
+      return await response.json();
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -208,17 +208,15 @@ const cartSlice = createSlice({
         };
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
-        const { id, data } = action.payload;
-        if (state.cart) {
-          state.cart.lines = state.cart.lines.map((line) =>
-            line.id === id ? data : line
-          );
-        }
+        state.cart = action.payload;
         state.loading = false;
         state.loadingStates.update = false;
         state.itemLoadingStates = {
           ...state.itemLoadingStates,
-          [id]: { ...state.itemLoadingStates[id], update: false },
+          [action.meta.arg.id]: {
+            ...state.itemLoadingStates[action.meta.arg.id],
+            update: false,
+          },
         };
         state.lastUpdated = Date.now();
       })
@@ -247,13 +245,11 @@ const cartSlice = createSlice({
         };
       })
       .addCase(removeCartItem.fulfilled, (state, action) => {
-        const id = action.payload;
-        if (state.cart) {
-          state.cart.lines = state.cart.lines.filter((line) => line.id !== id);
-        }
+        state.cart = action.payload;
         state.loading = false;
         state.loadingStates.remove = false;
 
+        const { id } = action.meta.arg;
         if (state.itemLoadingStates[id]) {
           state.itemLoadingStates = omit(state.itemLoadingStates, id);
         }

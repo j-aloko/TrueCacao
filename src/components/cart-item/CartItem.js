@@ -15,7 +15,7 @@ import CounterField from '../counter-field/CounterField';
 import TextBlock from '../text-block/TextBlock';
 import Tooltip from '../tooltip/Tooltip';
 
-export default function CartItem({
+function CartItem({
   id,
   image = '/product-images/royale-cocoa-powder-2.jpg',
   productName,
@@ -131,3 +131,5 @@ export default function CartItem({
     </Card>
   );
 }
+
+export default CartItem;
