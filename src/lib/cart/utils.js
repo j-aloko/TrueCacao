@@ -5,11 +5,26 @@ import { calculateAndUpdateCartCost } from './cost-calculator';
 import { generateCheckoutUrl } from './generateCheckoutUrl';
 import { updateItem } from './item-utils';
 
+async function getNextPosition(cartId) {
+  const lastItem = await prisma.cartLine.findFirst({
+    orderBy: { position: 'desc' },
+    select: { position: true },
+    where: { cartId },
+  });
+  return (lastItem?.position || 0) + 1;
+}
+
 export async function getOrCreateCart(sessionId, userId = null) {
   const where = userId ? { userId } : { sessionId };
 
   let cart = await prisma.cart.findFirst({
-    include: fullCartIncludes,
+    include: {
+      ...fullCartIncludes,
+      lines: {
+        ...fullCartIncludes.lines,
+        orderBy: { position: 'asc' },
+      },
+    },
     where,
   });
 
@@ -21,7 +36,13 @@ export async function getOrCreateCart(sessionId, userId = null) {
         ...(sessionId && { sessionId }),
         totalQuantity: 0,
       },
-      include: fullCartIncludes,
+      include: {
+        ...fullCartIncludes,
+        lines: {
+          ...fullCartIncludes.lines,
+          orderBy: { position: 'asc' },
+        },
+      },
     });
 
     await trackAbandonedCart(cart.id, userId);
@@ -35,7 +56,7 @@ export async function mergeCarts(sessionId, userId) {
     throw new Error('Missing required parameters');
   }
 
-  // Find guest cart
+  // Find guest cart with ordered lines
   const guestCart = await prisma.cart.findFirst({
     include: {
       lines: {
@@ -46,6 +67,7 @@ export async function mergeCarts(sessionId, userId) {
             },
           },
         },
+        orderBy: { position: 'asc' },
       },
     },
     where: { sessionId },
@@ -57,7 +79,11 @@ export async function mergeCarts(sessionId, userId) {
 
   // Find or create user cart with new checkout URL
   let userCart = await prisma.cart.findFirst({
-    include: { lines: true },
+    include: {
+      lines: {
+        orderBy: { position: 'asc' },
+      },
+    },
     where: { userId },
   });
 
@@ -67,34 +93,49 @@ export async function mergeCarts(sessionId, userId) {
         checkoutUrl: generateCheckoutUrl(),
         userId,
       },
-      include: { lines: true },
+      include: {
+        lines: {
+          orderBy: { position: 'asc' },
+        },
+      },
     });
   } else {
     userCart = await prisma.cart.update({
       data: {
         checkoutUrl: generateCheckoutUrl(),
       },
-      include: { lines: true },
+      include: {
+        lines: {
+          orderBy: { position: 'asc' },
+        },
+      },
       where: { id: userCart.id },
     });
   }
 
-  // Merge cart lines
+  // Get next available position in user cart
+  const nextPosition = await getNextPosition(userCart.id);
+
+  // Merge cart lines with proper positioning
   await Promise.all(
-    guestCart.lines.map(async (line) => {
+    guestCart.lines.map(async (line, index) => {
       const existingLine = userCart.lines.find(
         (l) => l.productVariantId === line.productVariantId
       );
 
       if (existingLine) {
         return prisma.cartLine.update({
-          data: { quantity: existingLine.quantity + line.quantity },
+          data: {
+            quantity: existingLine.quantity + line.quantity,
+            // Maintain existing position
+          },
           where: { id: existingLine.id },
         });
       }
       return prisma.cartLine.create({
         data: {
           cartId: userCart.id,
+          position: nextPosition + index,
           priceId: line.priceId,
           productVariantId: line.productVariantId,
           quantity: line.quantity,
@@ -129,6 +170,7 @@ export async function addItemToCart(
               include: { price: true },
             },
           },
+          orderBy: { position: 'asc' },
           where: { productVariantId },
         },
       },
@@ -157,9 +199,12 @@ export async function addItemToCart(
     throw new Error('Product variant not found');
   }
 
+  const position = await getNextPosition(cart.id);
+
   await prisma.cartLine.create({
     data: {
       cartId: cart.id,
+      position,
       priceId: variant.priceId,
       productVariantId,
       quantity,

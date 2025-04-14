@@ -27,6 +27,7 @@ export async function calculateAndUpdateCartCost(cartId) {
             },
           },
         },
+        orderBy: { position: 'asc' },
       },
     },
     where: { id: cartId },

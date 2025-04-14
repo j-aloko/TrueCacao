@@ -19,6 +19,7 @@ export const fullCartIncludes = {
     },
   },
   lines: {
+    orderBy: { position: 'asc' },
     select: {
       discountAllocations: {
         include: {
@@ -27,6 +28,7 @@ export const fullCartIncludes = {
         },
       },
       id: true,
+      position: true, // Include position in response
       productVariant: {
         include: {
           price: true,
@@ -41,4 +43,5 @@ export const fullCartIncludes = {
       quantity: true,
     },
   },
+  user: true,
 };

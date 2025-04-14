@@ -138,6 +138,7 @@ CREATE TABLE "CartLine" (
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "priceId" TEXT NOT NULL,
     "attributes" JSONB,
+    "position" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -399,6 +400,8 @@ CREATE TABLE "User" (
     "passwordHash" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "role" "USER_ROLE" NOT NULL DEFAULT 'CUSTOMER',
+    "verificationToken" TEXT,
+    "resetToken" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -486,6 +489,9 @@ CREATE INDEX "CartLine_cartId_idx" ON "CartLine"("cartId");
 
 -- CreateIndex
 CREATE INDEX "CartLine_productVariantId_idx" ON "CartLine"("productVariantId");
+
+-- CreateIndex
+CREATE INDEX "CartLine_cartId_position_idx" ON "CartLine"("cartId", "position");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
@@ -611,10 +617,22 @@ CREATE INDEX "TrackingLog_timestamp_idx" ON "TrackingLog"("timestamp");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_verificationToken_key" ON "User"("verificationToken");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_resetToken_key" ON "User"("resetToken");
+
+-- CreateIndex
 CREATE INDEX "User_email_idx" ON "User"("email");
 
 -- CreateIndex
 CREATE INDEX "User_role_idx" ON "User"("role");
+
+-- CreateIndex
+CREATE INDEX "User_verificationToken_idx" ON "User"("verificationToken");
+
+-- CreateIndex
+CREATE INDEX "User_resetToken_idx" ON "User"("resetToken");
 
 -- CreateIndex
 CREATE INDEX "User_createdAt_idx" ON "User"("createdAt");

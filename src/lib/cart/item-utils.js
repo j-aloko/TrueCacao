@@ -22,9 +22,11 @@ export async function updateItem(lineId, newQuantity) {
     throw new Error('Insufficient stock');
   }
 
-  // Update line quantity
+  // Update line quantity (position remains unchanged)
   await prisma.cartLine.update({
-    data: { quantity: newQuantity },
+    data: {
+      quantity: newQuantity,
+    },
     where: { id: lineId },
   });
 
@@ -53,6 +55,9 @@ export async function deleteItem(lineId) {
     throw new Error('Cart item not found');
   }
 
+  // Get the position of the item we're deleting
+  const deletedPosition = line.position;
+
   // Release reserved stock
   await prisma.productVariant.update({
     data: { reservedStock: { decrement: line.quantity } },
@@ -61,6 +66,21 @@ export async function deleteItem(lineId) {
 
   // Delete the line
   await prisma.cartLine.delete({ where: { id: lineId } });
+
+  // Update positions of remaining items to fill the gap
+  await prisma.cartLine.updateMany({
+    data: {
+      position: {
+        decrement: 1,
+      },
+    },
+    where: {
+      cartId: line.cartId,
+      position: {
+        gt: deletedPosition,
+      },
+    },
+  });
 
   // Update cart total quantity
   await prisma.cart.update({
