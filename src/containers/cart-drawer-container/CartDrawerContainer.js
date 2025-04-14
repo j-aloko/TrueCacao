@@ -67,7 +67,7 @@ function CartDrawerContainer() {
           key={lineId}
           id={lineId}
           image="/product-images/Alltime-cocoa-powder-1.jpg"
-          packaging={variant.packaging}
+          packaging={variant.packaging.type}
           weight={variant.weight}
           productName={product.name}
           itemPrice={`${price.currencyCode || ''}${price.amount || ''}`}

@@ -72,13 +72,13 @@ function CartItem({
             />
             <TextBlock
               text={
-                typeof value === 'string'
-                  ? formatString(packaging.type)
+                typeof packaging === 'string'
+                  ? `${formatString(packaging)} / ${weight}g`
                   : `${weight}g`
               }
               variant="caption"
               component="p"
-              sx={{ fontWeight: 500, textTransform: 'lowercase' }}
+              sx={{ fontWeight: 500 }}
             />
             <TextBlock
               text={itemPrice}
