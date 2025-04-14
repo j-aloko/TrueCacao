@@ -1,9 +1,11 @@
 import prisma from '@/lib/prisma';
 
+import { trackAbandonedCart } from './abondoned';
 import { fullCartIncludes } from './cartSchema';
 import { calculateAndUpdateCartCost } from './cost-calculator';
 import { generateCheckoutUrl } from './generateCheckoutUrl';
 import { updateItem } from './item-utils';
+import { validateStock } from '../product-variant/validateStock';
 
 async function getNextPosition(cartId) {
   const lastItem = await prisma.cartLine.findFirst({
@@ -235,29 +237,5 @@ async function createNewCart(sessionId, userId) {
       ...(sessionId && { sessionId }),
       totalQuantity: 0,
     },
-  });
-}
-
-export async function validateStock(productVariantId, quantity) {
-  const variant = await prisma.productVariant.findUnique({
-    where: { id: productVariantId },
-  });
-
-  if (!variant || variant.stock - (variant.reservedStock || 0) < quantity) {
-    throw new Error('Insufficient stock');
-  }
-}
-
-export async function trackAbandonedCart(cartId, userId = null) {
-  return prisma.abandonedCart.upsert({
-    create: {
-      cartId,
-      lastUpdated: new Date(),
-      userId,
-    },
-    update: {
-      lastUpdated: new Date(),
-    },
-    where: { cartId },
   });
 }

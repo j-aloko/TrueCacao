@@ -2,6 +2,20 @@ import prisma from '@/lib/prisma';
 
 import { sendEmail } from './email';
 
+export async function trackAbandonedCart(cartId, userId = null) {
+  return prisma.abandonedCart.upsert({
+    create: {
+      cartId,
+      lastUpdated: new Date(),
+      userId,
+    },
+    update: {
+      lastUpdated: new Date(),
+    },
+    where: { cartId },
+  });
+}
+
 export async function checkAbandonedCarts() {
   const threshold = new Date();
   threshold.setHours(threshold.getHours() - 2); // 2 hours threshold
