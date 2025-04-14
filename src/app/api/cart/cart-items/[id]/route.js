@@ -4,7 +4,7 @@ import { updateItem, deleteItem } from '@/lib/cart/item-utils';
 import { cartItemSchema } from '@/lib/cart/validators';
 
 export async function PUT(request, { params }) {
-  const { id } = params;
+  const { id } = await params;
   const { quantity } = await request.json();
 
   try {
@@ -17,7 +17,7 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const cart = await deleteItem(id);
