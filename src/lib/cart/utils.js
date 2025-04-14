@@ -2,11 +2,8 @@ import prisma from '@/lib/prisma';
 
 import { fullCartIncludes } from './cartSchema';
 import { calculateAndUpdateCartCost } from './cost-calculator';
+import { generateCheckoutUrl } from './generateCheckoutUrl';
 import { updateItem } from './item-utils';
-
-export function generateCheckoutUrl() {
-  return `/checkout/${crypto.randomUUID()}`;
-}
 
 export async function getOrCreateCart(sessionId, userId = null) {
   const where = userId ? { userId } : { sessionId };
@@ -31,6 +28,86 @@ export async function getOrCreateCart(sessionId, userId = null) {
   }
 
   return calculateAndUpdateCartCost(cart.id);
+}
+
+export async function mergeCarts(sessionId, userId) {
+  if (!userId || !sessionId) {
+    throw new Error('Missing required parameters');
+  }
+
+  // Find guest cart
+  const guestCart = await prisma.cart.findFirst({
+    include: {
+      lines: {
+        include: {
+          productVariant: {
+            include: {
+              price: true,
+            },
+          },
+        },
+      },
+    },
+    where: { sessionId },
+  });
+
+  if (!guestCart) {
+    throw new Error('Guest cart not found');
+  }
+
+  // Find or create user cart with new checkout URL
+  let userCart = await prisma.cart.findFirst({
+    include: { lines: true },
+    where: { userId },
+  });
+
+  if (!userCart) {
+    userCart = await prisma.cart.create({
+      data: {
+        checkoutUrl: generateCheckoutUrl(),
+        userId,
+      },
+      include: { lines: true },
+    });
+  } else {
+    userCart = await prisma.cart.update({
+      data: {
+        checkoutUrl: generateCheckoutUrl(),
+      },
+      include: { lines: true },
+      where: { id: userCart.id },
+    });
+  }
+
+  // Merge cart lines
+  await Promise.all(
+    guestCart.lines.map(async (line) => {
+      const existingLine = userCart.lines.find(
+        (l) => l.productVariantId === line.productVariantId
+      );
+
+      if (existingLine) {
+        return prisma.cartLine.update({
+          data: { quantity: existingLine.quantity + line.quantity },
+          where: { id: existingLine.id },
+        });
+      }
+      return prisma.cartLine.create({
+        data: {
+          cartId: userCart.id,
+          priceId: line.priceId,
+          productVariantId: line.productVariantId,
+          quantity: line.quantity,
+        },
+      });
+    })
+  );
+
+  // Delete guest cart
+  await prisma.cart.delete({ where: { id: guestCart.id } });
+
+  // Return merged cart with costs calculated
+  return calculateAndUpdateCartCost(userCart.id);
 }
 
 export async function addItemToCart(

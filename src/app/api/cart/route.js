@@ -12,8 +12,8 @@ import { addItemToCart, getOrCreateCart } from '@/lib/cart/utils';
 import { cartDiscountSchema, cartGiftCardSchema } from '@/lib/cart/validators';
 
 export async function GET(request) {
-  const sessionId = request.cookies.get('sessionId')?.value;
-  const userId = request.user?.id;
+  const sessionId = await request.cookies.get('sessionId')?.value;
+  const userId = await request.headers.get('x-user-id');
 
   try {
     const cart = await getOrCreateCart(sessionId, userId);
@@ -24,8 +24,8 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const sessionId = request.cookies.get('sessionId')?.value;
-  const userId = request.user?.id;
+  const sessionId = await request.cookies.get('sessionId')?.value;
+  const userId = await request.headers.get('x-user-id');
   const body = await request.json();
 
   try {
@@ -64,8 +64,8 @@ export async function POST(request) {
 }
 
 export async function DELETE(request) {
-  const sessionId = request.cookies.get('sessionId')?.value;
-  const userId = request.user?.id;
+  const sessionId = await request.cookies.get('sessionId')?.value;
+  const userId = await request.headers.get('x-user-id');
   const body = await request.json();
 
   try {
