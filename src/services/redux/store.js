@@ -24,7 +24,7 @@ const productSelectionPersistConfig = {
 };
 
 const cartPersistConfig = {
-  blacklist: ['loading', 'error'],
+  blacklist: ['loading', 'loadingStates', 'error', 'itemLoadingStates'],
   key: 'cart',
   storage: cookieStorage,
 };

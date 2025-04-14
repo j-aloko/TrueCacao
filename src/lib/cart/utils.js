@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 
 import { fullCartIncludes } from './cartSchema';
 import { calculateAndUpdateCartCost } from './cost-calculator';
+import { updateItem } from './item-utils';
 
 export function generateCheckoutUrl() {
   return `/checkout/${crypto.randomUUID()}`;
@@ -41,66 +42,78 @@ export async function addItemToCart(
   // First validate stock availability
   await validateStock(productVariantId, quantity);
 
-  // Get or create cart
-  const cart = await getOrCreateCart(sessionId, userId);
+  // Get or create cart with lines included
+  const cart =
+    (await prisma.cart.findFirst({
+      include: {
+        lines: {
+          include: {
+            productVariant: {
+              include: { price: true },
+            },
+          },
+          where: { productVariantId },
+        },
+      },
+      where: {
+        OR: [{ sessionId }, { userId }],
+      },
+    })) || (await createNewCart(sessionId, userId));
 
-  // Check if variant already exists in cart
+  // Check for existing line item
   const existingLine = cart.lines.find(
     (line) => line.productVariantId === productVariantId
   );
 
   if (existingLine) {
-    // Update existing line
-    await prisma.cartLine.update({
-      data: { quantity: existingLine.quantity + quantity },
-      where: { id: existingLine.id },
-    });
-  } else {
-    // Create new line
-    const variant = await prisma.productVariant.findUnique({
-      select: { priceId: true },
-      where: { id: productVariantId },
-    });
-
-    if (!variant) {
-      throw new Error('Product variant not found');
-    }
-
-    await prisma.cartLine.create({
-      data: {
-        cartId: cart.id,
-        priceId: variant.priceId,
-        productVariantId,
-        quantity,
-      },
-    });
+    // Update existing line instead of creating new one
+    return updateItem(existingLine.id, existingLine.quantity + quantity);
   }
+
+  // Create new line if variant doesn't exist in cart
+  const variant = await prisma.productVariant.findUnique({
+    select: { priceId: true, stock: true },
+    where: { id: productVariantId },
+  });
+
+  if (!variant) {
+    throw new Error('Product variant not found');
+  }
+
+  await prisma.cartLine.create({
+    data: {
+      cartId: cart.id,
+      priceId: variant.priceId,
+      productVariantId,
+      quantity,
+    },
+  });
 
   // Update reserved stock
   await prisma.productVariant.update({
-    data: {
-      reservedStock: {
-        increment: quantity,
-      },
-    },
+    data: { reservedStock: { increment: quantity } },
     where: { id: productVariantId },
   });
 
   // Update cart total quantity
   await prisma.cart.update({
-    data: {
-      totalQuantity: {
-        increment: quantity,
-      },
-    },
+    data: { totalQuantity: { increment: quantity } },
     where: { id: cart.id },
   });
 
-  // Update abandoned cart tracking
-  await trackAbandonedCart(cart.id, userId);
-
-  // Return updated cart with recalculated costs
+  // Return updated cart
   return calculateAndUpdateCartCost(cart.id);
+}
+
+async function createNewCart(sessionId, userId) {
+  return prisma.cart.create({
+    data: {
+      checkoutUrl: generateCheckoutUrl(),
+      ...(userId && { userId }),
+      ...(sessionId && { sessionId }),
+      totalQuantity: 0,
+    },
+  });
 }
 
 export async function validateStock(productVariantId, quantity) {
