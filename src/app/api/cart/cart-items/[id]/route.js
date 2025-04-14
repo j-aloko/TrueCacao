@@ -21,7 +21,7 @@ export async function DELETE(request, { params }) {
 
   try {
     const cart = await deleteItem(id);
-    return NextResponse.json({ cart, success: true });
+    return NextResponse.json(cart);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
