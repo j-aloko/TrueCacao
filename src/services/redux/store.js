@@ -9,9 +9,23 @@ import { cartDrawerReducer } from './features/cart-drawer/cartDrawerSlice';
 import { productReducer } from './features/product/productSlice';
 import { productSelectionReducer } from './features/product-selection/productSelectionSlice';
 
-const cookieStorage = new CookieStorage(Cookies, {
+const productSelectionExpiry =
+  +process.env.NEXT_PUBLIC_PRODUCT_SELECTION_EXPIRY;
+
+const cartExpiry = +process.env.NEXT_PUBLIC_CART_EXPIRY;
+
+// Create separate cookie storage configurations for each persist config
+const productSelectionCookieStorage = new CookieStorage(Cookies, {
   expiration: {
-    default: 60 * 60, // 1 hour
+    default: productSelectionExpiry,
+  },
+  httpOnly: false,
+  secure: process.env.NODE_ENV === 'production',
+});
+
+const cartCookieStorage = new CookieStorage(Cookies, {
+  expiration: {
+    default: cartExpiry,
   },
   httpOnly: false,
   secure: process.env.NODE_ENV === 'production',
@@ -20,13 +34,13 @@ const cookieStorage = new CookieStorage(Cookies, {
 // Persistence configurations at store level
 const productSelectionPersistConfig = {
   key: 'productSelection',
-  storage: cookieStorage,
+  storage: productSelectionCookieStorage,
 };
 
 const cartPersistConfig = {
   blacklist: ['loading', 'loadingStates', 'error', 'itemLoadingStates'],
   key: 'cart',
-  storage: cookieStorage,
+  storage: cartCookieStorage,
 };
 
 const rootReducer = combineReducers({

@@ -1,15 +1,14 @@
 import jwt from 'jsonwebtoken';
-import 'dotenv/config';
 
 export async function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: '15m',
+    expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRATION,
   });
 }
 
 export async function generateRefreshToken(payload) {
   return jwt.sign(payload, process.env.REFRESH_SECRET, {
-    expiresIn: '7d',
+    expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION,
   });
 }
 

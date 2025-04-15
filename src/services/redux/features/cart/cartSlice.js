@@ -12,7 +12,7 @@ export const fetchCart = createAsyncThunk(
       const sessionId = Cookies.get('sessionId') || crypto.randomUUID();
       if (!Cookies.get('sessionId')) {
         Cookies.set('sessionId', sessionId, {
-          expires: 30,
+          expires: +process.env.NEXT_PUBLIC_SESSION_ID_EXPIRY_DAYS,
           secure: process.env.NODE_ENV === 'production',
         });
       }

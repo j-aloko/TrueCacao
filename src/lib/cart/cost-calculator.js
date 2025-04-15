@@ -55,8 +55,12 @@ export async function calculateAndUpdateCartCost(cartId) {
   );
   const currencyCode =
     cart.lines[0]?.productVariant.price.currencyCode || 'USD';
-  const estimatedTaxAmount = subtotalAmount * 0.1;
-  const estimatedShippingAmount = 5.0;
+
+  // Use environment variables for tax rate and shipping amount
+  const estimatedTaxRate = +process.env.ESTIMATED_TAX_RATE;
+  const estimatedShippingAmount = +process.env.ESTIMATED_SHIPPING_AMOUNT;
+
+  const estimatedTaxAmount = subtotalAmount * estimatedTaxRate;
   const totalAmount = Math.max(
     0,
     subtotalAmount -

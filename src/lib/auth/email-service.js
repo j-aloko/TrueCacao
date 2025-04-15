@@ -1,9 +1,6 @@
 import emailjs from '@emailjs/browser';
 import 'dotenv/config';
 
-const SERVICE_ID = process.env.EMAILJS_SERVICE_ID;
-const PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY;
-
 export async function sendVerificationEmail(email, token) {
   const verificationLink = `${process.env.NEXTAUTH_URL}/verify-email?token=${token}`;
 
@@ -14,7 +11,12 @@ export async function sendVerificationEmail(email, token) {
   };
 
   try {
-    await emailjs.send(SERVICE_ID, 'verification_email', params, PUBLIC_KEY);
+    await emailjs.send(
+      process.env.EMAILJS_SERVICE_ID,
+      'verification_email',
+      params,
+      process.env.EMAILJS_PUBLIC_KEY
+    );
   } catch {
     throw new Error('Failed to send verification email');
   }
@@ -30,7 +32,12 @@ export async function sendPasswordResetEmail(email, token) {
   };
 
   try {
-    await emailjs.send(SERVICE_ID, 'password_reset_email', params, PUBLIC_KEY);
+    await emailjs.send(
+      process.env.EMAILJS_SERVICE_ID,
+      'password_reset_email',
+      params,
+      process.env.EMAILJS_PUBLIC_KEY
+    );
   } catch {
     throw new Error('Failed to send password reset email');
   }
