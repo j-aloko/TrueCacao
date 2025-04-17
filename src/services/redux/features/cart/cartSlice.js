@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 import { omit } from 'lodash';
 
 import { toggleDrawer } from '../cart-drawer/cartDrawerSlice';
+import { showErrorToast } from '@/lib/toast/toast';
 
 // Async thunks for API operations
 export const fetchCart = createAsyncThunk(
@@ -28,11 +29,13 @@ export const fetchCart = createAsyncThunk(
 
       if (!response.ok) {
         const error = await response.json();
+        showErrorToast(error.message || 'Failed to retrieve cart');
         return rejectWithValue(error.message || 'Failed to retrieve cart');
       }
 
       return response.json();
     } catch (error) {
+      showErrorToast(error.message);
       return rejectWithValue(error.message);
     }
   }
@@ -56,12 +59,14 @@ export const addCartItem = createAsyncThunk(
 
       if (!response.ok) {
         const error = await response.json();
+        showErrorToast(error.message || 'Failed to add item');
         return rejectWithValue(error.message || 'Failed to add item');
       }
 
       dispatch(toggleDrawer());
       return response.json();
     } catch (error) {
+      showErrorToast(error.message);
       return rejectWithValue(error.message);
     }
   }
@@ -81,10 +86,12 @@ export const updateCartItem = createAsyncThunk(
       });
       if (!response.ok) {
         const error = await response.json();
+        showErrorToast(error.message || 'Failed to update item');
         return rejectWithValue(error.message || 'Failed to update item');
       }
       return await response.json();
     } catch (error) {
+      showErrorToast(error.message);
       return rejectWithValue(error.message);
     }
   },
@@ -107,10 +114,12 @@ export const removeCartItem = createAsyncThunk(
 
       if (!response.ok) {
         const error = await response.json();
+        showErrorToast(error.message || 'Failed to remove item');
         return rejectWithValue(error.message || 'Failed to remove item');
       }
       return await response.json();
     } catch (error) {
+      showErrorToast(error.message);
       return rejectWithValue(error.message);
     }
   }
@@ -134,12 +143,14 @@ export const mergeCarts = createAsyncThunk(
 
         if (!response.ok) {
           const error = await response.json();
+          showErrorToast(error.message || 'Failed to merge cart');
           return rejectWithValue(error.message || 'Failed to merge cart');
         }
         return response.json();
       }
       return null;
     } catch (error) {
+      showErrorToast(error.message);
       return rejectWithValue(error.message);
     }
   }

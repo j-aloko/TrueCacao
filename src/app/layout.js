@@ -9,8 +9,9 @@ import PropTypes from 'prop-types';
 import CartDrawerContainer from '@/containers/cart-drawer-container/CartDrawerContainer';
 import FooterContainer from '@/containers/footer-container/FooterContainer';
 import NavbarContainer from '@/containers/navbar-container/NavbarContainer';
+import StoreProvider from '@/provider-components/StoreProvider';
+import ToastProvider from '@/provider-components/ToastProvider';
 
-import StoreProvider from './StoreProvider';
 import theme from './theme';
 
 export const metadata = {
@@ -49,6 +50,7 @@ export default function RootLayout({ children }) {
               <Suspense fallback={<p>Loading cart...</p>}>
                 <CartDrawerContainer />
               </Suspense>
+              <ToastProvider />
             </StoreProvider>
           </ThemeProvider>
         </AppRouterCacheProvider>
