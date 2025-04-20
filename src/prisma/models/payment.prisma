@@ -8,7 +8,7 @@ model Payment {
   method             PAYMENT_METHOD
   transactionId      String?
   shopPayTransaction ShopPayTransaction?
-  refundedAmount     Money?             @relation("RefundedAmount", fields: [refundedAmountId], references: [id])
+  refundedAmount     Money?              @relation("RefundedAmount", fields: [refundedAmountId], references: [id])
   refundedAmountId   String?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt

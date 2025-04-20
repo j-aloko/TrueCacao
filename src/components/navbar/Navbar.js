@@ -13,6 +13,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
+import Logo from '../logo/Logo';
 import Tooltip from '../tooltip/Tooltip';
 
 function Navbar({
@@ -28,26 +29,14 @@ function Navbar({
   onToggleCartDrawer,
 }) {
   return (
-    <AppBar position="fixed">
+    <AppBar
+      position="fixed"
+      color="inherit"
+      sx={{ boxShadow: 'none', zIndex: 999 }}
+    >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Typography
-            variant="h4"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              color: 'inherit',
-              display: { md: 'flex', xs: 'none' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              mr: 2,
-              textDecoration: 'none',
-            }}
-          >
-            COCOAHUB
-          </Typography>
+          <Logo variant="desktop" />
           <Box sx={{ display: { md: 'none', xs: 'flex' }, flexGrow: 1 }}>
             <IconButton
               size="large"
@@ -82,24 +71,7 @@ function Navbar({
               ))}
             </Menu>
           </Box>
-          <Typography
-            variant="h4"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              color: 'inherit',
-              display: { md: 'none', xs: 'flex' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              mr: 2,
-              textDecoration: 'none',
-            }}
-          >
-            COCOAHUB
-          </Typography>
+          <Logo variant="mobile" />
           <Box
             sx={{
               display: { md: 'flex', xs: 'none' },
@@ -129,7 +101,7 @@ function Navbar({
                   <ShoppingCartIcon
                     fontSize="medium"
                     sx={(theme) => ({
-                      color: theme.palette.primary.contrastText,
+                      color: theme.palette.primary.main,
                     })}
                   />
                 </Badge>

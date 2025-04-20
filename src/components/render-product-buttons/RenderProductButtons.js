@@ -1,16 +1,15 @@
 import React from 'react';
 
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Stack from '@mui/material/Stack';
 
 function RenderProductButtons({
   submitting = false,
   addingItem = false,
   onAddToCart = null,
-  onBuyNow = null,
 }) {
   return (
-    <Stack direction="column" spacing={2} mt={2}>
+    <Box>
       <Button
         type="submit"
         variant="contained"
@@ -22,16 +21,7 @@ function RenderProductButtons({
       >
         {addingItem ? 'Adding...' : 'Add to Cart'}
       </Button>
-      <Button
-        type="submit"
-        variant="contained"
-        color="secondary"
-        disabled={submitting}
-        onClick={onBuyNow}
-      >
-        Buy it Now
-      </Button>
-    </Stack>
+    </Box>
   );
 }
 

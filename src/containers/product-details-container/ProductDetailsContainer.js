@@ -14,7 +14,6 @@ import ProductImage from '@/components/product-image/ProductImage';
 import ProductName from '@/components/product-name/ProductName';
 import ProductPrice from '@/components/product-price/ProductPrice';
 import RenderProductButtons from '@/components/render-product-buttons/RenderProductButtons';
-import StorePickupInfo from '@/components/store-pickup-info/StorePickupInfo';
 import TextBlock from '@/components/text-block/TextBlock';
 import { useCart } from '@/hooks/useCart';
 import {
@@ -27,15 +26,9 @@ import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 import { formatString } from '@/util/formatString';
 import { getNestedProperty } from '@/util/getNestedProperty';
 
-const pickupInfo = `
-<div>
-  <p>Usually ready in 4 hours. Pickup available at <strong>27 Okodan Road</strong></p>
-</div>
-`;
-
 const productDescription = `
 <div>
-  <p>Appreciated for its unmistakably bold taste, this bar is loved by cocoa enthusiasts. Made with traceable cocoa beans, Panela or Turbinado sugar, and cocoa butter. </p>
+  Our 100% pure, unprocessed cocoa powder is made from premium organic cocoa beans. Cold-pressed to preserve nutrients, it delivers a rich chocolate flavor with all the natural health benefits intact. Perfect for baking, smoothies, or making hot chocolate.
 </div>
 `;
 
@@ -166,10 +159,6 @@ function ProductDetailsContainer({
     addItem({ productVariantId: selectedVariant?.id, quantity });
   }, [addItem, selectedVariant?.id, quantity]);
 
-  const onBuyNow = useCallback(() => {
-    console.log('Buying now:', { quantity, variant: selectedVariant });
-  }, [quantity, selectedVariant]);
-
   return (
     <Box sx={{ flexGrow: 1, p: 2 }}>
       <Grid container spacing={2}>
@@ -177,15 +166,18 @@ function ProductDetailsContainer({
           <ProductImage image="/product-images/royale-cocoa-powder-3.jpg" />
         </Grid>
         <Grid size={5} p={3}>
-          <Box flexGrow={1}>
-            <Stack spacing={3.5}>
+          <Stack spacing={3}>
+            <Stack spacing={2}>
               <ProductName name={product?.name} />
               <ProductPrice price={`GH₵${selectedVariant?.price || 0}`} />
-              <Divider />
+              <ProductDescription productDescription={productDescription} />
+            </Stack>
+            <Divider />
+            <Stack spacing={2}>
               {variantProps.map((prop) => (
                 <Stack key={prop} spacing={2}>
                   <TextBlock
-                    text={labels[prop.split('.')[0]] || prop}
+                    text={`Choose ${labels[prop.split('.')[0]] || prop}`}
                     variant="subtitle2"
                     sx={{ fontWeight: 500 }}
                   />
@@ -216,23 +208,31 @@ function ProductDetailsContainer({
                   </Box>
                 </Stack>
               ))}
-              <CounterField
-                quantity={quantity}
-                onIncrement={handleIncrement}
-                onDecrement={handleDecrement}
-              />
-              <RenderProductButtons
-                onAddToCart={onAddToCart}
-                onBuyNow={onBuyNow}
-                submitting={cartLoading}
-                addingItem={addingItemToCart}
-              />
-              <Stack>
-                <StorePickupInfo pickupInfo={pickupInfo} />
-                <ProductDescription productDescription={productDescription} />
-              </Stack>
             </Stack>
-          </Box>
+            <Divider />
+            <Box
+              display="flex"
+              alignItems="center"
+              columnGap={2}
+              rowGap={2}
+              flex={1}
+            >
+              <Box flex={0.3}>
+                <CounterField
+                  quantity={quantity}
+                  onIncrement={handleIncrement}
+                  onDecrement={handleDecrement}
+                />
+              </Box>
+              <Box flex={0.7}>
+                <RenderProductButtons
+                  onAddToCart={onAddToCart}
+                  submitting={cartLoading}
+                  addingItem={addingItemToCart}
+                />
+              </Box>
+            </Box>
+          </Stack>
         </Grid>
       </Grid>
     </Box>
