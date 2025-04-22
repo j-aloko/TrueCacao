@@ -6,7 +6,9 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 
 import AspectRatioImage from '../aspect-ratio-image/AspectRatioImage';
-import TextBlock from '../text-block/TextBlock';
+import ProductDescription from '../product-description/ProductDescription';
+import ProductName from '../product-name/ProductName';
+import ProductPrice from '../product-price/ProductPrice';
 
 function ProductCard({ product }) {
   return (
@@ -43,34 +45,9 @@ function ProductCard({ product }) {
       </Box>
 
       <Stack spacing={2}>
-        <TextBlock
-          text={product.title}
-          variant="h5"
-          component="h3"
-          color="primary"
-          gutterBottom
-        />
-
-        <TextBlock
-          text={product.price}
-          variant="h6"
-          component="p"
-          color="secondary"
-          gutterBottom
-        />
-
-        <TextBlock
-          text={product.description}
-          variant="body1"
-          component="p"
-          color="text.secondary"
-          gutterBottom
-          sx={{
-            flexGrow: 1,
-            mb: 3,
-          }}
-        />
-
+        <ProductName name={product.title} />
+        <ProductPrice price={product.price} />
+        <ProductDescription productDescription={product.description} />
         <Button
           variant="contained"
           color="primary"

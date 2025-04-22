@@ -26,11 +26,8 @@ import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 import { formatString } from '@/util/formatString';
 import { getNestedProperty } from '@/util/getNestedProperty';
 
-const productDescription = `
-<div>
-  Our 100% pure, unprocessed cocoa powder is made from premium organic cocoa beans. Cold-pressed to preserve nutrients, it delivers a rich chocolate flavor with all the natural health benefits intact. Perfect for baking, smoothies, or making hot chocolate.
-</div>
-`;
+const productDescription =
+  'Our 100% pure, unprocessed cocoa powder is made from premium organic cocoa beans. Cold-pressed to preserve nutrients, it delivers a rich chocolate flavor with all the natural health benefits intact. Perfect for baking, smoothies, or making hot chocolate.';
 
 function ProductDetailsContainer({
   product,

@@ -124,14 +124,14 @@ const disableOptions = {
 function Home() {
   return (
     <Container maxWidth="xl" disableGutters>
-      {/* <ProductDetailsContainer
-        product={product}
-        variantProps={variantProps}
-        labels={labels}
-        disableOptions={disableOptions}
-      /> */}
       <Stack spacing={3}>
         <HeroSection />
+        <ProductDetailsContainer
+          product={product}
+          variantProps={variantProps}
+          labels={labels}
+          disableOptions={disableOptions}
+        />
         <ProductCards />
         <ValuePropositionCardContainer />
       </Stack>
