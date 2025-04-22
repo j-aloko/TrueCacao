@@ -2,6 +2,8 @@ import React from 'react';
 
 import Container from '@mui/material/Container';
 
+import HeroSection from '@/components/hero-section/HeroSection';
+import ProductCards from '@/components/product-cards/ProductCards';
 import ProductDetailsContainer from '@/containers/product-details-container/ProductDetailsContainer';
 
 const product = {
@@ -120,12 +122,14 @@ const disableOptions = {
 function Home() {
   return (
     <Container maxWidth="xl" disableGutters>
-      <ProductDetailsContainer
+      {/* <ProductDetailsContainer
         product={product}
         variantProps={variantProps}
         labels={labels}
         disableOptions={disableOptions}
-      />
+      /> */}
+      <HeroSection />
+      <ProductCards />
     </Container>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import { createTheme } from '@mui/material/styles';
-import { Inter as interFont, Poppins as poppinsFont } from 'next/font/google';
+import { createTheme, responsiveFontSizes } from '@mui/material/styles';
+import { Inter as interFont } from 'next/font/google';
 
 const inter = interFont({
   display: 'swap',
@@ -9,13 +9,7 @@ const inter = interFont({
   weight: ['300', '400', '500', '700'],
 });
 
-const poppins = poppinsFont({
-  display: 'swap',
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-});
-
-const theme = createTheme({
+const baseTheme = createTheme({
   components: {
     MuiAlert: {
       styleOverrides: {
@@ -41,8 +35,8 @@ const theme = createTheme({
       main: '#512d1a',
     },
     background: {
-      default: '#ffffff',
-      paper: '#f2f2f2',
+      default: '#FFF9F5', // Soft cream
+      paper: '#F5EDE6', // Light parchment
     },
     common: {
       black: '#1a0e09',
@@ -55,17 +49,18 @@ const theme = createTheme({
       main: '#d94c4c',
     },
     mode: 'light',
+
     primary: {
-      contrastText: '#ffffff',
-      dark: '#120a06',
-      light: '#4e342e',
-      main: '#1c0f0a',
+      contrastText: '#FFFFFF',
+      dark: '#261009',
+      light: '#5D3A2B',
+      main: '#3A1C0E', // Deep cocoa
     },
     secondary: {
-      contrastText: '#ffffff',
-      dark: '#2b160b',
-      light: '#875a3a',
-      main: '#603921',
+      contrastText: '#1A0E09',
+      dark: '#B78D56', // Gold accent
+      light: '#E8C9A0',
+      main: '#D4A76A',
     },
     success: {
       contrastText: '#000000',
@@ -73,11 +68,12 @@ const theme = createTheme({
       light: '#c8e6c9',
       main: '#81c784',
     },
+
     text: {
-      disabled: 'rgba(0, 0, 0, 0.4)',
-      hint: 'rgba(0, 0, 0, 0.5)',
-      primary: '#1a0e09',
-      secondary: '#603921',
+      disabled: '#B7A99B', // Warm brown
+      hint: '#B7A99B',
+      primary: '#2A1509', // Deep brown
+      secondary: '#5D3A2B', // Muted beige
     },
   },
   shadows: [
@@ -109,14 +105,16 @@ const theme = createTheme({
   ],
   typography: {
     fontFamily: inter.style.fontFamily,
-    h1: { fontFamily: poppins.style.fontFamily },
-    h2: { fontFamily: poppins.style.fontFamily },
-    h3: { fontFamily: poppins.style.fontFamily },
-    h4: { fontFamily: poppins.style.fontFamily },
-    h5: { fontFamily: poppins.style.fontFamily },
-    h6: { fontFamily: poppins.style.fontFamily },
-    lineHeight: 1.2,
+    h1: { fontWeight: 600 },
+    h2: { fontWeight: 600 },
+    h3: { fontWeight: 600 },
+    h4: { fontWeight: 600 },
+    h5: { fontWeight: 600 },
+    h6: { fontWeight: 600 },
+    lineHeight: 1.5,
   },
 });
+
+const theme = responsiveFontSizes(baseTheme);
 
 export default theme;

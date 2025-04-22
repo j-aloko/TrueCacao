@@ -92,7 +92,7 @@ function Navbar({
             ))}
           </Box>
           <Box sx={{ display: 'flex', flexGrow: 0, gap: 2 }}>
-            <Tooltip title="Remove">
+            <Tooltip title="Cart">
               <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
                 <Badge
                   badgeContent={cart?.lines?.length || 0}

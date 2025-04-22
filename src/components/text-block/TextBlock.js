@@ -7,6 +7,7 @@ import { clean } from '@/util/cleanHtml';
 function TextBlock({
   text = null,
   isHtmlString = false,
+  textAlign = 'left',
   variant = 'body1',
   color = 'primary',
   align = 'left',
@@ -19,6 +20,7 @@ function TextBlock({
     <Typography
       variant={variant}
       color={color}
+      textAlign={textAlign}
       component={component}
       align={align}
       gutterBottom={gutterBottom}
