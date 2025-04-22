@@ -5,9 +5,23 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid2';
+import Paper from '@mui/material/Paper';
+import { styled } from '@mui/material/styles';
 
 import ProductCard from '../product-card/ProductCard';
 import TextBlock from '../text-block/TextBlock';
+
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: '#fff',
+  ...theme.typography.body2,
+  height: '100%',
+  maxHeight: 600,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  ...theme.applyStyles('dark', {
+    backgroundColor: '#1A2027',
+  }),
+}));
 
 function ProductCards() {
   const products = [
@@ -37,8 +51,7 @@ function ProductCards() {
     <Box
       component="section"
       id="products"
-      sx={(theme) => ({
-        backgroundColor: theme.palette.grey[100],
+      sx={() => ({
         py: 8,
       })}
     >
@@ -47,25 +60,28 @@ function ProductCards() {
           text="Our Premium Selection"
           variant="h4"
           component="h2"
-          sx={(theme) => ({
-            color: theme.palette.primary.main,
+          sx={() => ({
             mb: 6,
             textAlign: 'center',
           })}
         />
 
-        <Grid container spacing={4} justifyContent="center">
+        <Grid
+          container
+          spacing={4}
+          sx={(theme) => ({
+            bgcolor: theme.palette.background.paper,
+            height: 'auto',
+            p: { md: 4, xs: 2 },
+            width: '100%',
+          })}
+        >
           {React.Children.toArray(
             products.map((product) => (
-              <Grid
-                key={product.id}
-                size={{ lg: 6, md: 6, sm: 6, xs: 12 }}
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                }}
-              >
-                <ProductCard product={product} />
+              <Grid size={{ md: 6, xs: 12 }} key={product.id}>
+                <Item>
+                  <ProductCard product={product} />
+                </Item>
               </Grid>
             ))
           )}

@@ -9,7 +9,9 @@ export default function ValuePropositionCard({ icon, title, description }) {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Stack spacing={2} p={2}>
-        <Box>{icon}</Box>
+        <Box display="flex" justifyContent="center">
+          {icon}
+        </Box>
         <TextBlock
           text={title}
           variant="h6"

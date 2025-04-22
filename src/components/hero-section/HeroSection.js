@@ -59,7 +59,7 @@ function HeroSection() {
           }}
         >
           <TextBlock
-            text="Discover the Essence of Pure Cocoa"
+            text="Discover the Essence of True Cocoa"
             variant="h3"
             component="h1"
             textAlign="center"

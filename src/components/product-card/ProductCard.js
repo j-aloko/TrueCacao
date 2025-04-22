@@ -2,27 +2,21 @@ import React from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
+import Stack from '@mui/material/Stack';
 
 import AspectRatioImage from '../aspect-ratio-image/AspectRatioImage';
 import TextBlock from '../text-block/TextBlock';
 
 function ProductCard({ product }) {
   return (
-    <Card
+    <Stack
+      spacing={2}
       sx={{
         '&:hover': {
           cursor: 'pointer',
         },
-        borderRadius: 3,
-        boxShadow: 'none',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        maxWidth: 'sm',
-        width: '100%',
+        p: 2,
       }}
     >
       <Box
@@ -48,13 +42,7 @@ function ProductCard({ product }) {
         )}
       </Box>
 
-      <CardContent
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          flexGrow: 1,
-        }}
-      >
+      <Stack spacing={2}>
         <TextBlock
           text={product.title}
           variant="h5"
@@ -73,7 +61,8 @@ function ProductCard({ product }) {
 
         <TextBlock
           text={product.description}
-          variant="body2"
+          variant="body1"
+          component="p"
           color="text.secondary"
           gutterBottom
           sx={{
@@ -93,8 +82,8 @@ function ProductCard({ product }) {
         >
           View Details
         </Button>
-      </CardContent>
-    </Card>
+      </Stack>
+    </Stack>
   );
 }
 

@@ -25,6 +25,13 @@ const baseTheme = createTheme({
         },
       },
     },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          boxShadow: 'none',
+        },
+      },
+    },
   },
   cssVariables: true,
   palette: {

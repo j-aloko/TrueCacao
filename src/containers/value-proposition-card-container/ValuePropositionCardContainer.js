@@ -59,7 +59,7 @@ function ValuePropositionCardContainer() {
       p={{ sm: 4, xs: 2 }}
       sx={(theme) => ({
         bgcolor: theme.palette.background.paper,
-        height: 400,
+        height: 'auto',
         width: '100%',
       })}
     >
