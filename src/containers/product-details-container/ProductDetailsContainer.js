@@ -14,6 +14,7 @@ import ProductImage from '@/components/product-image/ProductImage';
 import ProductName from '@/components/product-name/ProductName';
 import ProductPrice from '@/components/product-price/ProductPrice';
 import RenderProductButtons from '@/components/render-product-buttons/RenderProductButtons';
+import Review from '@/components/Review/Review';
 import TextBlock from '@/components/text-block/TextBlock';
 import { useCart } from '@/hooks/useCart';
 import {
@@ -25,6 +26,8 @@ import {
 import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 import { formatString } from '@/util/formatString';
 import { getNestedProperty } from '@/util/getNestedProperty';
+
+import PurchasePerksContainer from '../purchase-perks-container/PurchasePerksContainer';
 
 const productDescription =
   'Our 100% pure, unprocessed cocoa powder is made from premium organic cocoa beans. Cold-pressed to preserve nutrients, it delivers a rich chocolate flavor with all the natural health benefits intact. Perfect for baking, smoothies, or making hot chocolate.';
@@ -166,6 +169,14 @@ function ProductDetailsContainer({
           <Stack spacing={3}>
             <Stack spacing={2}>
               <ProductName name={product?.name} />
+              <Box display="flex" alignItems="center" gap={2}>
+                <Review value={4.5} />
+                <TextBlock
+                  text={`${4.5} (${128} reviews)`}
+                  variant="body2"
+                  component="span"
+                />
+              </Box>
               <ProductPrice price={`GH₵${selectedVariant?.price || 0}`} />
               <ProductDescription productDescription={productDescription} />
             </Stack>
@@ -229,6 +240,7 @@ function ProductDetailsContainer({
                 />
               </Box>
             </Box>
+            <PurchasePerksContainer />
           </Stack>
         </Grid>
       </Grid>
