@@ -14,7 +14,7 @@ function CounterField({
   onDecrement = null,
   fabSize = 'small', // 'small' | 'medium' | 'tiny' (custom)
   minValue = 1,
-  typographyVariant = 'h6',
+  typographyVariant = 'subtitle1',
   typographySx = {},
   disabled = false,
   sx = {},
@@ -55,7 +55,11 @@ function CounterField({
       {loading ? (
         <CircularProgress size={15} />
       ) : (
-        <Typography variant={typographyVariant} sx={typographySx}>
+        <Typography
+          variant={typographyVariant}
+          sx={typographySx}
+          component="span"
+        >
           {quantity}
         </Typography>
       )}
