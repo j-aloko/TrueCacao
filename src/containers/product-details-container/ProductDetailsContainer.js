@@ -225,14 +225,18 @@ function ProductDetailsContainer({
               rowGap={2}
               flex={1}
             >
-              <Box flex={0.3}>
+              <Box flex={0.4}>
                 <CounterField
                   quantity={quantity}
                   onIncrement={handleIncrement}
                   onDecrement={handleDecrement}
                 />
               </Box>
-              <Box flex={0.7}>
+              <Box
+                flex={0.6}
+                display="flex"
+                justifyContent={{ md: 'center', sm: 'flex-end' }}
+              >
                 <RenderProductButtons
                   onAddToCart={onAddToCart}
                   submitting={cartLoading}
@@ -240,6 +244,7 @@ function ProductDetailsContainer({
                 />
               </Box>
             </Box>
+            <Divider />
             <PurchasePerksContainer />
           </Stack>
         </Grid>

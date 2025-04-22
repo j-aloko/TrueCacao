@@ -19,7 +19,7 @@ export async function GET(request) {
     const cart = await getOrCreateCart(sessionId, userId);
     return NextResponse.json(cart);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ message: error.message }, { status: 400 });
   }
 }
 
@@ -59,7 +59,7 @@ export async function POST(request) {
     const cart = await getOrCreateCart(sessionId, userId);
     return NextResponse.json(cart);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ message: error.message }, { status: 400 });
   }
 }
 
@@ -79,6 +79,6 @@ export async function DELETE(request) {
     }
     return NextResponse.json(cart);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ message: error.message }, { status: 400 });
   }
 }

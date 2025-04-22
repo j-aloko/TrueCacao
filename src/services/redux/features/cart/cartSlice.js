@@ -2,8 +2,9 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
 import { omit } from 'lodash';
 
-import { toggleDrawer } from '../cart-drawer/cartDrawerSlice';
 import { showErrorToast } from '@/lib/toast/toast';
+
+import { toggleDrawer } from '../cart-drawer/cartDrawerSlice';
 
 // Async thunks for API operations
 export const fetchCart = createAsyncThunk(

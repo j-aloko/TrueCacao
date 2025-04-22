@@ -11,7 +11,7 @@ export async function POST(request) {
     return NextResponse.json(mergedCart);
   } catch (error) {
     return NextResponse.json(
-      { error: error.message },
+      { message: error.message },
       { status: error.message === 'Guest cart not found' ? 404 : 400 }
     );
   }
