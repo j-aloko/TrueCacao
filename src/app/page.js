@@ -1,10 +1,12 @@
 import React from 'react';
 
 import Container from '@mui/material/Container';
+import Stack from '@mui/material/Stack';
 
 import HeroSection from '@/components/hero-section/HeroSection';
 import ProductCards from '@/components/product-cards/ProductCards';
 import ProductDetailsContainer from '@/containers/product-details-container/ProductDetailsContainer';
+import ValuePropositionCardContainer from '@/containers/value-proposition-card-container/ValuePropositionCardContainer';
 
 const product = {
   categoryId: 'category-1',
@@ -128,8 +130,11 @@ function Home() {
         labels={labels}
         disableOptions={disableOptions}
       /> */}
-      <HeroSection />
-      <ProductCards />
+      <Stack spacing={3}>
+        <HeroSection />
+        <ProductCards />
+        <ValuePropositionCardContainer />
+      </Stack>
     </Container>
   );
 }
