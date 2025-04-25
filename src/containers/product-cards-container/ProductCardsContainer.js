@@ -8,8 +8,8 @@ import Grid from '@mui/material/Grid2';
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 
-import ProductCard from '../product-card/ProductCard';
-import TextBlock from '../text-block/TextBlock';
+import ProductCard from '../../components/product-card/ProductCard';
+import TextBlock from '../../components/text-block/TextBlock';
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#fff',
@@ -23,7 +23,7 @@ const Item = styled(Paper)(({ theme }) => ({
   }),
 }));
 
-function ProductCards() {
+function ProductCardsContainer() {
   const products = [
     {
       description:
@@ -91,4 +91,4 @@ function ProductCards() {
   );
 }
 
-export default ProductCards;
+export default ProductCardsContainer;
