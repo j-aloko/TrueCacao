@@ -6,7 +6,7 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 
 import AspectRatioImage from '../aspect-ratio-image/AspectRatioImage';
-import ProductDescription from '../product-description/ProductDescription';
+import ProductDescription from '../product-summarized-description/ProductSummarizedDescription';
 import ProductName from '../product-name/ProductName';
 import ProductPrice from '../product-price/ProductPrice';
 

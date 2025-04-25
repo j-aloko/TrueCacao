@@ -113,6 +113,7 @@ const eslintConfig = [
         { extensions: ['.js', '.jsx'] },
       ],
       'react/jsx-props-no-spreading': 'off',
+      'react/jsx-wrap-multilines': ['error', { prop: false }],
       'react/prop-types': 'off',
       'sort-keys-fix/sort-keys-fix': 'warn',
     },
