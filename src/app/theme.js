@@ -25,6 +25,22 @@ const baseTheme = createTheme({
         },
       },
     },
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          '&::-webkit-scrollbar': {
+            backgroundColor: 'var(--background-paper)',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'var(--secondary-main)',
+            border: '2px solid var(--background-paper)',
+            borderRadius: 8,
+          },
+          '--background-paper': '#F5EDE6',
+          '--secondary-main': '#D4A76A',
+        },
+      },
+    },
     MuiPaper: {
       styleOverrides: {
         root: {
