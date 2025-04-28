@@ -276,6 +276,7 @@ CREATE TABLE "Payment" (
 CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
     "description" TEXT,
     "stock" INTEGER NOT NULL DEFAULT 0,
     "reservedStock" INTEGER NOT NULL DEFAULT 0,
@@ -557,10 +558,16 @@ CREATE INDEX "Payment_status_idx" ON "Payment"("status");
 CREATE INDEX "Payment_transactionId_idx" ON "Payment"("transactionId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Product_slug_key" ON "Product"("slug");
+
+-- CreateIndex
 CREATE INDEX "Product_categoryId_idx" ON "Product"("categoryId");
 
 -- CreateIndex
 CREATE INDEX "Product_stock_idx" ON "Product"("stock");
+
+-- CreateIndex
+CREATE INDEX "Product_slug_idx" ON "Product"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ProductVariant_sku_key" ON "ProductVariant"("sku");
