@@ -1,6 +1,7 @@
 model Product {
   id                String           @id @default(uuid())
   name              String
+  slug              String           @unique
   description       String?
   stock             Int              @default(0)
   reservedStock     Int              @default(0)
@@ -19,4 +20,5 @@ model Product {
 
   @@index([categoryId])
   @@index([stock])
+  @@index([slug])
 }

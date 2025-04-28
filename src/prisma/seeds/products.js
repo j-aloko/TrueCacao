@@ -1,3 +1,9 @@
+const slugify = (text) =>
+  text
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '');
+
 async function seedProducts(prisma) {
   const products = [
     {
@@ -7,6 +13,7 @@ async function seedProducts(prisma) {
       images: ['image1.jpg', 'image2.jpg'],
       lowStockThreshold: 10,
       name: 'Raw Cocoa Powder',
+      slug: slugify('Raw Cocoa Powder'),
       stock: 280,
       variants: [
         {
@@ -161,6 +168,7 @@ async function seedProducts(prisma) {
       images: ['image3.jpg', 'image4.jpg'],
       lowStockThreshold: 20,
       name: 'Dark Chocolate Bar',
+      slug: slugify('Dark Chocolate Bar'),
       stock: 200,
       variants: [
         {

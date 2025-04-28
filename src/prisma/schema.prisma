@@ -415,7 +415,7 @@ model Payment {
   method             PAYMENT_METHOD
   transactionId      String?
   shopPayTransaction ShopPayTransaction?
-  refundedAmount     Money?             @relation("RefundedAmount", fields: [refundedAmountId], references: [id])
+  refundedAmount     Money?              @relation("RefundedAmount", fields: [refundedAmountId], references: [id])
   refundedAmountId   String?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
@@ -429,6 +429,7 @@ model Payment {
 model Product {
   id                String           @id @default(uuid())
   name              String
+  slug              String           @unique
   description       String?
   stock             Int              @default(0)
   reservedStock     Int              @default(0)
@@ -447,6 +448,7 @@ model Product {
 
   @@index([categoryId])
   @@index([stock])
+  @@index([slug])
 }
 
 
