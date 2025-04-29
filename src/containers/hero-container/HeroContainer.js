@@ -6,9 +6,9 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 
-import TextBlock from '../text-block/TextBlock';
+import TextBlock from '../../components/text-block/TextBlock';
 
-function HeroSection() {
+function HeroContainer() {
   return (
     <Box
       sx={{
@@ -105,4 +105,4 @@ function HeroSection() {
   );
 }
 
-export default HeroSection;
+export default HeroContainer;

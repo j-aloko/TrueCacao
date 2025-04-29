@@ -213,13 +213,13 @@ function ProductDetailsContainer({
   }, [addItem, selectedVariant?.id, quantity]);
 
   return (
-    <Box sx={{ flexGrow: 1, p: { sm: 2, xs: 0 } }}>
+    <Box sx={{ flexGrow: 1, p: 2 }}>
       <Stack spacing={10}>
         <Grid container spacing={2}>
-          <Grid size={7} p={3}>
+          <Grid size={7} p={2}>
             <ProductImage image="/product-images/royale-cocoa-powder-3.jpg" />
           </Grid>
-          <Grid size={5} p={3}>
+          <Grid size={5} p={2}>
             <Stack spacing={3}>
               <Stack spacing={2}>
                 <ProductName name={product?.name} />
@@ -307,7 +307,9 @@ function ProductDetailsContainer({
             </Stack>
           </Grid>
         </Grid>
-        <CustomTabs tabs={tabs} tabSx={{ fontWeight: 'bold' }} />
+        <Box p={2}>
+          <CustomTabs tabs={tabs} tabSx={{ fontWeight: 'bold' }} />
+        </Box>
       </Stack>
     </Box>
   );

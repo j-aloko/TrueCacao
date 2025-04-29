@@ -6,8 +6,8 @@ import SpaIcon from '@mui/icons-material/Spa';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 
-import HeroSection from '@/components/hero-section/HeroSection';
-import ProductCards from '@/containers/product-cards-container/ProductCardsContainer';
+import HeroContainer from '@/containers/hero-container/HeroContainer';
+import ProductCardsContainer from '@/containers/product-cards-container/ProductCardsContainer';
 import ProductDetailsContainer from '@/containers/product-details-container/ProductDetailsContainer';
 import ValuePropositionCardContainer from '@/containers/value-proposition-card-container/ValuePropositionCardContainer';
 
@@ -212,14 +212,14 @@ function Home() {
   return (
     <Container maxWidth="xl" disableGutters>
       <Stack spacing={3}>
-        <HeroSection />
+        <HeroContainer />
         <ProductDetailsContainer
           product={product}
           variantProps={variantProps}
           labels={labels}
           disableOptions={disableOptions}
         />
-        <ProductCards />
+        <ProductCardsContainer />
         <ValuePropositionCardContainer features={features} />
       </Stack>
     </Container>

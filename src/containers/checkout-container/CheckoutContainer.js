@@ -9,7 +9,7 @@ import BreadcrumbsNavigation from '@/components/breadcrumbs-navigation/Breadcrum
 
 function CheckoutContainer() {
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box p={2}>
       <Stack spacing={2}>
         <BreadcrumbsNavigation
           pathMap={{ cart: 'Cart', checkout: 'Checkout' }}

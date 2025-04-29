@@ -56,12 +56,10 @@ function ValuePropositionCardContainer() {
     <Grid
       container
       spacing={2}
-      p={{ sm: 4, xs: 2 }}
-      sx={(theme) => ({
-        bgcolor: theme.palette.background.paper,
+      sx={{
         height: 'auto',
         width: '100%',
-      })}
+      }}
     >
       {React.Children.toArray(
         features.map((feature) => (

@@ -69,12 +69,10 @@ function ProductCardsContainer() {
         <Grid
           container
           spacing={4}
-          sx={(theme) => ({
-            bgcolor: theme.palette.background.paper,
+          sx={{
             height: 'auto',
-            p: { md: 4, xs: 2 },
             width: '100%',
-          })}
+          }}
         >
           {React.Children.toArray(
             products.map((product) => (

@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 
+import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
@@ -39,13 +40,13 @@ export default function RootLayout({ children }) {
                   minHeight: '100vh',
                 }}
               >
-                <nav>
+                <Box component="nav">
                   <NavbarContainer />
-                </nav>
-                <main>{children}</main>
-                <footer style={{ marginTop: 'auto' }}>
+                </Box>
+                <Box component="main">{children}</Box>
+                <Box component="footer" mt="auto">
                   <FooterContainer />
-                </footer>
+                </Box>
               </Container>
               <Suspense fallback={<p>Loading cart...</p>}>
                 <CartDrawerContainer />
