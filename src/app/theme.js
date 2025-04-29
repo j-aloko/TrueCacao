@@ -37,7 +37,10 @@ const baseTheme = createTheme({
             borderRadius: 8,
           },
           '--background-paper': '#F5EDE6',
-          '--secondary-main': '#D4A76A',
+          '--border-color': 'rgba(58, 28, 14, 0.23)',
+          '--common-white': '#ffffff',
+          '--text-primary': '#2A1509',
+          '--text-secondary': '#5D3A2B',
         },
       },
     },
@@ -45,6 +48,52 @@ const baseTheme = createTheme({
       styleOverrides: {
         root: {
           boxShadow: 'none',
+        },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'var(--border-color)',
+          },
+          '& select:-webkit-autofill': {
+            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
+            WebkitTextFillColor: 'var(--text-primary)',
+          },
+
+          '& select:-webkit-autofill:focus': {
+            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
+          },
+          '& select:-webkit-autofill:hover': {
+            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
+          },
+          backgroundColor: 'var(--common-white)',
+          color: 'var(--text-primary)',
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: 'var(--border-color)',
+            },
+            backgroundColor: 'var(--common-white)',
+            color: 'var(--text-primary)',
+          },
+          '& input:-webkit-autofill': {
+            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
+            WebkitTextFillColor: 'var(--text-primary)',
+            borderRadius: 'inherit',
+          },
+          '& input:-webkit-autofill:focus': {
+            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
+          },
+          '& input:-webkit-autofill:hover': {
+            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
+          },
         },
       },
     },
@@ -131,9 +180,6 @@ const baseTheme = createTheme({
     h1: { fontWeight: 600 },
     h2: { fontWeight: 600 },
     h3: { fontWeight: 600 },
-    h4: { fontWeight: 600 },
-    h5: { fontWeight: 600 },
-    h6: { fontWeight: 600 },
     lineHeight: 1.5,
   },
 });

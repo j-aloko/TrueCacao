@@ -7,16 +7,16 @@ import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import { Select } from 'mui-rff';
 
-function VariantSelector({ name, menuItems = [], onChange }) {
+function VariantSelector({ name, menuItems = [], onChange, label }) {
   return (
     <Box sx={{ minWidth: 120 }}>
       <FormControl fullWidth>
         <Select
           name={name}
           labelId="variant-select-label"
-          label={name}
+          label={label}
           id="variant-select"
-          onChange={onChange} // Pass the onChange handler
+          onChange={onChange}
         >
           {menuItems.map((item) => (
             <MenuItem key={item.value} value={item.value}>
