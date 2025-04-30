@@ -1,16 +1,34 @@
 import React, { useCallback } from 'react';
 
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import Stack from '@mui/material/Stack';
 
 import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
-import TextBlock from '@/components/text-block/TextBlock';
 import VariantSelector from '@/components/variant-selector/VariantSelector';
 import { formValidation, Yup } from '@/util/formValidation';
 
 const fields = [
+  {
+    component: CustomTextField,
+    name: 'email',
+    props: { label: 'Email' },
+  },
+  {
+    component: VariantSelector,
+    name: 'deliveryMethod',
+    props: {
+      label: 'Delivery Method',
+      menuItems: [
+        { label: 'Ship', value: 'ship' },
+        { label: 'Pick in Store', value: 'pickInStore' },
+      ],
+    },
+  },
+  {
+    component: CustomTextField,
+    name: 'country',
+    props: { label: 'Country/Region' },
+  },
   {
     fields: [
       {
@@ -28,32 +46,6 @@ const fields = [
     ],
     group: 'row',
     id: 'group-1',
-  },
-  {
-    component: CustomTextField,
-    name: 'email',
-    props: { label: 'Email' },
-  },
-  {
-    component: CustomTextField,
-    name: 'phone',
-    props: { label: 'Phone (Optional)' },
-  },
-  {
-    component: VariantSelector,
-    name: 'deliveryMethod',
-    props: {
-      label: 'Delivery Method',
-      menuItems: [
-        { label: 'Ship', value: 'ship' },
-        { label: 'Pick in Store', value: 'pickInStore' },
-      ],
-    },
-  },
-  {
-    component: CustomTextField,
-    name: 'country',
-    props: { label: 'Country/Region' },
   },
   {
     component: CustomTextField,
@@ -114,12 +106,12 @@ const shippingInfoValidationSchema = Yup.object().shape({
     .required('Last name is required')
     .max(50, 'Last name is too long'),
 
-  phone: Yup.string()
+  /* phone: Yup.string()
     .matches(
       /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/,
       'Please enter a valid phone number'
     )
-    .nullable(),
+    .nullable(), */
 
   postalCode: Yup.string()
     .matches(/^[a-zA-Z0-9\s-]*$/, 'Please enter a valid postal code')
@@ -133,11 +125,7 @@ function ShippingInformationContainer() {
   }, []);
 
   return (
-    <Stack spacing={3}>
-      <Box display="flex" flexDirection="column" gap={1}>
-        <TextBlock text="Shipping Information" variant="h6" component="span" />
-        <Divider />
-      </Box>
+    <Box>
       <GenericForm
         fields={fields}
         onSubmit={handleShippingFormSubmit}
@@ -145,7 +133,7 @@ function ShippingInformationContainer() {
         initialValues={null}
         renderButtons={null}
       />
-    </Stack>
+    </Box>
   );
 }
 

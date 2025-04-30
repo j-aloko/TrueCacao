@@ -31,15 +31,12 @@ function CartItem({
   ImageHeight = 120,
 }) {
   return (
-    <Card sx={{ boxShadow: 1, display: 'flex' }}>
-      <CardContent sx={{ p: 1 }}>
+    <Card sx={{ display: 'flex', gap: 3 }}>
+      <CardContent>
         <Box
           sx={{
-            alignItems: 'center',
             display: 'flex',
-            flexShrink: 0,
             height: ImageHeight,
-            justifyContent: 'center',
             overflow: 'hidden',
             width: imageWidth,
           }}
@@ -47,9 +44,8 @@ function CartItem({
           <CardMedia
             component="img"
             sx={{
-              height: 'auto',
-              maxHeight: '100%',
-              objectFit: 'scale-down',
+              height: '100%',
+              objectFit: 'cover',
               width: '100%',
             }}
             image={image}
@@ -59,7 +55,7 @@ function CartItem({
       </CardContent>
 
       <Box sx={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
-        <CardContent sx={{ p: 1 }}>
+        <CardContent>
           <Stack spacing={0.5}>
             <TextBlock
               text={productName}

@@ -6,16 +6,16 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { Form, Field } from 'react-final-form';
 
-function DefaultSubmitButton({ submitting, pristine }) {
+function DefaultSubmitButton({ submitting, pristine, buttonText, buttonSize }) {
   return (
     <Box>
       <Button
         type="submit"
         variant="contained"
+        size={buttonSize}
         disabled={submitting || pristine}
-        sx={{ mt: 2 }}
       >
-        Submit
+        {buttonText}
       </Button>
     </Box>
   );
@@ -24,8 +24,11 @@ function DefaultSubmitButton({ submitting, pristine }) {
 function GenericForm({
   fields,
   onSubmit,
-  initialValues,
+  initialValues = null,
   validate,
+  buttonOrientation = 'column',
+  buttonText = 'Submit',
+  buttonSize = 'large',
   renderButtons = null,
 }) {
   return (
@@ -35,18 +38,31 @@ function GenericForm({
       validate={validate}
       render={({ handleSubmit, submitting, pristine }) => (
         <form onSubmit={handleSubmit}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Box
+            sx={{
+              alignItems: buttonOrientation === 'row' ? 'center' : 'stretch',
+              display: 'flex',
+              flexDirection: buttonOrientation === 'row' ? 'row' : 'column',
+              flexWrap: 'wrap',
+              gap: 3,
+              p: 2,
+            }}
+          >
             {React.Children.toArray(
               fields.map((field) => {
                 if (field.group === 'row') {
                   return (
-                    <Box key={field.id} sx={{ display: 'flex', gap: 2 }}>
+                    <Box
+                      key={field.id}
+                      sx={{ display: 'flex', flex: 1, gap: 2 }}
+                    >
                       {React.Children.toArray(
                         field.fields.map((subField) => (
                           <Box
                             key={subField.name}
                             sx={{
                               flex: subField.xs ? subField.xs : 1,
+                              minWidth: 0,
                             }}
                           >
                             <Field name={subField.name}>
@@ -66,15 +82,17 @@ function GenericForm({
                 }
 
                 return (
-                  <Field key={field.name} name={field.name}>
-                    {({ input, meta }) => (
-                      <field.component
-                        {...input}
-                        {...field.props}
-                        error={meta.touched && meta.error}
-                      />
-                    )}
-                  </Field>
+                  <Box key={field.name} sx={{ flex: 1, minWidth: 0 }}>
+                    <Field name={field.name}>
+                      {({ input, meta }) => (
+                        <field.component
+                          {...input}
+                          {...field.props}
+                          error={meta.touched && meta.error}
+                        />
+                      )}
+                    </Field>
+                  </Box>
                 );
               })
             )}
@@ -85,6 +103,8 @@ function GenericForm({
               <DefaultSubmitButton
                 submitting={submitting}
                 pristine={pristine}
+                buttonText={buttonText}
+                buttonSize={buttonSize}
               />
             )}
           </Box>

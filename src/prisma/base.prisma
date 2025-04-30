@@ -73,3 +73,9 @@ enum CURRENCY_CODE {
   NGN
   USD
 }
+
+enum DiscountCodeStatus {
+  ACTIVE
+  EXPIRED
+  DISABLED
+}

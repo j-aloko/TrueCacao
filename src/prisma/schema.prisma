@@ -76,6 +76,12 @@ enum CURRENCY_CODE {
   USD
 }
 
+enum DiscountCodeStatus {
+  ACTIVE
+  EXPIRED
+  DISABLED
+}
+
 
 model AbandonedCart {
   id              String    @id @default(uuid())
@@ -200,14 +206,18 @@ model CartCost {
 
 
 model CartDiscountCode {
-  id         String   @id @default(uuid())
+  id         String             @id @default(uuid())
   cartId     String
-  cart       Cart     @relation(fields: [cartId], references: [id])
-  code       String
-  applicable Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  cart       Cart               @relation(fields: [cartId], references: [id])
+  code       String             @unique
+  applicable Boolean            @default(false)
+  usageCount Int                @default(0)
+  expiresAt  DateTime?
+  status     DiscountCodeStatus @default(ACTIVE)
+  createdAt  DateTime           @default(now())
 
   @@index([cartId])
+  @@index([code])
 }
 
 
@@ -287,6 +297,7 @@ model GiftCard {
   initialValueId String
   balance        Money             @relation("GiftCardBalanceMoney", fields: [balanceId], references: [id])
   balanceId      String
+  usageCount     Int               @default(0)
   expiresAt      DateTime?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt

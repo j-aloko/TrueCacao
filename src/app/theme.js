@@ -6,22 +6,30 @@ import { Inter as interFont } from 'next/font/google';
 const inter = interFont({
   display: 'swap',
   subsets: ['latin'],
-  weight: ['300', '400', '500', '700'],
+  weight: ['300', '400', '500', '600', '700'],
 });
 
 const baseTheme = createTheme({
   components: {
-    MuiAlert: {
+    MuiCard: {
       styleOverrides: {
         root: {
-          variants: [
-            {
-              props: { severity: 'info' },
-              style: {
-                backgroundColor: '#60a5fa',
-              },
-            },
-          ],
+          '&:last-child': {
+            paddingBottom: 0,
+          },
+          margin: 0,
+          padding: 0,
+        },
+      },
+    },
+    MuiCardContent: {
+      styleOverrides: {
+        root: {
+          '&:last-child': {
+            paddingBottom: 0,
+          },
+          margin: 0,
+          padding: 0,
         },
       },
     },

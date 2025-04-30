@@ -1,10 +1,14 @@
 model CartDiscountCode {
-  id         String   @id @default(uuid())
+  id         String             @id @default(uuid())
   cartId     String
-  cart       Cart     @relation(fields: [cartId], references: [id])
-  code       String
-  applicable Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  cart       Cart               @relation(fields: [cartId], references: [id])
+  code       String             @unique
+  applicable Boolean            @default(false)
+  usageCount Int                @default(0)
+  expiresAt  DateTime?
+  status     DiscountCodeStatus @default(ACTIVE)
+  createdAt  DateTime           @default(now())
 
   @@index([cartId])
+  @@index([code])
 }
