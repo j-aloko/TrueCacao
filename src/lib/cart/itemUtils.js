@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma';
 
-import { calculateAndUpdateCartCost } from './cost-calculator';
+import { calculateAndUpdateCartCost } from './costCalculator';
 
 export async function updateItem(lineId, newQuantity) {
   const line = await prisma.cartLine.findUnique({

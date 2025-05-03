@@ -2,8 +2,6 @@ import React from 'react';
 
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Stack from '@mui/material/Stack';
 
@@ -22,77 +20,71 @@ function CheckoutItem({
   imageHeight = 60,
 }) {
   return (
-    <Card sx={{ display: 'flex', justifyContent: 'space-between', p: 2 }}>
-      <CardContent>
-        <Box display="flex" gap={2}>
-          <Badge
-            badgeContent={quantity}
-            anchorOrigin={{
-              horizontal: 'left',
-              vertical: 'top',
-            }}
-            color="secondary"
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+      }}
+    >
+      <Box display="flex" gap={2}>
+        <Badge
+          badgeContent={quantity}
+          anchorOrigin={{
+            horizontal: 'right',
+            vertical: 'top',
+          }}
+          color="secondary"
+          sx={{
+            '& .MuiBadge-badge': {
+              borderRadius: '50%',
+              fontSize: '0.85rem',
+              height: 24,
+              minWidth: 24,
+            },
+          }}
+        >
+          <Box
             sx={{
-              '& .MuiBadge-badge': {
-                borderRadius: '50%',
-                fontSize: '0.85rem',
-                height: 28,
-                minWidth: 28,
-              },
+              borderRadius: 1,
+              height: imageHeight,
+              width: imageWidth,
             }}
           >
-            <Box
+            <CardMedia
+              component="img"
               sx={{
-                borderRadius: 1,
-                height: imageHeight,
-                width: imageWidth,
+                height: '100%',
+                objectFit: 'cover',
+                width: '100%',
               }}
-            >
-              <CardMedia
-                component="img"
-                sx={{
-                  height: '100%',
-                  objectFit: 'cover',
-                  width: '100%',
-                }}
-                image={image}
-                alt={productName}
-              />
-            </Box>
-          </Badge>
+              image={image}
+              alt={productName}
+            />
+          </Box>
+        </Badge>
 
-          <Stack spacing={0.5}>
-            <TextBlock
-              text={productName}
-              variant="caption"
-              component="h3"
-              sx={{
-                fontWeight: 600,
-                textTransform: 'capitalize',
-              }}
-            />
-            <TextBlock
-              text={
-                typeof packaging === 'string'
-                  ? `${formatString(packaging)} / ${weight}g`
-                  : `${weight}g`
-              }
-              variant="caption"
-              component="p"
-              sx={{ fontWeight: 500 }}
-            />
-          </Stack>
-        </Box>
-      </CardContent>
-      <CardContent>
-        <TextBlock
-          text={itemPrice}
-          variant="caption"
-          component="p"
-          sx={{ fontWeight: 600 }}
-        />
-      </CardContent>
-    </Card>
+        <Stack spacing={0.5}>
+          <TextBlock
+            text={productName}
+            variant="body2"
+            component="span"
+            sx={{
+              textTransform: 'capitalize',
+            }}
+          />
+          <TextBlock
+            text={
+              typeof packaging === 'string'
+                ? `${formatString(packaging)} / ${weight}g`
+                : `${weight}g`
+            }
+            variant="body2"
+            component="span"
+          />
+        </Stack>
+      </Box>
+      <TextBlock text={itemPrice} variant="body2" component="span" />
+    </Box>
   );
 }
 

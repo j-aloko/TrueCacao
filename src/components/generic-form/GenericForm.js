@@ -25,7 +25,7 @@ function GenericForm({
   fields,
   onSubmit,
   initialValues = null,
-  validate,
+  validate = null,
   buttonOrientation = 'column',
   buttonText = 'Submit',
   buttonSize = 'large',
@@ -45,7 +45,6 @@ function GenericForm({
               flexDirection: buttonOrientation === 'row' ? 'row' : 'column',
               flexWrap: 'wrap',
               gap: 3,
-              p: 2,
             }}
           >
             {React.Children.toArray(

@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma';
 
-import { calculateAndUpdateCartCost } from './cost-calculator';
+import { calculateAndUpdateCartCost } from './costCalculator';
 import { getOrCreateCart } from './utils';
 
 export async function applyGiftCardToCart(sessionId, userId, code) {

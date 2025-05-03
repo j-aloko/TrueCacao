@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { updateItem, deleteItem } from '@/lib/cart/item-utils';
+import { updateItem, deleteItem } from '@/lib/cart/itemUtils';
 import { cartItemSchema } from '@/lib/cart/validators';
 
 export async function PUT(request, { params }) {

@@ -59,8 +59,8 @@ function CartItem({
           <Stack spacing={0.5}>
             <TextBlock
               text={productName}
-              variant="caption"
-              component="h3"
+              variant="body2"
+              component="span"
               sx={{
                 fontWeight: 600,
                 textTransform: 'capitalize',
@@ -72,14 +72,14 @@ function CartItem({
                   ? `${formatString(packaging)} / ${weight}g`
                   : `${weight}g`
               }
-              variant="caption"
-              component="p"
+              variant="body2"
+              component="span"
               sx={{ fontWeight: 500 }}
             />
             <TextBlock
               text={itemPrice}
-              variant="caption"
-              component="p"
+              variant="body2"
+              component="span"
               sx={{ fontWeight: 600 }}
             />
             <Box

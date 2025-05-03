@@ -16,10 +16,10 @@ function CheckoutContainer() {
   return (
     <Box p={2}>
       <Grid container spacing={2}>
-        <Grid size={7}>
+        <Grid size={7} p={2}>
           <ShippingInformationContainer />
         </Grid>
-        <Grid size={5} bgcolor="background.paper" borderRadius={4}>
+        <Grid size={5} p={2} bgcolor="background.paper" borderRadius={4}>
           <CheckoutOrderContainer cart={cart} />
         </Grid>
       </Grid>

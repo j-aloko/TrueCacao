@@ -2,9 +2,9 @@ import prisma from '@/lib/prisma';
 
 import { trackAbandonedCart } from './abondoned';
 import { fullCartIncludes } from './cartSchema';
-import { calculateAndUpdateCartCost } from './cost-calculator';
+import { calculateAndUpdateCartCost } from './costCalculator';
 import { generateCheckoutUrl } from './generateCheckoutUrl';
-import { updateItem } from './item-utils';
+import { updateItem } from './itemUtils';
 import { validateStock } from '../product-variant/validateStock';
 
 async function getNextPosition(cartId) {

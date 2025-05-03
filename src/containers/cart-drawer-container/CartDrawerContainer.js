@@ -5,11 +5,13 @@ import React, { useCallback, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
+import Link from 'next/link';
 
 import CartDrawerHeader from '@/components/cart-drawer-header/CartDrawerHeader';
 import CartItem from '@/components/cart-item/CartItem';
 import SwipeDrawer from '@/components/swipe-drawer/SwipeDrawer';
 import TextBlock from '@/components/text-block/TextBlock';
+import { ROUTES } from '@/constants/routes';
 import { useCart } from '@/hooks/useCart';
 import {
   openDrawer,
@@ -154,6 +156,8 @@ function CartDrawerContainer() {
                   fullWidth
                   onClick={handleClose}
                   aria-label={checkoutTotal}
+                  component={Link}
+                  href={ROUTES.checkout}
                 >
                   {checkoutTotal}
                 </Button>

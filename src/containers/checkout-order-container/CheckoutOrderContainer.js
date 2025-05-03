@@ -3,30 +3,22 @@ import React, { useCallback, useMemo } from 'react';
 import Box from '@mui/material/Box';
 
 import CheckoutItem from '@/components/checkout-item/CheckoutItem';
+import CheckoutTotals from '@/components/checkout-totals/CheckoutTotals';
 import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
-import { formValidation, Yup } from '@/util/formValidation';
+import { formatCurrency } from '@/util/formatCurrency';
 
 const fields = [
   {
     component: CustomTextField,
     name: 'discountCode',
-    props: { label: 'Discount Code' },
+    props: { label: 'Discount Code', size: 'small' },
   },
 ];
 
-const discountCodeValidationSchema = Yup.object().shape({
-  discountCode: Yup.string()
-    .trim()
-    .uppercase()
-    .matches(/^[A-Z0-9-]+$/, 'Invalid discount code format') // Restricts format to alphanumeric+hyphens
-    .min(5, 'Discount code must be at least 5 characters')
-    .max(30, 'Discount code is too long')
-    .nullable(),
-});
-
 function CheckoutOrderContainer({ cart }) {
   const hasItems = cart?.lines?.length > 0;
+  const cost = cart?.cost || null;
 
   const checkoutItems = useMemo(() => {
     if (!hasItems) return null;
@@ -45,12 +37,46 @@ function CheckoutOrderContainer({ cart }) {
           packaging={variant.packaging.type}
           weight={variant.weight}
           productName={product.name}
-          itemPrice={`${price.currencyCode || ''}${price.amount || ''}`}
+          itemPrice={formatCurrency(price.currencyCode, price.amount)}
           quantity={line.quantity || 0}
         />
       );
     });
   }, [cart.lines, hasItems]);
+
+  const priceItems = useMemo(
+    () => [
+      {
+        amount: formatCurrency(
+          cost?.subtotal?.currencyCode,
+          cost?.subtotal?.amount
+        ),
+        name: 'Subtotal',
+      },
+      {
+        amount: cost?.estimatedShipping?.amount
+          ? formatCurrency(
+              cost.estimatedShipping.currencyCode,
+              cost.estimatedShipping.amount
+            )
+          : 'Calculated at next step',
+        name: 'Shipping',
+      },
+      {
+        amount: formatCurrency(
+          cost?.totalTax?.currencyCode,
+          cost?.totalTax?.amount
+        ),
+        name: 'Tax',
+      },
+      {
+        amount: formatCurrency(cost?.total?.currencyCode, cost?.total?.amount),
+        isTotal: true,
+        name: 'Total',
+      },
+    ],
+    [cost]
+  );
 
   const handleDiscountCodeApplication = useCallback((values) => {
     console.log(values);
@@ -73,15 +99,22 @@ function CheckoutOrderContainer({ cart }) {
         role="region"
         aria-label="Cart items"
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-          {checkoutItems}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {checkoutItems}
+          </Box>
           <GenericForm
             fields={fields}
             onSubmit={handleDiscountCodeApplication}
-            validate={formValidation(discountCodeValidationSchema)}
             buttonOrientation="row"
+            buttonSize="medium"
             buttonText="Apply"
           />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {priceItems?.map((item) => (
+              <CheckoutTotals key={item.name} item={item} />
+            ))}
+          </Box>
         </Box>
       </Box>
     </Box>
