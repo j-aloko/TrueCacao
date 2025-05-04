@@ -1,10 +1,14 @@
 import React, { useCallback } from 'react';
 
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 
+import CustomRadioGroup from '@/components/custom-radio-group/CustomRadioGroup';
 import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
-import VariantSelector from '@/components/variant-selector/VariantSelector';
+import TextBlock from '@/components/text-block/TextBlock';
 import { formValidation, Yup } from '@/util/formValidation';
 
 const fields = [
@@ -14,13 +18,21 @@ const fields = [
     props: { label: 'Email' },
   },
   {
-    component: VariantSelector,
+    component: CustomRadioGroup,
     name: 'deliveryMethod',
     props: {
       label: 'Delivery Method',
-      menuItems: [
-        { label: 'Ship', value: 'ship' },
-        { label: 'Pick in Store', value: 'pickInStore' },
+      options: [
+        {
+          icon: <LocalShippingIcon color="action" />,
+          label: 'Shipping',
+          value: 'SHIP',
+        },
+        {
+          icon: <StorefrontIcon color="action" />,
+          label: 'Pick in Store',
+          value: 'PICK_IN_STORE',
+        },
       ],
     },
   },
@@ -125,12 +137,23 @@ function ShippingInformationContainer() {
   }, []);
 
   return (
-    <Box>
+    <Box display="flex" flexDirection="column" gap={2}>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <TextBlock text="Contact" variant="h5" component="h2" />
+        <Button
+          size="small"
+          variant="text"
+          aria-label="login"
+          sx={{ textDecoration: 'underline', textTransform: 'capitalize' }}
+        >
+          Login
+        </Button>
+      </Box>
       <GenericForm
         fields={fields}
         onSubmit={handleShippingFormSubmit}
         validate={formValidation(shippingInfoValidationSchema)}
-        initialValues={null}
+        initialValues={{ deliveryMethod: 'SHIP' }}
         renderButtons={null}
       />
     </Box>

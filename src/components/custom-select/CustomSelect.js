@@ -7,7 +7,7 @@ import FormControl from '@mui/material/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import { Select } from 'mui-rff';
 
-function VariantSelector({
+function CustomSelect({
   name,
   menuItems = [],
   onChange,
@@ -36,4 +36,4 @@ function VariantSelector({
   );
 }
 
-export default VariantSelector;
+export default CustomSelect;
