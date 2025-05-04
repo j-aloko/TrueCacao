@@ -103,7 +103,7 @@ const shippingInfoValidationSchema = Yup.object().shape({
   country: Yup.string().required('Country/Region is required'),
 
   deliveryMethod: Yup.string()
-    .oneOf(['ship', 'pickInStore'], 'Invalid delivery method')
+    .oneOf(['SHIP', 'PICK_IN_STORE'], 'Invalid delivery method')
     .required('Delivery method is required'),
 
   email: Yup.string()

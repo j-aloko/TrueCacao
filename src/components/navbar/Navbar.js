@@ -31,8 +31,11 @@ function Navbar({
   return (
     <AppBar
       position="fixed"
-      color="inherit"
-      sx={{ boxShadow: 'none', zIndex: 999 }}
+      sx={{
+        bgcolor: (theme) => theme.palette.common.white,
+        boxShadow: 'none',
+        zIndex: 999,
+      }}
     >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
@@ -66,7 +69,9 @@ function Navbar({
             >
               {pages.map((page) => (
                 <MenuItem key={page} onClick={onCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
+                  <Typography color="primary" sx={{ textAlign: 'center' }}>
+                    {page}
+                  </Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -83,6 +88,7 @@ function Navbar({
             {pages.map((page) => (
               <Typography
                 variant="subtitle1"
+                color="primary"
                 key={page}
                 onClick={onCloseNavMenu}
                 sx={{ cursor: 'pointer' }}
@@ -110,7 +116,13 @@ function Navbar({
 
             <Tooltip title="Open settings">
               <IconButton onClick={onOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar>RS</Avatar>
+                <Avatar
+                  sx={{
+                    color: (theme) => theme.palette.primary.main,
+                  }}
+                >
+                  RS
+                </Avatar>
               </IconButton>
             </Tooltip>
             <Menu
