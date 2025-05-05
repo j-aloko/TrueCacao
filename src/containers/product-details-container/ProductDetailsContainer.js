@@ -231,7 +231,9 @@ function ProductDetailsContainer({
                     component="span"
                   />
                 </Box>
-                <ProductPrice price={`GH₵${selectedVariant?.price || 0}`} />
+                <ProductPrice
+                  price={`${selectedVariant?.price?.currencyCode}${selectedVariant?.price?.amount || 0}`}
+                />
                 <ProductSummarizedDescription
                   summary={summarizedProductDescription}
                 />

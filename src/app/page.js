@@ -26,10 +26,8 @@ const product = {
       images: ['variant1-image1.jpg', 'variant1-image2.jpg'],
       packaging: { type: 'SACHET' },
       price: {
-        create: {
-          amount: 5.99,
-          currencyCode: 'USD',
-        },
+        amount: 5.99,
+        currencyCode: 'USD',
       },
       stock: 50,
       weight: 100,
@@ -39,10 +37,8 @@ const product = {
       images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
       packaging: { type: 'CARTON_OF_SACHETS' },
       price: {
-        create: {
-          amount: 30.99,
-          currencyCode: 'USD',
-        },
+        amount: 30.99,
+        currencyCode: 'USD',
       },
       stock: 30,
       weight: 100,
@@ -52,10 +48,8 @@ const product = {
       images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
       packaging: { type: 'SACHET' },
       price: {
-        create: {
-          amount: 12.99,
-          currencyCode: 'USD',
-        },
+        amount: 12.99,
+        currencyCode: 'USD',
       },
       stock: 30,
       weight: 200,
@@ -65,10 +59,8 @@ const product = {
       images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
       packaging: { type: 'CARTON_OF_SACHETS' },
       price: {
-        create: {
-          amount: 39.99,
-          currencyCode: 'USD',
-        },
+        amount: 39.99,
+        currencyCode: 'USD',
       },
       stock: 30,
       weight: 200,
@@ -78,10 +70,8 @@ const product = {
       images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
       packaging: { type: 'SACHET' },
       price: {
-        create: {
-          amount: 12.99,
-          currencyCode: 'USD',
-        },
+        amount: 12.99,
+        currencyCode: 'USD',
       },
       stock: 30,
       weight: 1000,
@@ -91,10 +81,8 @@ const product = {
       images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
       packaging: { type: 'CARTON_OF_SACHETS' },
       price: {
-        create: {
-          amount: 65.99,
-          currencyCode: 'USD',
-        },
+        amount: 65.99,
+        currencyCode: 'USD',
       },
       stock: 30,
       weight: 1000,
@@ -104,10 +92,8 @@ const product = {
       images: ['variant1-image1.jpg', 'variant1-image2.jpg'],
       packaging: { type: 'JAR' },
       price: {
-        create: {
-          amount: 5.99,
-          currencyCode: 'USD',
-        },
+        amount: 5.99,
+        currencyCode: 'USD',
       },
       stock: 50,
       weight: 400,
@@ -117,10 +103,8 @@ const product = {
       images: ['variant1-image1.jpg', 'variant1-image2.jpg'],
       packaging: { type: 'JAR' },
       price: {
-        create: {
-          amount: 5.99,
-          currencyCode: 'USD',
-        },
+        amount: 5.99,
+        currencyCode: 'USD',
       },
       stock: 50,
       weight: 500,
@@ -130,10 +114,8 @@ const product = {
       images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
       packaging: { type: 'CARTON_OF_JARS' },
       price: {
-        create: {
-          amount: 45.99,
-          currencyCode: 'USD',
-        },
+        amount: 45.99,
+        currencyCode: 'USD',
       },
       stock: 30,
       weight: 400,
@@ -143,10 +125,8 @@ const product = {
       images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
       packaging: { type: 'CARTON_OF_JARS' },
       price: {
-        create: {
-          amount: 45.99,
-          currencyCode: 'USD',
-        },
+        amount: 45.99,
+        currencyCode: 'USD',
       },
       stock: 30,
       weight: 500,
@@ -156,10 +136,8 @@ const product = {
       images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
       packaging: { type: 'CARTON_OF_JARS' },
       price: {
-        create: {
-          amount: 45.99,
-          currencyCode: 'USD',
-        },
+        amount: 45.99,
+        currencyCode: 'USD',
       },
       stock: 30,
       weight: 200,
