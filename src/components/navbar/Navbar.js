@@ -118,7 +118,8 @@ function Navbar({
               <IconButton onClick={onOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar
                   sx={{
-                    color: (theme) => theme.palette.primary.main,
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
                   }}
                 >
                   RS
