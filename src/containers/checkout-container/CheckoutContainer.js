@@ -16,10 +16,24 @@ function CheckoutContainer() {
   return (
     <Box p={2}>
       <Grid container spacing={2}>
+        {/* Shipping Details Scrolls Normally */}
         <Grid size={7} p={2}>
           <ShippingInformationContainer />
         </Grid>
-        <Grid size={5} p={2} bgcolor="background.paper" borderRadius={4}>
+
+        {/* Sticky Checkout Order Summary */}
+        <Grid
+          size={5}
+          p={2}
+          bgcolor="background.paper"
+          borderRadius={4}
+          sx={{
+            height: 'fit-content',
+            overflow: 'visible',
+            position: 'sticky',
+            top: (theme) => theme.mixins.toolbar.minHeight,
+          }}
+        >
           <CheckoutOrderContainer cart={cart} />
         </Grid>
       </Grid>

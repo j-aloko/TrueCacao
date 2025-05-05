@@ -1,15 +1,11 @@
 import React, { Suspense } from 'react';
 
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import PropTypes from 'prop-types';
 
 import CartDrawerContainer from '@/containers/cart-drawer-container/CartDrawerContainer';
-import FooterContainer from '@/containers/footer-container/FooterContainer';
-import NavbarContainer from '@/containers/navbar-container/NavbarContainer';
 import StoreProvider from '@/provider-components/StoreProvider';
 import ToastProvider from '@/provider-components/ToastProvider';
 
@@ -30,24 +26,7 @@ export default function RootLayout({ children }) {
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <StoreProvider>
-              <Container
-                maxWidth="xl"
-                disableGutters
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 10,
-                  minHeight: '100vh',
-                }}
-              >
-                <Box component="nav">
-                  <NavbarContainer />
-                </Box>
-                <Box component="main">{children}</Box>
-                <Box component="footer" mt="auto">
-                  <FooterContainer />
-                </Box>
-              </Container>
+              {children}
               <Suspense fallback={<p>Loading cart...</p>}>
                 <CartDrawerContainer />
               </Suspense>

@@ -2,14 +2,17 @@ import React from 'react';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Link from 'next/link';
+
+import { ROUTES } from '@/constants/routes';
 
 function Logo({ variant = 'desktop' }) {
   return (
     <Typography
       variant="h4"
       noWrap
-      component="a"
-      href="#app-bar-with-responsive-menu"
+      component={Link}
+      href={ROUTES.home}
       sx={{
         color: 'inherit',
         display: {
