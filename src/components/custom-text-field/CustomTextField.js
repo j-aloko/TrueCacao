@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 import { useField } from 'react-final-form';
 
@@ -13,6 +14,8 @@ function CustomTextField({
   onChange,
   error,
   helperText,
+  showEndAdornment = false,
+  adornmentComponent = null,
   ...rest
 }) {
   const { input, meta } = useField(name, {
@@ -37,6 +40,17 @@ function CustomTextField({
       onChange={(e) => {
         input.onChange(e);
         if (onChange) onChange(e);
+      }}
+      slotProps={{
+        input: showEndAdornment
+          ? {
+              endAdornment: (
+                <InputAdornment position="end">
+                  {adornmentComponent}
+                </InputAdornment>
+              ),
+            }
+          : {},
       }}
       error={showError}
       helperText={showError ? errorText : ''}

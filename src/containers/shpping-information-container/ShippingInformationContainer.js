@@ -1,14 +1,18 @@
 import React, { useCallback } from 'react';
 
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import StorefrontIcon from '@mui/icons-material/Storefront';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 
+import CustomCheckbox from '@/components/custom-checkbox/CustomCheckbox';
 import CustomRadioGroup from '@/components/custom-radio-group/CustomRadioGroup';
 import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
 import TextBlock from '@/components/text-block/TextBlock';
+import Tooltip from '@/components/tooltip/Tooltip';
 import { formValidation, Yup } from '@/util/formValidation';
 
 const fields = [
@@ -18,18 +22,25 @@ const fields = [
     props: { label: 'Email' },
   },
   {
+    component: CustomCheckbox,
+    name: 'emailMarketting',
+    props: {
+      label: 'Email me with news and offers',
+    },
+  },
+  {
     component: CustomRadioGroup,
     name: 'deliveryMethod',
     props: {
       label: 'Delivery Method',
       options: [
         {
-          icon: <LocalShippingIcon color="action" />,
+          icon: <LocalShippingOutlinedIcon />,
           label: 'Shipping',
           value: 'SHIP',
         },
         {
-          icon: <StorefrontIcon color="action" />,
+          icon: <StorefrontOutlinedIcon />,
           label: 'Pick in Store',
           value: 'PICK_IN_STORE',
         },
@@ -87,6 +98,32 @@ const fields = [
     group: 'row',
     id: 'group-2',
   },
+  {
+    component: CustomTextField,
+    name: 'phone',
+    props: {
+      adornmentComponent: (
+        <Tooltip
+          placement="top"
+          title="Incase we need to contact you about your order"
+          sx={{ maxWidth: 150, textAlign: 'center' }}
+        >
+          <IconButton>
+            <HelpOutlineIcon />
+          </IconButton>
+        </Tooltip>
+      ),
+      label: 'Phone (optional)',
+      showEndAdornment: true,
+    },
+  },
+  {
+    component: CustomCheckbox,
+    name: 'saveShippingInformation',
+    props: {
+      label: 'Save this information for next time',
+    },
+  },
 ];
 
 const shippingInfoValidationSchema = Yup.object().shape({
@@ -118,12 +155,12 @@ const shippingInfoValidationSchema = Yup.object().shape({
     .required('Last name is required')
     .max(50, 'Last name is too long'),
 
-  /* phone: Yup.string()
+  phone: Yup.string()
     .matches(
       /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/,
       'Please enter a valid phone number'
     )
-    .nullable(), */
+    .nullable(),
 
   postalCode: Yup.string()
     .matches(/^[a-zA-Z0-9\s-]*$/, 'Please enter a valid postal code')
@@ -139,7 +176,7 @@ function ShippingInformationContainer() {
   return (
     <Box display="flex" flexDirection="column" gap={2}>
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <TextBlock text="Contact" variant="h5" component="h2" />
+        <TextBlock text="Contact" variant="h6" component="h2" />
         <Button
           size="small"
           variant="text"
@@ -153,7 +190,12 @@ function ShippingInformationContainer() {
         fields={fields}
         onSubmit={handleShippingFormSubmit}
         validate={formValidation(shippingInfoValidationSchema)}
-        initialValues={{ deliveryMethod: 'SHIP' }}
+        buttonText="Pay Now"
+        initialValues={{
+          deliveryMethod: 'SHIP',
+          emailMarketting: true,
+          saveShippingInformation: false,
+        }}
         renderButtons={null}
       />
     </Box>
