@@ -1,12 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
-import { omit } from 'lodash';
+// import { omit } from 'lodash';
 
 import { showErrorToast } from '@/lib/toast/toast';
 
 import { toggleDrawer } from '../cart-drawer/cartDrawerSlice';
 
-// Async thunks for API operations
 export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
   async (_, { rejectWithValue }) => {
@@ -14,7 +13,7 @@ export const fetchCart = createAsyncThunk(
       const sessionId = Cookies.get('sessionId') || crypto.randomUUID();
       if (!Cookies.get('sessionId')) {
         Cookies.set('sessionId', sessionId, {
-          expires: +process.env.NEXT_PUBLIC_SESSION_ID_EXPIRY_DAYS,
+          expires: 60 * 60 * 24 * 7, // 7 days
           secure: process.env.NODE_ENV === 'production',
         });
       }
@@ -44,12 +43,25 @@ export const fetchCart = createAsyncThunk(
 
 export const addCartItem = createAsyncThunk(
   'cart/addItem',
-  async ({ productVariantId, quantity = 1 }, { dispatch, rejectWithValue }) => {
-    try {
-      const sessionId = Cookies.get('sessionId');
+  async ({ productVariant, quantity = 1 }, { dispatch, rejectWithValue }) => {
+    const sessionId = Cookies.get('sessionId');
 
+    const tempItem = {
+      id: `temp-${productVariant?.id}-${Date.now()}`,
+      isTemporary: true,
+      productVariant,
+      quantity,
+    };
+
+    dispatch(cartSlice.actions.optimisticAddItem(tempItem));
+    dispatch(toggleDrawer());
+
+    try {
       const response = await fetch('/api/cart', {
-        body: JSON.stringify({ productVariantId, quantity }),
+        body: JSON.stringify({
+          productVariantId: productVariant?.id,
+          quantity,
+        }),
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -59,15 +71,15 @@ export const addCartItem = createAsyncThunk(
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        showErrorToast(error.message || 'Failed to add item');
-        return rejectWithValue(error.message || 'Failed to add item');
+        throw new Error(
+          (await response.json().message) || 'Failed to add item'
+        );
       }
 
-      dispatch(toggleDrawer());
       return response.json();
     } catch (error) {
       showErrorToast(error.message);
+      dispatch(cartSlice.actions.rollbackAddItem(tempItem.id));
       return rejectWithValue(error.message);
     }
   }
@@ -75,52 +87,55 @@ export const addCartItem = createAsyncThunk(
 
 export const updateCartItem = createAsyncThunk(
   'cart/updateItem',
-  async ({ id, quantity }, { rejectWithValue }) => {
+  async ({ id, quantity }, { dispatch, rejectWithValue }) => {
+    dispatch(
+      cartSlice.actions.optimisticUpdateItem({ id, newQuantity: quantity })
+    );
+
     try {
       const response = await fetch(`/api/cart/cart-items/${id}`, {
         body: JSON.stringify({ quantity }),
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         method: 'PUT',
       });
+
       if (!response.ok) {
-        const error = await response.json();
-        showErrorToast(error.message || 'Failed to update item');
-        return rejectWithValue(error.message || 'Failed to update item');
+        throw new Error(
+          (await response.json().message) || 'Failed to update item'
+        );
       }
+
       return await response.json();
     } catch (error) {
       showErrorToast(error.message);
+      dispatch(cartSlice.actions.rollbackUpdateItem({ id }));
       return rejectWithValue(error.message);
     }
-  },
-  {
-    condition: ({ id }, { getState }) => {
-      const { cart } = getState();
-      // Prevent duplicate updates if already updating this item
-      return !cart.itemLoadingStates[id]?.update;
-    },
   }
 );
 
 export const removeCartItem = createAsyncThunk(
   'cart/removeItem',
-  async ({ id }, { rejectWithValue }) => {
+  async ({ id }, { dispatch, getState, rejectWithValue }) => {
+    const item = getState().cart.cart.lines.find((line) => line.id === id);
+    dispatch(cartSlice.actions.optimisticRemoveItem(id));
+
     try {
       const response = await fetch(`/api/cart/cart-items/${id}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        showErrorToast(error.message || 'Failed to remove item');
-        return rejectWithValue(error.message || 'Failed to remove item');
+        throw new Error(
+          (await response.json().message) || 'Failed to remove item'
+        );
       }
+
       return await response.json();
     } catch (error) {
       showErrorToast(error.message);
+      dispatch(cartSlice.actions.rollbackRemoveItem(item));
       return rejectWithValue(error.message);
     }
   }
@@ -132,16 +147,12 @@ export const mergeCarts = createAsyncThunk(
     try {
       const { auth } = getState();
       const sessionId = Cookies.get('sessionId');
-
       if (auth.user?.id && sessionId) {
         const response = await fetch('/api/cart/merge', {
           body: JSON.stringify({ sessionId }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           method: 'POST',
         });
-
         if (!response.ok) {
           const error = await response.json();
           showErrorToast(error.message || 'Failed to merge cart');
@@ -157,8 +168,9 @@ export const mergeCarts = createAsyncThunk(
   }
 );
 
+// Initial State
 const initialState = {
-  cart: null,
+  cart: { lines: [] },
   error: null,
   itemLoadingStates: {},
   lastUpdated: null,
@@ -172,6 +184,7 @@ const initialState = {
   },
 };
 
+// Cart Slice Definition
 const cartSlice = createSlice({
   extraReducers: (builder) => {
     builder
@@ -193,7 +206,7 @@ const cartSlice = createSlice({
       })
 
       // Add Item
-      .addCase(addCartItem.pending, (state) => {
+      /* .addCase(addCartItem.pending, (state) => {
         state.loading = true;
         state.loadingStates.add = true;
       })
@@ -281,7 +294,7 @@ const cartSlice = createSlice({
             remove: false,
           },
         };
-      })
+      }) */
 
       // Merge Carts
       .addCase(mergeCarts.pending, (state) => {
@@ -306,11 +319,77 @@ const cartSlice = createSlice({
   name: 'cart',
   reducers: {
     clearCart: (state) => {
-      state.cart = null;
+      state.cart = { lines: [] };
       state.lastUpdated = Date.now();
+    },
+    optimisticAddItem: (state, action) => {
+      const { productVariant, quantity } = action.payload;
+      // Prevent duplicate additions
+      const existingItem = state.cart.lines.find(
+        (line) => line.productVariant?.id === productVariant.id
+      );
+
+      if (existingItem) {
+        existingItem.quantity += quantity;
+      } else {
+        const tempItem = {
+          id: `temp-${productVariant.id}-${Date.now()}`,
+          isTemporary: true,
+          productVariant,
+          quantity,
+        };
+        state.cart.lines.push(tempItem);
+      }
+    },
+    optimisticRemoveItem: (state, action) => {
+      state.cart.lines = state.cart.lines.filter(
+        (item) => item.id !== action.payload
+      );
+    },
+    optimisticUpdateCost: (state) => {
+      const subtotalAmount = state.cart.lines.reduce(
+        (sum, line) =>
+          sum + (line.productVariant.price?.amount || 0) * line.quantity,
+        0
+      );
+
+      state.cart.cost = {
+        subtotal: {
+          amount: parseFloat(subtotalAmount.toFixed(2)),
+          currencyCode: 'USD',
+        },
+      };
+    },
+    optimisticUpdateItem: (state, action) => {
+      const { id, newQuantity } = action.payload;
+      const cartItem = state.cart.lines.find((item) => item.id === id);
+      if (cartItem) cartItem.quantity = newQuantity;
+    },
+    rollbackAddItem: (state, action) => {
+      state.cart.lines = state.cart.lines.filter(
+        (item) => item.id !== action.payload
+      );
+    },
+    rollbackRemoveItem: (state, action) => {
+      state.cart.lines.push(action.payload);
+    },
+    rollbackUpdateItem: (state, action) => {
+      const { id } = action.payload;
+      const cartItem = state.cart.lines.find((item) => item.id === id);
+      if (cartItem) cartItem.quantity = action.payload.originalQuantity;
     },
   },
 });
 
-export const { clearCart } = cartSlice.actions;
+export const {
+  clearCart,
+  optimisticAddItem,
+  optimisticRemoveItem,
+  optimisticUpdateItem,
+  rollbackAddItem,
+  rollbackRemoveItem,
+  rollbackUpdateItem,
+  optimisticUpdateCost,
+} = cartSlice.actions;
+
 export const cartReducer = cartSlice.reducer;

@@ -208,9 +208,14 @@ function ProductDetailsContainer({
   const handleIncrement = () => dispatch(incrementQuantity());
   const handleDecrement = () => dispatch(decrementQuantity());
 
-  const onAddToCart = useCallback(() => {
-    addItem({ productVariantId: selectedVariant?.id, quantity });
-  }, [addItem, selectedVariant?.id, quantity]);
+  const onAddToCart = () =>
+    addItem({
+      productVariant: {
+        ...selectedVariant,
+        product,
+      },
+      quantity,
+    });
 
   return (
     <Box sx={{ flexGrow: 1, p: 2 }}>
@@ -317,4 +322,4 @@ function ProductDetailsContainer({
   );
 }
 
-export default ProductDetailsContainer;
+export default React.memo(ProductDetailsContainer);

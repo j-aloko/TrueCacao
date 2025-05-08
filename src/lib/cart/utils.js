@@ -4,8 +4,7 @@ import { trackAbandonedCart } from './abondoned';
 import { fullCartIncludes } from './cartSchema';
 import { calculateAndUpdateCartCost } from './costCalculator';
 import { generateCheckoutUrl } from './generateCheckoutUrl';
-import { updateItem } from './itemUtils';
-import { validateStock } from '../product-variant/validateStock';
+import { getCachedStock, invalidateStockCache } from '../cache/redisUtils';
 
 async function getNextPosition(cartId) {
   const lastItem = await prisma.cartLine.findFirst({
@@ -16,41 +15,31 @@ async function getNextPosition(cartId) {
   return (lastItem?.position || 0) + 1;
 }
 
+async function getFullCart(cartId) {
+  return prisma.cart.findUnique({
+    include: fullCartIncludes,
+    where: { id: cartId },
+  });
+}
+
 export async function getOrCreateCart(sessionId, userId = null) {
   const where = userId ? { userId } : { sessionId };
 
-  let cart = await prisma.cart.findFirst({
-    include: {
-      ...fullCartIncludes,
-      lines: {
-        ...fullCartIncludes.lines,
-        orderBy: { position: 'asc' },
-      },
+  const cart = await prisma.cart.upsert({
+    create: {
+      checkoutUrl: generateCheckoutUrl(),
+      sessionId,
+      totalQuantity: 0,
+      userId,
     },
+    select: { id: true },
+    update: {},
     where,
   });
 
-  if (!cart) {
-    cart = await prisma.cart.create({
-      data: {
-        checkoutUrl: generateCheckoutUrl(),
-        ...(userId && { userId }),
-        ...(sessionId && { sessionId }),
-        totalQuantity: 0,
-      },
-      include: {
-        ...fullCartIncludes,
-        lines: {
-          ...fullCartIncludes.lines,
-          orderBy: { position: 'asc' },
-        },
-      },
-    });
+  await trackAbandonedCart(cart.id, userId);
 
-    await trackAbandonedCart(cart.id, userId);
-  }
-
-  return calculateAndUpdateCartCost(cart.id);
+  return getFullCart(cart.id);
 }
 
 export async function mergeCarts(sessionId, userId) {
@@ -58,99 +47,56 @@ export async function mergeCarts(sessionId, userId) {
     throw new Error('Missing required parameters');
   }
 
-  // Find guest cart with ordered lines
-  const guestCart = await prisma.cart.findFirst({
-    include: {
-      lines: {
-        include: {
-          productVariant: {
-            include: {
-              price: true,
-            },
-          },
-        },
-        orderBy: { position: 'asc' },
-      },
-    },
-    where: { sessionId },
-  });
-
-  if (!guestCart) {
-    throw new Error('Guest cart not found');
-  }
-
-  // Find or create user cart with new checkout URL
-  let userCart = await prisma.cart.findFirst({
-    include: {
-      lines: {
-        orderBy: { position: 'asc' },
-      },
-    },
-    where: { userId },
-  });
-
-  if (!userCart) {
-    userCart = await prisma.cart.create({
-      data: {
-        checkoutUrl: generateCheckoutUrl(),
-        userId,
-      },
-      include: {
-        lines: {
-          orderBy: { position: 'asc' },
-        },
-      },
+  return prisma.$transaction(async (tx) => {
+    const guestCart = await tx.cart.findUnique({
+      include: { lines: { orderBy: { position: 'asc' } } },
+      where: { sessionId },
     });
-  } else {
-    userCart = await prisma.cart.update({
-      data: {
-        checkoutUrl: generateCheckoutUrl(),
-      },
-      include: {
-        lines: {
-          orderBy: { position: 'asc' },
-        },
-      },
-      where: { id: userCart.id },
+
+    if (!guestCart) throw new Error('Guest cart not found');
+
+    const userCart = await tx.cart.upsert({
+      create: { checkoutUrl: generateCheckoutUrl(), userId },
+      include: { lines: { orderBy: { position: 'asc' } } },
+      update: { checkoutUrl: generateCheckoutUrl() },
+      where: { userId },
     });
-  }
 
-  // Get next available position in user cart
-  const nextPosition = await getNextPosition(userCart.id);
+    const nextPosition = await getNextPosition(userCart.id);
 
-  // Merge cart lines with proper positioning
-  await Promise.all(
-    guestCart.lines.map(async (line, index) => {
-      const existingLine = userCart.lines.find(
-        (l) => l.productVariantId === line.productVariantId
-      );
+    await Promise.all(
+      guestCart.lines.map(async (line, index) => {
+        const existingLine = userCart.lines.find(
+          (l) => l.productVariantId === line.productVariantId
+        );
 
-      if (existingLine) {
-        return prisma.cartLine.update({
+        if (existingLine) {
+          return tx.cartLine.update({
+            data: { quantity: { increment: line.quantity } },
+            where: { id: existingLine.id },
+          });
+        }
+
+        return tx.cartLine.create({
           data: {
-            quantity: existingLine.quantity + line.quantity,
-            // Maintain existing position
+            cartId: userCart.id,
+            position: nextPosition + index,
+            priceId: line.priceId,
+            productVariantId: line.productVariantId,
+            quantity: line.quantity,
           },
-          where: { id: existingLine.id },
         });
-      }
-      return prisma.cartLine.create({
-        data: {
-          cartId: userCart.id,
-          position: nextPosition + index,
-          priceId: line.priceId,
-          productVariantId: line.productVariantId,
-          quantity: line.quantity,
-        },
-      });
-    })
-  );
+      })
+    );
 
-  // Delete guest cart
-  await prisma.cart.delete({ where: { id: guestCart.id } });
+    await tx.cart.delete({ where: { id: guestCart.id } });
 
-  // Return merged cart with costs calculated
-  return calculateAndUpdateCartCost(userCart.id);
+    await invalidateStockCache(
+      guestCart.lines.map((line) => line.productVariantId)
+    );
+
+    return calculateAndUpdateCartCost(userCart.id, tx);
+  });
 }
 
 export async function addItemToCart(
@@ -159,83 +105,72 @@ export async function addItemToCart(
   productVariantId,
   quantity = 1
 ) {
-  // First validate stock availability
-  await validateStock(productVariantId, quantity);
+  // Fetch stock using Redis caching
+  const stock = await getCachedStock(productVariantId, async (id) => {
+    const variant = await prisma.productVariant.findUnique({
+      select: { stock: true },
+      where: { id },
+    });
+    return variant ? variant.stock : null;
+  });
 
-  // Get or create cart with lines included
-  const cart =
-    (await prisma.cart.findFirst({
-      include: {
-        lines: {
-          include: {
-            productVariant: {
-              include: { price: true },
-            },
-          },
-          orderBy: { position: 'asc' },
-          where: { productVariantId },
-        },
-      },
-      where: {
-        OR: [{ sessionId }, { userId }],
-      },
-    })) || (await createNewCart(sessionId, userId));
+  if (!stock || stock < quantity) throw new Error('Insufficient stock');
 
-  // Check for existing line item
+  // Fetch or create cart
+  const cart = await prisma.cart.upsert({
+    create: {
+      checkoutUrl: generateCheckoutUrl(),
+      sessionId,
+      totalQuantity: 0,
+      userId,
+    },
+    include: { lines: { orderBy: { position: 'asc' } } },
+    update: {},
+    where: { sessionId },
+  });
+
+  // Find existing cart line
   const existingLine = cart.lines.find(
     (line) => line.productVariantId === productVariantId
   );
 
-  if (existingLine) {
-    // Update existing line instead of creating new one
-    return updateItem(existingLine.id, existingLine.quantity + quantity);
-  }
+  return prisma.$transaction(async (tx) => {
+    if (existingLine) {
+      await tx.cartLine.update({
+        data: { quantity: { increment: quantity } },
+        where: { id: existingLine.id },
+      });
+    } else {
+      const variant = await tx.productVariant.findUnique({
+        select: { priceId: true },
+        where: { id: productVariantId },
+      });
+      if (!variant) throw new Error('Product variant not found');
 
-  // Create new line if variant doesn't exist in cart
-  const variant = await prisma.productVariant.findUnique({
-    select: { priceId: true, stock: true },
-    where: { id: productVariantId },
-  });
+      await tx.cartLine.create({
+        data: {
+          cartId: cart.id,
+          position: await getNextPosition(cart.id),
+          priceId: variant.priceId,
+          productVariantId,
+          quantity,
+        },
+      });
+    }
 
-  if (!variant) {
-    throw new Error('Product variant not found');
-  }
+    // Update reserved stock and invalidate cache
+    await tx.productVariant.update({
+      data: { reservedStock: { increment: quantity } },
+      where: { id: productVariantId },
+    });
+    await invalidateStockCache(productVariantId);
 
-  const position = await getNextPosition(cart.id);
+    // Update cart total quantity
+    await tx.cart.update({
+      data: { totalQuantity: { increment: quantity } },
+      where: { id: cart.id },
+    });
 
-  await prisma.cartLine.create({
-    data: {
-      cartId: cart.id,
-      position,
-      priceId: variant.priceId,
-      productVariantId,
-      quantity,
-    },
-  });
-
-  // Update reserved stock
-  await prisma.productVariant.update({
-    data: { reservedStock: { increment: quantity } },
-    where: { id: productVariantId },
-  });
-
-  // Update cart total quantity
-  await prisma.cart.update({
-    data: { totalQuantity: { increment: quantity } },
-    where: { id: cart.id },
-  });
-
-  // Return updated cart
-  return calculateAndUpdateCartCost(cart.id);
-}
-
-async function createNewCart(sessionId, userId) {
-  return prisma.cart.create({
-    data: {
-      checkoutUrl: generateCheckoutUrl(),
-      ...(userId && { userId }),
-      ...(sessionId && { sessionId }),
-      totalQuantity: 0,
-    },
+    return calculateAndUpdateCartCost(cart.id, tx);
   });
 }

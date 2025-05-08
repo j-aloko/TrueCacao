@@ -9,10 +9,9 @@ import { cartDrawerReducer } from './features/cart-drawer/cartDrawerSlice';
 import { productReducer } from './features/product/productSlice';
 import { productSelectionReducer } from './features/product-selection/productSelectionSlice';
 
-const productSelectionExpiry =
-  +process.env.NEXT_PUBLIC_PRODUCT_SELECTION_EXPIRY;
+const productSelectionExpiry = 60 * 60; // 1 hour
 
-const cartExpiry = +process.env.NEXT_PUBLIC_CART_EXPIRY;
+const cartExpiry = 60 * 60 * 24 * 7; // 7 days
 
 // Create separate cookie storage configurations for each persist config
 const productSelectionCookieStorage = new CookieStorage(Cookies, {

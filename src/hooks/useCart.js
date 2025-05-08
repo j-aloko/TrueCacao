@@ -10,6 +10,13 @@ import {
   updateCartItem,
   removeCartItem,
   mergeCarts,
+  optimisticAddItem,
+  rollbackAddItem,
+  optimisticUpdateItem,
+  rollbackUpdateItem,
+  optimisticRemoveItem,
+  rollbackRemoveItem,
+  optimisticUpdateCost,
 } from '../services/redux/features/cart/cartSlice';
 import { useAppDispatch, useAppSelector } from '../services/redux/store';
 
@@ -46,39 +53,50 @@ export function useCart() {
     }
   }, [dispatch, user, cart?.lines]);
 
-  // Memoized action creators with operation-specific loading states
   const addItem = useCallback(
-    (payload) => {
-      if (loadingStates.add) {
-        return Promise.reject(new Error('Add operation already in progress'));
+    async (payload) => {
+      dispatch(optimisticAddItem(payload));
+      dispatch(optimisticUpdateCost());
+
+      try {
+        await dispatch(addCartItem(payload)).unwrap();
+      } catch {
+        dispatch(rollbackAddItem(payload.productVariant?.id));
       }
-      return dispatch(addCartItem(payload)).unwrap();
     },
-    [dispatch, loadingStates.add]
+    [dispatch]
   );
 
   const updateItem = useCallback(
-    (payload) => {
-      if (loadingStates.update) {
-        return Promise.reject(
-          new Error('Update operation already in progress')
-        );
+    async ({ id, quantity }) => {
+      const originalQuantity = cart.lines.find(
+        (item) => item.id === id
+      )?.quantity;
+      dispatch(optimisticUpdateItem({ id, newQuantity: quantity }));
+      dispatch(optimisticUpdateCost());
+
+      try {
+        await dispatch(updateCartItem({ id, quantity })).unwrap();
+      } catch {
+        dispatch(rollbackUpdateItem({ id, originalQuantity }));
       }
-      return dispatch(updateCartItem(payload)).unwrap();
     },
-    [dispatch, loadingStates.update]
+    [dispatch, cart.lines]
   );
 
   const removeItem = useCallback(
-    (payload) => {
-      if (loadingStates.remove) {
-        return Promise.reject(
-          new Error('Remove operation already in progress')
-        );
+    async (payload) => {
+      const item = cart.lines.find((line) => line.id === payload.id);
+      dispatch(optimisticRemoveItem(payload.id));
+      dispatch(optimisticUpdateCost());
+
+      try {
+        await dispatch(removeCartItem(payload)).unwrap();
+      } catch {
+        dispatch(rollbackRemoveItem(item));
       }
-      return dispatch(removeCartItem(payload)).unwrap();
     },
-    [dispatch, loadingStates.remove]
+    [dispatch, cart.lines]
   );
 
   return {

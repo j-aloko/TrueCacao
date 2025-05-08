@@ -2,35 +2,29 @@ import prisma from '@/lib/prisma';
 
 import { fullCartIncludes } from './cartSchema';
 
-// Helper function to format amounts with 2 decimal places
-const formatAmount = (amount) => parseFloat(amount.toFixed(2));
+const ESTIMATED_TAX_RATE = 0;
+const ESTIMATED_SHIPPING_AMOUNT = 0;
 
-export async function calculateAndUpdateCartCost(cartId) {
-  const cart = await prisma.cart.findUnique({
-    include: {
-      discountCodes: true,
-      giftCards: {
-        include: {
-          amountUsed: true,
-          balance: true,
-          giftCard: true,
-        },
-      },
+const formatAmount = (amount) => {
+  const formatted = parseFloat(amount.toFixed(2));
+  return formatted;
+};
+
+export async function calculateAndUpdateCartCost(cartId, tx = prisma) {
+  const cart = await tx.cart.findUnique({
+    select: {
+      giftCards: { select: { amountUsed: { select: { amount: true } } } },
+      id: true,
       lines: {
-        include: {
+        select: {
           discountAllocations: {
-            include: {
-              amount: true,
-              discount: true,
-            },
+            select: { amount: { select: { amount: true } } },
           },
           productVariant: {
-            include: {
-              price: true,
-            },
+            select: { price: { select: { amount: true, currencyCode: true } } },
           },
+          quantity: true,
         },
-        orderBy: { position: 'asc' },
       },
     },
     where: { id: cartId },
@@ -38,98 +32,74 @@ export async function calculateAndUpdateCartCost(cartId) {
 
   if (!cart) throw new Error('Cart not found');
 
-  // Calculate all amounts and format them to 2 decimal places
-  const subtotalAmount = formatAmount(
-    cart.lines.reduce(
-      (sum, line) => sum + line.productVariant.price.amount * line.quantity,
-      0
-    )
+  // Perform calculations
+  const subtotalAmount = cart.lines.reduce(
+    (sum, line) => sum + line.productVariant.price.amount * line.quantity,
+    0
   );
 
-  const discountAmount = formatAmount(
-    cart.lines.reduce(
-      (sum, line) =>
-        sum +
-        line.discountAllocations.reduce(
-          (lineSum, allocation) => lineSum + allocation.amount.amount,
-          0
-        ),
-      0
-    )
+  const discountAmount = cart.lines.reduce(
+    (sum, line) =>
+      sum +
+      line.discountAllocations.reduce(
+        (lineSum, allocation) => lineSum + allocation.amount.amount,
+        0
+      ),
+    0
   );
 
-  const giftCardAmount = formatAmount(
-    cart.giftCards.reduce(
-      (sum, giftCard) => sum + giftCard.amountUsed.amount,
-      0
-    )
+  const giftCardAmount = cart.giftCards.reduce(
+    (sum, giftCard) => sum + (giftCard.amountUsed?.amount || 0),
+    0
   );
-
   const currencyCode =
     cart.lines[0]?.productVariant.price.currencyCode || 'USD';
-
-  // Use environment variables for tax rate and shipping amount
-  const estimatedTaxRate = +process.env.ESTIMATED_TAX_RATE;
-  const estimatedShippingAmount = formatAmount(
-    +process.env.ESTIMATED_SHIPPING_AMOUNT
+  const estimatedTaxAmount = subtotalAmount * ESTIMATED_TAX_RATE;
+  const totalAmount = Math.max(
+    0,
+    subtotalAmount -
+      discountAmount -
+      giftCardAmount +
+      estimatedTaxAmount +
+      ESTIMATED_SHIPPING_AMOUNT
   );
 
-  const estimatedTaxAmount = formatAmount(subtotalAmount * estimatedTaxRate);
-  const totalAmount = formatAmount(
-    Math.max(
-      0,
-      subtotalAmount -
-        discountAmount -
-        giftCardAmount +
-        estimatedTaxAmount +
-        estimatedShippingAmount
-    )
-  );
-
-  // Helper function to create money records with formatted amounts
-  const createMoneyRecord = (amount) => ({
-    create: {
-      amount: formatAmount(amount),
-      currencyCode,
-    },
+  const moneyRecord = (amount) => ({
+    create: { amount: formatAmount(amount), currencyCode },
   });
 
-  // Check if cartCost exists
-  const existingCartCost = await prisma.cartCost.findUnique({
+  await tx.cartCost.upsert({
+    create: {
+      cart: { connect: { id: cartId } },
+      discount: discountAmount > 0 ? moneyRecord(discountAmount) : undefined,
+      discountAmount: formatAmount(discountAmount),
+      estimatedShipping: moneyRecord(ESTIMATED_SHIPPING_AMOUNT),
+      estimatedTax: moneyRecord(estimatedTaxAmount),
+      shippingAmount: formatAmount(ESTIMATED_SHIPPING_AMOUNT),
+      subtotal: moneyRecord(subtotalAmount),
+      subtotalAmount: formatAmount(subtotalAmount),
+      total: moneyRecord(totalAmount),
+      totalAmount: formatAmount(totalAmount),
+      totalTax: moneyRecord(estimatedTaxAmount),
+      totalTaxAmount: formatAmount(estimatedTaxAmount),
+    },
+    update: {
+      discount: discountAmount > 0 ? moneyRecord(discountAmount) : undefined,
+      discountAmount: formatAmount(discountAmount),
+      estimatedShipping: moneyRecord(ESTIMATED_SHIPPING_AMOUNT),
+      estimatedTax: moneyRecord(estimatedTaxAmount),
+      shippingAmount: formatAmount(ESTIMATED_SHIPPING_AMOUNT),
+      subtotal: moneyRecord(subtotalAmount),
+      subtotalAmount: formatAmount(subtotalAmount),
+      total: moneyRecord(totalAmount),
+      totalAmount: formatAmount(totalAmount),
+      totalTax: moneyRecord(estimatedTaxAmount),
+      totalTaxAmount: formatAmount(estimatedTaxAmount),
+    },
     where: { cartId },
   });
 
-  const updateData = {
-    discount:
-      discountAmount > 0 ? createMoneyRecord(discountAmount) : undefined,
-    discountAmount,
-    estimatedShipping: createMoneyRecord(estimatedShippingAmount),
-    estimatedTax: createMoneyRecord(estimatedTaxAmount),
-    shippingAmount: estimatedShippingAmount,
-    subtotal: createMoneyRecord(subtotalAmount),
-    subtotalAmount,
-    total: createMoneyRecord(totalAmount),
-    totalAmount,
-    totalTax: createMoneyRecord(estimatedTaxAmount),
-    totalTaxAmount: estimatedTaxAmount,
-  };
-
-  if (existingCartCost) {
-    // Update existing cart cost
-    await prisma.cartCost.update({
-      data: updateData,
-      where: { cartId },
-    });
-  } else {
-    await prisma.cartCost.create({
-      data: {
-        cart: { connect: { id: cartId } },
-        ...updateData,
-      },
-    });
-  }
-
-  return prisma.cart.findUnique({
+  return tx.cart.findUnique({
     include: fullCartIncludes,
     where: { id: cartId },
   });

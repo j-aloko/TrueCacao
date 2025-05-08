@@ -57,6 +57,7 @@ export async function POST(request) {
       return NextResponse.json(cart);
     }
     const cart = await getOrCreateCart(sessionId, userId);
+    console.log(cart);
     return NextResponse.json(cart);
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 400 });

@@ -60,20 +60,21 @@ function CartDrawerContainer() {
 
     return cart.lines.map((line) => {
       const lineId = line?.id || '';
-      const variant = line?.productVariant || {};
-      const product = variant?.product || {};
-      const price = variant?.price || {};
+      const variant = line?.productVariant ?? {};
+      const product = variant?.product ?? {};
+      const price = variant?.price ?? {};
+      const packagingType = variant?.packaging?.type || 'Unknown';
 
       return (
         <CartItem
           key={lineId}
           id={lineId}
           image="/product-images/Alltime-cocoa-powder-1.jpg"
-          packaging={variant.packaging.type}
-          weight={variant.weight}
-          productName={product.name}
-          itemPrice={`${price.currencyCode || ''}${price.amount || ''}`}
-          quantity={line.quantity || 0}
+          packaging={packagingType}
+          weight={variant?.weight || 'N/A'}
+          productName={product?.name || 'Unnamed Product'}
+          itemPrice={`${price?.currencyCode || ''}${price?.amount || ''}`}
+          quantity={line?.quantity || 0}
           loading={itemLoadingStates?.[lineId] || {}}
           onCartItemIncrement={handleCartItemIncrement}
           onCartItemDecrement={handleCartItemDecrement}
