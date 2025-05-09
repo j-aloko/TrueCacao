@@ -47,6 +47,7 @@ const baseTheme = createTheme({
           '--background-paper': '#F5EDE6',
           '--border-color': 'rgba(58, 28, 14, 0.23)',
           '--common-white': '#ffffff',
+          '--secondary-main': '#D4A76A',
           '--text-primary': '#2A1509',
           '--text-secondary': '#5D3A2B',
         },
