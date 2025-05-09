@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { shallowEqual } from 'react-redux';
 
@@ -10,13 +10,6 @@ import {
   updateCartItem,
   removeCartItem,
   mergeCarts,
-  optimisticAddItem,
-  rollbackAddItem,
-  optimisticUpdateItem,
-  rollbackUpdateItem,
-  optimisticRemoveItem,
-  rollbackRemoveItem,
-  optimisticUpdateCost,
 } from '../services/redux/features/cart/cartSlice';
 import { useAppDispatch, useAppSelector } from '../services/redux/store';
 
@@ -39,6 +32,7 @@ export function useCart() {
       shallowEqual
     );
 
+  // Singleton initialization
   useEffect(() => {
     if (!cartInitialized) {
       cartInitialized = true;
@@ -53,51 +47,12 @@ export function useCart() {
     }
   }, [dispatch, user, cart?.lines]);
 
-  const addItem = useCallback(
-    async (payload) => {
-      dispatch(optimisticAddItem(payload));
-      dispatch(optimisticUpdateCost());
+  const addItem = (payload) => dispatch(addCartItem(payload));
 
-      try {
-        await dispatch(addCartItem(payload)).unwrap();
-      } catch {
-        dispatch(rollbackAddItem(payload.productVariant?.id));
-      }
-    },
-    [dispatch]
-  );
+  const updateItem = ({ id, quantity }) =>
+    dispatch(updateCartItem({ id, quantity }));
 
-  const updateItem = useCallback(
-    async ({ id, quantity }) => {
-      const originalQuantity = cart.lines.find(
-        (item) => item.id === id
-      )?.quantity;
-      dispatch(optimisticUpdateItem({ id, newQuantity: quantity }));
-      dispatch(optimisticUpdateCost());
-
-      try {
-        await dispatch(updateCartItem({ id, quantity })).unwrap();
-      } catch {
-        dispatch(rollbackUpdateItem({ id, originalQuantity }));
-      }
-    },
-    [dispatch, cart.lines]
-  );
-
-  const removeItem = useCallback(
-    async (payload) => {
-      const item = cart.lines.find((line) => line.id === payload.id);
-      dispatch(optimisticRemoveItem(payload.id));
-      dispatch(optimisticUpdateCost());
-
-      try {
-        await dispatch(removeCartItem(payload)).unwrap();
-      } catch {
-        dispatch(rollbackRemoveItem(item));
-      }
-    },
-    [dispatch, cart.lines]
-  );
+  const removeItem = (payload) => dispatch(removeCartItem(payload));
 
   return {
     addItem,

@@ -5,10 +5,7 @@ import { fullCartIncludes } from './cartSchema';
 const ESTIMATED_TAX_RATE = 0;
 const ESTIMATED_SHIPPING_AMOUNT = 0;
 
-const formatAmount = (amount) => {
-  const formatted = parseFloat(amount.toFixed(2));
-  return formatted;
-};
+const formatAmount = (amount) => Math.round(amount * 100) / 100;
 
 export async function calculateAndUpdateCartCost(cartId, tx = prisma) {
   const cart = await tx.cart.findUnique({

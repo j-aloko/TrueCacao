@@ -208,7 +208,7 @@ function ProductDetailsContainer({
   const handleIncrement = () => dispatch(incrementQuantity());
   const handleDecrement = () => dispatch(decrementQuantity());
 
-  const onAddToCart = () =>
+  const onAddToCart = useCallback(() => {
     addItem({
       productVariant: {
         ...selectedVariant,
@@ -216,6 +216,7 @@ function ProductDetailsContainer({
       },
       quantity,
     });
+  }, [addItem, selectedVariant, product, quantity]);
 
   return (
     <Box sx={{ flexGrow: 1, p: 2 }}>

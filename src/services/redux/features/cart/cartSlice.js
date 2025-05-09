@@ -53,7 +53,8 @@ export const addCartItem = createAsyncThunk(
       quantity,
     };
 
-    dispatch(cartSlice.actions.optimisticAddItem(tempItem));
+    dispatch(optimisticAddItem(tempItem));
+    dispatch(optimisticUpdateCost());
     dispatch(toggleDrawer());
 
     try {
@@ -79,7 +80,7 @@ export const addCartItem = createAsyncThunk(
       return response.json();
     } catch (error) {
       showErrorToast(error.message);
-      dispatch(cartSlice.actions.rollbackAddItem(tempItem.id));
+      dispatch(rollbackAddItem(tempItem.id));
       return rejectWithValue(error.message);
     }
   }
@@ -88,9 +89,8 @@ export const addCartItem = createAsyncThunk(
 export const updateCartItem = createAsyncThunk(
   'cart/updateItem',
   async ({ id, quantity }, { dispatch, rejectWithValue }) => {
-    dispatch(
-      cartSlice.actions.optimisticUpdateItem({ id, newQuantity: quantity })
-    );
+    dispatch(optimisticUpdateItem({ id, newQuantity: quantity }));
+    dispatch(optimisticUpdateCost());
 
     try {
       const response = await fetch(`/api/cart/cart-items/${id}`, {
@@ -109,7 +109,7 @@ export const updateCartItem = createAsyncThunk(
       return await response.json();
     } catch (error) {
       showErrorToast(error.message);
-      dispatch(cartSlice.actions.rollbackUpdateItem({ id }));
+      dispatch(rollbackUpdateItem({ id }));
       return rejectWithValue(error.message);
     }
   }
@@ -119,7 +119,8 @@ export const removeCartItem = createAsyncThunk(
   'cart/removeItem',
   async ({ id }, { dispatch, getState, rejectWithValue }) => {
     const item = getState().cart.cart.lines.find((line) => line.id === id);
-    dispatch(cartSlice.actions.optimisticRemoveItem(id));
+    dispatch(optimisticRemoveItem(id));
+    dispatch(optimisticUpdateCost());
 
     try {
       const response = await fetch(`/api/cart/cart-items/${id}`, {
@@ -135,7 +136,7 @@ export const removeCartItem = createAsyncThunk(
       return await response.json();
     } catch (error) {
       showErrorToast(error.message);
-      dispatch(cartSlice.actions.rollbackRemoveItem(item));
+      dispatch(rollbackRemoveItem(item));
       return rejectWithValue(error.message);
     }
   }
@@ -324,7 +325,7 @@ const cartSlice = createSlice({
     },
     optimisticAddItem: (state, action) => {
       const { productVariant, quantity } = action.payload;
-      // Prevent duplicate additions
+      // Prevent duplicate additions. If existing line exists, increase quantity
       const existingItem = state.cart.lines.find(
         (line) => line.productVariant?.id === productVariant.id
       );
