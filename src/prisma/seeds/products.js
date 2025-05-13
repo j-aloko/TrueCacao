@@ -9,7 +9,6 @@ async function seedProducts(prisma) {
     {
       categoryId: 'category-1',
       description: 'Pure, unprocessed cocoa powder',
-      id: 'product-1',
       images: ['image1.jpg', 'image2.jpg'],
       lowStockThreshold: 10,
       name: 'Raw Cocoa Powder',
@@ -164,7 +163,6 @@ async function seedProducts(prisma) {
     {
       categoryId: 'category-2',
       description: 'Rich and smooth dark chocolate',
-      id: 'product-2',
       images: ['image3.jpg', 'image4.jpg'],
       lowStockThreshold: 20,
       name: 'Dark Chocolate Bar',

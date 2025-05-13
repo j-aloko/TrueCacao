@@ -18,7 +18,7 @@ export const fetchCart = createAsyncThunk(
         });
       }
 
-      const response = await fetch('/api/cart', {
+      const response = await fetch('/api/v1/cart', {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export const addCartItem = createAsyncThunk(
     dispatch(toggleDrawer());
 
     try {
-      const response = await fetch('/api/cart', {
+      const response = await fetch('/api/v1/cart', {
         body: JSON.stringify({
           productVariantId: productVariant?.id,
           quantity,
@@ -93,7 +93,7 @@ export const updateCartItem = createAsyncThunk(
     dispatch(optimisticUpdateCost());
 
     try {
-      const response = await fetch(`/api/cart/cart-items/${id}`, {
+      const response = await fetch(`/api/v1/cart/cart-items/${id}`, {
         body: JSON.stringify({ quantity }),
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -123,7 +123,7 @@ export const removeCartItem = createAsyncThunk(
     dispatch(optimisticUpdateCost());
 
     try {
-      const response = await fetch(`/api/cart/cart-items/${id}`, {
+      const response = await fetch(`/api/v1/cart/cart-items/${id}`, {
         method: 'DELETE',
       });
 
@@ -149,7 +149,7 @@ export const mergeCarts = createAsyncThunk(
       const { auth } = getState();
       const sessionId = Cookies.get('sessionId');
       if (auth.user?.id && sessionId) {
-        const response = await fetch('/api/cart/merge', {
+        const response = await fetch('/api/v1/cart/merge', {
           body: JSON.stringify({ sessionId }),
           headers: { 'Content-Type': 'application/json' },
           method: 'POST',
