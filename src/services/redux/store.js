@@ -6,8 +6,6 @@ import { CookieStorage } from 'redux-persist-cookie-storage';
 
 import { cartReducer } from './features/cart/cartSlice';
 import { cartDrawerReducer } from './features/cart-drawer/cartDrawerSlice';
-import { productReducer } from './features/product/productSlice';
-import { productSelectionReducer } from './features/product-selection/productSelectionSlice';
 
 const cartExpiry = 60 * 60 * 24 * 7; // 7 days
 
@@ -28,8 +26,6 @@ const cartPersistConfig = {
 const rootReducer = combineReducers({
   cart: persistReducer(cartPersistConfig, cartReducer),
   cartDrawer: cartDrawerReducer,
-  product: productReducer,
-  productSelection: productSelectionReducer,
 });
 
 export const store = configureStore({

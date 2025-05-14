@@ -20,13 +20,7 @@ import Review from '@/components/Review/Review';
 import TabHeading from '@/components/tab-heading/TabHeading';
 import TextBlock from '@/components/text-block/TextBlock';
 import { useCart } from '@/hooks/useCart';
-import {
-  decrementQuantity,
-  incrementQuantity,
-  selectVariantProperty,
-  setInitialState,
-} from '@/services/redux/features/product-selection/productSelectionSlice';
-import { useAppDispatch, useAppSelector } from '@/services/redux/store';
+import { useProductSelection } from '@/hooks/useProductSelection';
 import { formatString } from '@/util/formatString';
 import { getNestedProperty } from '@/util/getNestedProperty';
 
@@ -39,13 +33,18 @@ function ProductDetailsContainer({
   labels,
   disableOptions = {},
 }) {
-  const dispatch = useAppDispatch();
   const {
-    allVariantProperties,
-    selectedVariant,
-    quantity,
-    availableVariantProperties,
-  } = useAppSelector((state) => state.productSelection);
+    state: {
+      allVariantProperties,
+      selectedVariant,
+      quantity,
+      availableVariantProperties,
+    },
+    initializeState,
+    selectVariantProperty,
+    incrementQuantity,
+    decrementQuantity,
+  } = useProductSelection();
 
   const {
     addItem,
@@ -76,105 +75,22 @@ function ProductDetailsContainer({
   // Initialize state on component mount
   useEffect(() => {
     if (product.variants.length && !selectedVariant) {
-      // Extract all unique values for each variant property
-      const initialVariantProperties = variantProps.reduce((acc, prop) => {
-        acc[prop] = [
-          ...new Set(product.variants.map((v) => getNestedProperty(v, prop))),
-        ];
-        return acc;
-      }, {});
-
-      const defaultVariant =
-        product.variants.find((v) => v.stock > 0) || product.variants[0];
-
-      // Calculate available variant properties based on the default variant
-      const initialAvailableVariantProperties = variantProps.reduce(
-        (acc, prop) => {
-          acc[prop] = product.variants
-            .filter((v) =>
-              // Check if the variant matches all other selected properties
-              variantProps.every((p) => {
-                if (p === prop) return true; // Skip the current property
-                return (
-                  getNestedProperty(v, p) ===
-                  getNestedProperty(defaultVariant, p)
-                );
-              })
-            )
-            .map((v) => getNestedProperty(v, prop));
-          return acc;
-        },
-        {}
-      );
-
-      // Dispatch the initial state to Redux
-      dispatch(
-        setInitialState({
-          allVariantProperties: initialVariantProperties,
-          availableVariantProperties: initialAvailableVariantProperties,
-          quantity: 1,
-          selectedVariant: defaultVariant,
-          selectedVariantProperties: variantProps.reduce((acc, prop) => {
-            acc[prop] = getNestedProperty(defaultVariant, prop);
-            return acc;
-          }, {}),
-        })
-      );
+      initializeState(product, variantProps);
     }
-  }, [dispatch, product, selectedVariant, variantProps]);
+  }, [initializeState, product, selectedVariant, variantProps]);
 
   const handleVariantPropertySelect = useCallback(
     (property, value) => {
-      // Find all variants that match the new property value
-      const validVariants = product.variants.filter(
-        (v) => getNestedProperty(v, property) === value
-      );
-
-      // Find the variant that matches the new property value and other selected properties
-      const foundVariant =
-        validVariants.find((v) =>
-          variantProps.every((p) => {
-            if (p === property) return true; // Skip the current property
-            return (
-              getNestedProperty(v, p) === getNestedProperty(selectedVariant, p)
-            );
-          })
-        ) || validVariants[0]; // Fallback to the first valid variant if no exact match is found
-
-      // Calculate available values for each property based on the found variant
-      const availableValues = variantProps.reduce((acc, prop) => {
-        acc[prop] = [
-          ...new Set(
-            product.variants
-              .filter((v) =>
-                variantProps.every((p) => {
-                  if (p === prop) return true; // Skip the current property
-                  return (
-                    getNestedProperty(v, p) ===
-                    getNestedProperty(foundVariant, p)
-                  );
-                })
-              )
-              .map((v) => getNestedProperty(v, prop))
-          ),
-        ];
-        return acc;
-      }, {});
-
-      dispatch(
-        selectVariantProperty({
-          availableValues,
-          property,
-          value,
-          variant: foundVariant,
-        })
+      selectVariantProperty(
+        product,
+        variantProps,
+        selectedVariant,
+        property,
+        value
       );
     },
-    [dispatch, product.variants, selectedVariant, variantProps]
+    [product, selectedVariant, selectVariantProperty, variantProps]
   );
-
-  const handleIncrement = () => dispatch(incrementQuantity());
-  const handleDecrement = () => dispatch(decrementQuantity());
 
   const onAddToCart = useCallback(() => {
     addItem({
@@ -265,8 +181,8 @@ function ProductDetailsContainer({
                 <Box flex={0.4}>
                   <CounterField
                     quantity={quantity}
-                    onIncrement={handleIncrement}
-                    onDecrement={handleDecrement}
+                    onIncrement={incrementQuantity}
+                    onDecrement={decrementQuantity}
                   />
                 </Box>
                 <Box
