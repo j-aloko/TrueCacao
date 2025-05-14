@@ -33,31 +33,6 @@ import { getNestedProperty } from '@/util/getNestedProperty';
 import PurchasePerksContainer from '../purchase-perks-container/PurchasePerksContainer';
 import ReviewsContainer from '../reviews-container/ReviewsContainer';
 
-const summarizedProductDescription =
-  'Our 100% pure, unprocessed cocoa powder is made from premium organic cocoa beans. Cold-pressed to preserve nutrients, it delivers a rich chocolate flavor with all the natural health benefits intact. Perfect for baking, smoothies, or making hot chocolate.';
-
-const htmlProductDescription = `
-<div>
-    <p>Our Raw Organic Cocoa Powder is made from carefully selected premium cocoa beans that are
-        cold-pressed to remove the cocoa butter. This gentle process preserves the natural
-        enzymes and nutrients, resulting in a nutrient-dense powder with a rich, intense
-        chocolate flavor.</p>
-    <p><strong>Ingredients:</strong> 100% organic raw cocoa powder</p>
-    <p><strong>Net Weight:</strong> 8 oz (227g)</p>
-    <p><strong>Origin:</strong> Sustainably sourced from small farms in Ecuador</p>
-</div>
-`;
-
-const htmlBenefits = `
-<ul>
-    <li>Rich in antioxidants (flavonoids and polyphenols)</li>
-    <li>May help lower blood pressure</li>
-    <li>Contains mood-enhancing compounds like theobromine</li>
-    <li>Good source of magnesium, iron, and fiber</li>
-    <li>May improve brain function and reduce stress</li>
-</ul>
-`;
-
 function ProductDetailsContainer({
   product,
   variantProps,
@@ -83,18 +58,11 @@ function ProductDetailsContainer({
       {
         content: (
           <ProductDetailedDescription
-            detailedDescription={htmlProductDescription}
+            detailedDescription={product.descriptionHtml}
           />
         ),
         heading: <TabHeading name="Product Details" />,
         label: 'Description',
-      },
-      {
-        content: (
-          <ProductDetailedDescription detailedDescription={htmlBenefits} />
-        ),
-        heading: <TabHeading name={`Health Benefits of ${product.name}`} />,
-        label: 'Health Benefits',
       },
       {
         content: <ReviewsContainer />,
@@ -102,7 +70,7 @@ function ProductDetailsContainer({
         label: 'Reviews',
       },
     ],
-    [product.name]
+    [product.descriptionHtml]
   );
 
   // Initialize state on component mount
@@ -230,9 +198,12 @@ function ProductDetailsContainer({
               <Stack spacing={2}>
                 <ProductName name={product?.name} />
                 <Box display="flex" alignItems="center" gap={2}>
-                  <Review value={4.5} />
+                  <Review
+                    value={product.averageRating}
+                    precision={product.averageRatingPrecision}
+                  />
                   <TextBlock
-                    text={`${4.5} (${128} reviews)`}
+                    text={`${product.averageRating} (${product.totalReviews} reviews)`}
                     variant="body2"
                     component="span"
                   />
@@ -241,7 +212,7 @@ function ProductDetailsContainer({
                   price={`${selectedVariant?.price?.currencyCode}${selectedVariant?.price?.amount || 0}`}
                 />
                 <ProductSummarizedDescription
-                  summary={summarizedProductDescription}
+                  summary={product.descriptionSummary}
                 />
               </Stack>
               <Divider />

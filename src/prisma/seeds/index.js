@@ -2,6 +2,7 @@ const { default: prisma } = require('@/lib/prisma');
 
 const seedCategories = require('./category');
 const seedProducts = require('./products');
+const seedUsers = require('./users');
 
 async function main() {
   await prisma.shopPayTransaction.deleteMany();
@@ -30,11 +31,13 @@ async function main() {
   await prisma.address.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.user.deleteMany();
   await prisma.category.deleteMany();
   await prisma.money.deleteMany();
 
   // Then seed in the correct order
   await seedCategories(prisma);
+  await seedUsers(prisma);
   await seedProducts(prisma);
 
   console.log('Seeding completed successfully!');

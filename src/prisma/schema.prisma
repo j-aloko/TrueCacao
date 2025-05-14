@@ -50,6 +50,11 @@ enum COCOA_BAR_PACKAGING {
   CARTON_90_PERCENT
 }
 
+enum PRODUCT_TAG {
+  BEST_SELLER
+  NEW_ARRIVAL
+}
+
 enum DISCOUNT_TYPE {
   PERCENTAGE
   FIXED_AMOUNT
@@ -438,24 +443,29 @@ model Payment {
 
 
 model Product {
-  id                String           @id @default(uuid())
-  name              String
-  slug              String           @unique
-  description       String?
-  stock             Int              @default(0)
-  reservedStock     Int              @default(0)
-  lowStockThreshold Int?             @default(10)
-  categoryId        String
-  category          Category         @relation(fields: [categoryId], references: [id])
-  variants          ProductVariant[]
-  images            String[]
-  reviews           Review[]
-  discounts         Discount[]
-  wishlistItems     Wishlist[]
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  deletedAt         DateTime?
-  taxRates          TaxRate[]        @relation("ProductTaxRates")
+  id                     String           @id @default(uuid())
+  name                   String
+  slug                   String           @unique
+  descriptionSummary     String?          @db.Text // Short summary description
+  descriptionHtml        String?          @db.Text // Detailed HTML description
+  stock                  Int              @default(0)
+  reservedStock          Int              @default(0)
+  lowStockThreshold      Int?             @default(10)
+  tag                    PRODUCT_TAG?
+  categoryId             String
+  category               Category         @relation(fields: [categoryId], references: [id])
+  variants               ProductVariant[]
+  images                 String[]
+  reviews                Review[]
+  totalReviews           Int              @default(0)
+  averageRating          Float            @default(0.0)
+  averageRatingPrecision Float            @default(0.0)
+  discounts              Discount[]
+  wishlistItems          Wishlist[]
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  deletedAt              DateTime?
+  taxRates               TaxRate[]        @relation("ProductTaxRates")
 
   @@index([categoryId])
   @@index([stock])

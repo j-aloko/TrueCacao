@@ -14,6 +14,9 @@ CREATE TYPE "COCOA_POWDER_PACKAGING" AS ENUM ('SACHET', 'JAR', 'CARTON_OF_SACHET
 CREATE TYPE "COCOA_BAR_PACKAGING" AS ENUM ('BOX_70_PERCENT', 'CARTON_70_PERCENT', 'BOX_80_PERCENT', 'CARTON_80_PERCENT', 'BOX_90_PERCENT', 'CARTON_90_PERCENT');
 
 -- CreateEnum
+CREATE TYPE "PRODUCT_TAG" AS ENUM ('BEST_SELLER', 'NEW_ARRIVAL');
+
+-- CreateEnum
 CREATE TYPE "DISCOUNT_TYPE" AS ENUM ('PERCENTAGE', 'FIXED_AMOUNT');
 
 -- CreateEnum
@@ -24,6 +27,9 @@ CREATE TYPE "PAYMENT_METHOD" AS ENUM ('SHOP_PAY', 'CREDIT_CARD', 'PAYPAL', 'BANK
 
 -- CreateEnum
 CREATE TYPE "CURRENCY_CODE" AS ENUM ('GHS', 'NGN', 'USD');
+
+-- CreateEnum
+CREATE TYPE "DiscountCodeStatus" AS ENUM ('ACTIVE', 'EXPIRED', 'DISABLED');
 
 -- CreateTable
 CREATE TABLE "AbandonedCart" (
@@ -125,6 +131,9 @@ CREATE TABLE "CartDiscountCode" (
     "cartId" TEXT NOT NULL,
     "code" TEXT NOT NULL,
     "applicable" BOOLEAN NOT NULL DEFAULT false,
+    "usageCount" INTEGER NOT NULL DEFAULT 0,
+    "expiresAt" TIMESTAMP(3),
+    "status" "DiscountCodeStatus" NOT NULL DEFAULT 'ACTIVE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "CartDiscountCode_pkey" PRIMARY KEY ("id")
@@ -190,6 +199,7 @@ CREATE TABLE "GiftCard" (
     "code" TEXT NOT NULL,
     "initialValueId" TEXT NOT NULL,
     "balanceId" TEXT NOT NULL,
+    "usageCount" INTEGER NOT NULL DEFAULT 0,
     "expiresAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -277,12 +287,17 @@ CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "description" TEXT,
+    "descriptionSummary" TEXT,
+    "descriptionHtml" TEXT,
     "stock" INTEGER NOT NULL DEFAULT 0,
     "reservedStock" INTEGER NOT NULL DEFAULT 0,
     "lowStockThreshold" INTEGER DEFAULT 10,
+    "tag" "PRODUCT_TAG",
     "categoryId" TEXT NOT NULL,
     "images" TEXT[],
+    "totalReviews" INTEGER NOT NULL DEFAULT 0,
+    "averageRating" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    "averageRatingPrecision" DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -483,7 +498,13 @@ CREATE INDEX "Cart_updatedAt_idx" ON "Cart"("updatedAt");
 CREATE UNIQUE INDEX "CartCost_cartId_key" ON "CartCost"("cartId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "CartDiscountCode_code_key" ON "CartDiscountCode"("code");
+
+-- CreateIndex
 CREATE INDEX "CartDiscountCode_cartId_idx" ON "CartDiscountCode"("cartId");
+
+-- CreateIndex
+CREATE INDEX "CartDiscountCode_code_idx" ON "CartDiscountCode"("code");
 
 -- CreateIndex
 CREATE INDEX "CartLine_cartId_idx" ON "CartLine"("cartId");

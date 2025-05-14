@@ -23,30 +23,7 @@ const Item = styled(Paper)(({ theme }) => ({
   }),
 }));
 
-function ProductCardsContainer() {
-  const products = [
-    {
-      description:
-        '100% pure, unprocessed cocoa powder with rich flavor and antioxidants.',
-      id: 1,
-      image: '/product-images/royale-cocoa-powder-1.jpg',
-      link: '/product-cocoa',
-      price: '$12.99',
-      tag: 'Best Seller',
-      title: 'Royale Cocoa Powder',
-    },
-    {
-      description:
-        'Single-origin dark chocolate with 90% cocoa content for true connoisseurs.',
-      id: 2,
-      image: '/product-images/TQ-premium-dark-chocolate-90.jpg',
-      link: '/product-chocolate',
-      price: '$8.99',
-      tag: 'Best Seller',
-      title: 'TQ Premium Dark chocolate',
-    },
-  ];
-
+function ProductCardsContainer({ products }) {
   return (
     <Box
       component="section"
