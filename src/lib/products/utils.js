@@ -1,5 +1,7 @@
 import prisma from '@/lib/prisma';
 
+import { moneyRecord } from '../money/utils';
+
 export async function getProductBySlug(slug, customFields = {}) {
   const product = await prisma.product.findUnique({
     select: getProductSchema(customFields),
@@ -94,12 +96,7 @@ function prepareVariants(variants) {
   return variants.map((variant) => ({
     ...variant,
     packaging: variant.packaging,
-    price: {
-      create: {
-        ...variant.price.create,
-        amount: Math.max(0, variant.price.create.amount),
-      },
-    },
+    price: moneyRecord(variant.price.amount, variant.price.currencyCode),
     stock: Math.max(0, variant.stock ?? 0),
     weight: Math.max(0, variant.weight ?? 0),
   }));

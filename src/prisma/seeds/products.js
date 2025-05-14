@@ -1,3 +1,5 @@
+const { round } = require('mathjs');
+
 function calculateReviewStats(reviews) {
   if (!reviews?.create?.length) {
     return { averageRating: 0, averageRatingPrecision: 0, totalReviews: 0 };
@@ -15,6 +17,18 @@ function calculateReviewStats(reviews) {
     totalReviews,
   };
 }
+
+const formatAmount = (amount) => {
+  if (typeof amount !== 'number') {
+    throw new Error('Amount must be a number');
+  }
+
+  return round(amount, 2);
+};
+
+const moneyRecord = (amount, currencyCode = 'USD') => ({
+  create: { amount: formatAmount(amount), currencyCode },
+});
 
 const slugify = (text) =>
   text
@@ -121,7 +135,7 @@ async function seedProducts(prisma) {
           id: 'variant-1',
           images: ['variant1-image1.jpg', 'variant1-image2.jpg'],
           packaging: { type: 'SACHET' },
-          price: { create: { amount: 5.99, currencyCode: 'USD' } },
+          price: { amount: 5.99, currencyCode: 'USD' },
           stock: 50,
           weight: 100,
         },
@@ -129,7 +143,7 @@ async function seedProducts(prisma) {
           id: 'variant-2',
           images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
           packaging: { type: 'CARTON_OF_SACHETS' },
-          price: { create: { amount: 30.99, currencyCode: 'USD' } },
+          price: { amount: 30.99, currencyCode: 'USD' },
           stock: 30,
           weight: 100,
         },
@@ -137,7 +151,7 @@ async function seedProducts(prisma) {
           id: 'variant-3',
           images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
           packaging: { type: 'SACHET' },
-          price: { create: { amount: 12.99, currencyCode: 'USD' } },
+          price: { amount: 12.99, currencyCode: 'USD' },
           stock: 30,
           weight: 200,
         },
@@ -145,7 +159,7 @@ async function seedProducts(prisma) {
           id: 'variant-4',
           images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
           packaging: { type: 'CARTON_OF_SACHETS' },
-          price: { create: { amount: 39.99, currencyCode: 'USD' } },
+          price: { amount: 39.99, currencyCode: 'USD' },
           stock: 30,
           weight: 200,
         },
@@ -153,7 +167,7 @@ async function seedProducts(prisma) {
           id: 'variant-5',
           images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
           packaging: { type: 'SACHET' },
-          price: { create: { amount: 12.99, currencyCode: 'USD' } },
+          price: { amount: 12.99, currencyCode: 'USD' },
           stock: 30,
           weight: 1000,
         },
@@ -161,7 +175,7 @@ async function seedProducts(prisma) {
           id: 'variant-6',
           images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
           packaging: { type: 'CARTON_OF_SACHETS' },
-          price: { create: { amount: 65.99, currencyCode: 'USD' } },
+          price: { amount: 65.99, currencyCode: 'USD' },
           stock: 30,
           weight: 1000,
         },
@@ -169,7 +183,7 @@ async function seedProducts(prisma) {
           id: 'variant-7',
           images: ['variant1-image1.jpg', 'variant1-image2.jpg'],
           packaging: { type: 'JAR' },
-          price: { create: { amount: 5.99, currencyCode: 'USD' } },
+          price: { amount: 5.99, currencyCode: 'USD' },
           stock: 50,
           weight: 400,
         },
@@ -177,7 +191,7 @@ async function seedProducts(prisma) {
           id: 'variant-8',
           images: ['variant1-image1.jpg', 'variant1-image2.jpg'],
           packaging: { type: 'JAR' },
-          price: { create: { amount: 5.99, currencyCode: 'USD' } },
+          price: { amount: 5.99, currencyCode: 'USD' },
           stock: 50,
           weight: 500,
         },
@@ -185,7 +199,7 @@ async function seedProducts(prisma) {
           id: 'variant-9',
           images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
           packaging: { type: 'CARTON_OF_JARS' },
-          price: { create: { amount: 45.99, currencyCode: 'USD' } },
+          price: { amount: 45.99, currencyCode: 'USD' },
           stock: 30,
           weight: 400,
         },
@@ -193,7 +207,7 @@ async function seedProducts(prisma) {
           id: 'variant-10',
           images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
           packaging: { type: 'CARTON_OF_JARS' },
-          price: { create: { amount: 45.99, currencyCode: 'USD' } },
+          price: { amount: 45.99, currencyCode: 'USD' },
           stock: 30,
           weight: 500,
         },
@@ -201,7 +215,7 @@ async function seedProducts(prisma) {
           id: 'variant-11',
           images: ['variant2-image1.jpg', 'variant2-image2.jpg'],
           packaging: { type: 'CARTON_OF_JARS' },
-          price: { create: { amount: 45.99, currencyCode: 'USD' } },
+          price: { amount: 45.99, currencyCode: 'USD' },
           stock: 30,
           weight: 200,
         },
@@ -320,7 +334,7 @@ async function seedProducts(prisma) {
           id: 'variant-12',
           images: ['variant3-image1.jpg', 'variant3-image2.jpg'],
           packaging: { type: 'BOX_70_PERCENT' },
-          price: { create: { amount: 8.99, currencyCode: 'USD' } },
+          price: { amount: 8.99, currencyCode: 'USD' },
           stock: 100,
           weight: 100,
         },
@@ -328,7 +342,7 @@ async function seedProducts(prisma) {
           id: 'variant-13',
           images: ['variant4-image1.jpg', 'variant4-image2.jpg'],
           packaging: { type: 'CARTON_70_PERCENT' },
-          price: { create: { amount: 79.99, currencyCode: 'USD' } },
+          price: { amount: 79.99, currencyCode: 'USD' },
           stock: 50,
           weight: 100,
         },
@@ -336,7 +350,7 @@ async function seedProducts(prisma) {
           id: 'variant-14',
           images: ['variant3-image1.jpg', 'variant3-image2.jpg'],
           packaging: { type: 'BOX_80_PERCENT' },
-          price: { create: { amount: 8.99, currencyCode: 'USD' } },
+          price: { amount: 8.99, currencyCode: 'USD' },
           stock: 100,
           weight: 100,
         },
@@ -344,7 +358,7 @@ async function seedProducts(prisma) {
           id: 'variant-15',
           images: ['variant4-image1.jpg', 'variant4-image2.jpg'],
           packaging: { type: 'CARTON_80_PERCENT' },
-          price: { create: { amount: 79.99, currencyCode: 'USD' } },
+          price: { amount: 79.99, currencyCode: 'USD' },
           stock: 50,
           weight: 100,
         },
@@ -366,6 +380,10 @@ async function seedProducts(prisma) {
             create: product.variants.map((variant) => ({
               ...variant,
               packaging: variant.packaging,
+              price: moneyRecord(
+                variant.price.amount,
+                variant.price.currencyCode
+              ),
             })),
           },
         },

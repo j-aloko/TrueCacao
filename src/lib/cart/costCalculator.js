@@ -1,11 +1,10 @@
 import prisma from '@/lib/prisma';
 
 import { fullCartIncludes } from './cartSchema';
+import { formatAmount, moneyRecord } from '../money/utils';
 
 const ESTIMATED_TAX_RATE = 0;
 const ESTIMATED_SHIPPING_AMOUNT = 0;
-
-const formatAmount = (amount) => Math.round(amount * 100) / 100;
 
 export async function calculateAndUpdateCartCost(cartId, tx = prisma) {
   const cart = await tx.cart.findUnique({
@@ -61,36 +60,38 @@ export async function calculateAndUpdateCartCost(cartId, tx = prisma) {
       ESTIMATED_SHIPPING_AMOUNT
   );
 
-  const moneyRecord = (amount) => ({
-    create: { amount: formatAmount(amount), currencyCode },
-  });
-
   await tx.cartCost.upsert({
     create: {
       cart: { connect: { id: cartId } },
-      discount: discountAmount > 0 ? moneyRecord(discountAmount) : undefined,
+      discount:
+        discountAmount > 0
+          ? moneyRecord(discountAmount, currencyCode)
+          : undefined,
       discountAmount: formatAmount(discountAmount),
-      estimatedShipping: moneyRecord(ESTIMATED_SHIPPING_AMOUNT),
-      estimatedTax: moneyRecord(estimatedTaxAmount),
+      estimatedShipping: moneyRecord(ESTIMATED_SHIPPING_AMOUNT, currencyCode),
+      estimatedTax: moneyRecord(estimatedTaxAmount, currencyCode),
       shippingAmount: formatAmount(ESTIMATED_SHIPPING_AMOUNT),
-      subtotal: moneyRecord(subtotalAmount),
+      subtotal: moneyRecord(subtotalAmount, currencyCode),
       subtotalAmount: formatAmount(subtotalAmount),
-      total: moneyRecord(totalAmount),
+      total: moneyRecord(totalAmount, currencyCode),
       totalAmount: formatAmount(totalAmount),
-      totalTax: moneyRecord(estimatedTaxAmount),
+      totalTax: moneyRecord(estimatedTaxAmount, currencyCode),
       totalTaxAmount: formatAmount(estimatedTaxAmount),
     },
     update: {
-      discount: discountAmount > 0 ? moneyRecord(discountAmount) : undefined,
+      discount:
+        discountAmount > 0
+          ? moneyRecord(discountAmount, currencyCode)
+          : undefined,
       discountAmount: formatAmount(discountAmount),
-      estimatedShipping: moneyRecord(ESTIMATED_SHIPPING_AMOUNT),
-      estimatedTax: moneyRecord(estimatedTaxAmount),
+      estimatedShipping: moneyRecord(ESTIMATED_SHIPPING_AMOUNT, currencyCode),
+      estimatedTax: moneyRecord(estimatedTaxAmount, currencyCode),
       shippingAmount: formatAmount(ESTIMATED_SHIPPING_AMOUNT),
-      subtotal: moneyRecord(subtotalAmount),
+      subtotal: moneyRecord(subtotalAmount, currencyCode),
       subtotalAmount: formatAmount(subtotalAmount),
-      total: moneyRecord(totalAmount),
+      total: moneyRecord(totalAmount, currencyCode),
       totalAmount: formatAmount(totalAmount),
-      totalTax: moneyRecord(estimatedTaxAmount),
+      totalTax: moneyRecord(estimatedTaxAmount, currencyCode),
       totalTaxAmount: formatAmount(estimatedTaxAmount),
     },
     where: { cartId },
