@@ -1,0 +1,34 @@
+import jwt from 'jsonwebtoken';
+
+export async function generateAccessToken(payload) {
+  return jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRATION,
+  });
+}
+
+export async function generateRefreshToken(payload) {
+  return jwt.sign(payload, process.env.REFRESH_SECRET, {
+    expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION,
+  });
+}
+
+export async function verifyAccessToken(token) {
+  return jwt.verify(token, process.env.JWT_SECRET);
+}
+
+export async function verifyRefreshToken(token) {
+  return jwt.verify(token, process.env.REFRESH_SECRET);
+}
+
+export async function createSessionTokens(user, session) {
+  const payload = {
+    role: user.role,
+    sessionId: session.id,
+    userId: user.id,
+  };
+
+  return {
+    accessToken: generateAccessToken(payload),
+    refreshToken: generateRefreshToken(payload),
+  };
+}

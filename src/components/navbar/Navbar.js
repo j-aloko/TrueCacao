@@ -11,8 +11,10 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+
+import Logo from '../logo/Logo';
+import Tooltip from '../tooltip/Tooltip';
 
 function Navbar({
   pages,
@@ -27,26 +29,17 @@ function Navbar({
   onToggleCartDrawer,
 }) {
   return (
-    <AppBar position="fixed">
+    <AppBar
+      position="fixed"
+      sx={{
+        bgcolor: (theme) => theme.palette.common.white,
+        boxShadow: 'none',
+        zIndex: 999,
+      }}
+    >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Typography
-            variant="h4"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              color: 'inherit',
-              display: { md: 'flex', xs: 'none' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              mr: 2,
-              textDecoration: 'none',
-            }}
-          >
-            COCOAHUB
-          </Typography>
+          <Logo variant="desktop" />
           <Box sx={{ display: { md: 'none', xs: 'flex' }, flexGrow: 1 }}>
             <IconButton
               size="large"
@@ -76,29 +69,14 @@ function Navbar({
             >
               {pages.map((page) => (
                 <MenuItem key={page} onClick={onCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
+                  <Typography color="primary" sx={{ textAlign: 'center' }}>
+                    {page}
+                  </Typography>
                 </MenuItem>
               ))}
             </Menu>
           </Box>
-          <Typography
-            variant="h4"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              color: 'inherit',
-              display: { md: 'none', xs: 'flex' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              mr: 2,
-              textDecoration: 'none',
-            }}
-          >
-            COCOAHUB
-          </Typography>
+          <Logo variant="mobile" />
           <Box
             sx={{
               display: { md: 'flex', xs: 'none' },
@@ -110,6 +88,7 @@ function Navbar({
             {pages.map((page) => (
               <Typography
                 variant="subtitle1"
+                color="primary"
                 key={page}
                 onClick={onCloseNavMenu}
                 sx={{ cursor: 'pointer' }}
@@ -119,19 +98,32 @@ function Navbar({
             ))}
           </Box>
           <Box sx={{ display: 'flex', flexGrow: 0, gap: 2 }}>
-            <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
-              <Badge badgeContent={cart?.lines?.length || 0} color="secondary">
-                <ShoppingCartIcon
-                  fontSize="medium"
-                  sx={(theme) => ({
-                    color: theme.palette.primary.contrastText,
-                  })}
-                />
-              </Badge>
-            </IconButton>
+            <Tooltip title="Cart">
+              <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
+                <Badge
+                  badgeContent={cart?.lines?.length || 0}
+                  color="secondary"
+                >
+                  <ShoppingCartIcon
+                    fontSize="medium"
+                    sx={(theme) => ({
+                      color: theme.palette.primary.main,
+                    })}
+                  />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+
             <Tooltip title="Open settings">
               <IconButton onClick={onOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar>RS</Avatar>
+                <Avatar
+                  sx={{
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                  }}
+                >
+                  RS
+                </Avatar>
               </IconButton>
             </Tooltip>
             <Menu

@@ -1,4 +1,3 @@
-/// MONEY OBJECT
 model Money {
   id                     String               @id @default(uuid())
   amount                 Decimal
@@ -26,4 +25,9 @@ model Money {
   taxAmountMoney         Order[]              @relation("OrderTaxAmount")
   totalOrderMoney        Order[]              @relation("OrderTotal")
   lineTotalMoney         OrderItem[]          @relation("OrderItemTotal")
+  estimatedTaxMoney      CartCost[]           @relation("EstimatedTaxMoney")
+  estimatedShippingMoney CartCost[]           @relation("EstimatedShippingMoney")
+  shippingRatePrices     ShippingRate[]       @relation("ShippingRatePrice")
+  shippingRateMinAmounts ShippingRate[]       @relation("ShippingRateMinAmount")
+  refundedAmounts        Payment[]            @relation("RefundedAmount")
 }

@@ -65,6 +65,7 @@ const eslintConfig = [
         },
       ],
       'import/prefer-default-export': 0,
+      indent: 'off',
       'jsx-a11y/anchor-is-valid': 0,
       'jsx-a11y/click-events-have-key-events': 'warn',
       'jsx-a11y/control-has-associated-label': 'warn',
@@ -94,7 +95,7 @@ const eslintConfig = [
       'no-underscore-dangle': [
         'error',
         {
-          allow: ['__filename', '__dirname'],
+          allow: ['__filename', '__dirname', '_count', '_avg'],
         },
       ],
       'no-unsafe-optional-chaining': 'warn',
@@ -102,15 +103,17 @@ const eslintConfig = [
       'no-unused-vars': 'warn',
       'no-use-before-define': [
         'error',
-        { classes: true, functions: true, variables: false },
+        { classes: true, functions: false, variables: false },
       ],
       'object-curly-newline': 'off',
       'operator-linebreak': 'off',
+      'react/jsx-curly-newline': 'off',
       'react/jsx-filename-extension': [
         'error',
         { extensions: ['.js', '.jsx'] },
       ],
       'react/jsx-props-no-spreading': 'off',
+      'react/jsx-wrap-multilines': ['error', { prop: false }],
       'react/prop-types': 'off',
       'sort-keys-fix/sort-keys-fix': 'warn',
     },

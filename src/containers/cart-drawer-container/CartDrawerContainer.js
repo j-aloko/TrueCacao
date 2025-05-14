@@ -1,15 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
+import Link from 'next/link';
 
 import CartDrawerHeader from '@/components/cart-drawer-header/CartDrawerHeader';
 import CartItem from '@/components/cart-item/CartItem';
 import SwipeDrawer from '@/components/swipe-drawer/SwipeDrawer';
 import TextBlock from '@/components/text-block/TextBlock';
+import { ROUTES } from '@/constants/routes';
+import { useCart } from '@/hooks/useCart';
 import {
   openDrawer,
   closeDrawer,
@@ -19,16 +22,79 @@ import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 function CartDrawerContainer() {
   const dispatch = useAppDispatch();
   const { isOpen } = useAppSelector((state) => state.cartDrawer);
+  const { cart, updateItem, removeItem, itemLoadingStates } = useCart();
 
-  const price = 359.99;
-
-  const handleOpen = () => {
+  const handleOpen = useCallback(() => {
     dispatch(openDrawer());
-  };
+  }, [dispatch]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     dispatch(closeDrawer());
-  };
+  }, [dispatch]);
+
+  const hasItems = cart?.lines?.length > 0;
+
+  const handleCartItemIncrement = useCallback(
+    (id, currentQuantity) => {
+      updateItem({ id, quantity: currentQuantity + 1 });
+    },
+    [updateItem]
+  );
+
+  const handleCartItemDecrement = useCallback(
+    (id, currentQuantity) => {
+      updateItem({ id, quantity: currentQuantity - 1 });
+    },
+    [updateItem]
+  );
+
+  const handleRemoveCartItem = useCallback(
+    (id) => {
+      removeItem({ id });
+    },
+    [removeItem]
+  );
+
+  const cartItems = useMemo(() => {
+    if (!hasItems) return null;
+
+    return cart.lines.map((line) => {
+      const lineId = line?.id || '';
+      const variant = line?.productVariant ?? {};
+      const product = variant?.product ?? {};
+      const price = variant?.price ?? {};
+      const packagingType = variant?.packaging?.type || 'Unknown';
+
+      return (
+        <CartItem
+          key={lineId}
+          id={lineId}
+          image="/product-images/Alltime-cocoa-powder-1.jpg"
+          packaging={packagingType}
+          weight={variant?.weight || 'N/A'}
+          productName={product?.name || 'Unnamed Product'}
+          itemPrice={`${price?.currencyCode || ''}${price?.amount || ''}`}
+          quantity={line?.quantity || 0}
+          loading={itemLoadingStates?.[lineId] || {}}
+          onCartItemIncrement={handleCartItemIncrement}
+          onCartItemDecrement={handleCartItemDecrement}
+          onRemoveCartItem={handleRemoveCartItem}
+        />
+      );
+    });
+  }, [
+    cart?.lines,
+    hasItems,
+    itemLoadingStates,
+    handleCartItemIncrement,
+    handleCartItemDecrement,
+    handleRemoveCartItem,
+  ]);
+
+  const checkoutTotal = useMemo(() => {
+    if (!cart?.cost?.subtotal) return 'Checkout';
+    return `Checkout \u00A0 • \u00A0 ${cart.cost.subtotal.currencyCode || ''}${cart.cost.subtotal.amount || ''}`;
+  }, [cart?.cost?.subtotal]);
 
   return (
     <SwipeDrawer
@@ -36,6 +102,7 @@ function CartDrawerContainer() {
       open={isOpen}
       onOpen={handleOpen}
       onClose={handleClose}
+      data-testid="cart-drawer"
     >
       <Box
         sx={{
@@ -51,50 +118,69 @@ function CartDrawerContainer() {
           <Divider />
         </Box>
 
-        {/* Scrollable content section */}
-        <Box
-          sx={{
-            flexGrow: 1,
-            overflowY: 'auto',
-            p: 2,
-          }}
-        >
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <CartItem image="/product-images/Alltime-cocoa-powder-1.jpg" />
-            <CartItem image="/product-images/royale-cocoa-powder-3.jpg" />
-            <CartItem image="/product-images/royale-cocoa-powder-3.jpg" />
-            <CartItem image="/product-images/royale-cocoa-powder-3.jpg" />
-          </Box>
-        </Box>
-
-        {/* Footer section */}
-        <Box
-          sx={{
-            flexShrink: 0,
-            marginTop: 'auto',
-          }}
-        >
-          <Divider />
-          <Box sx={{ p: 2 }}>
-            <TextBlock
-              text="Taxes and shipping calculated at checkout"
-              variant="body2"
-              component="p"
-              sx={{ fontWeight: 500, mb: 2 }}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              color="secondary"
-              fullWidth
-              onClick={null}
+        {/* Main content section */}
+        {hasItems ? (
+          <>
+            <Box
+              sx={{
+                flexGrow: 1,
+                overflowY: 'auto',
+                p: 2,
+              }}
+              role="region"
+              aria-label="Cart items"
             >
-              {`Checkout \u00A0 . \u00A0 GH₵${price.toFixed(2)}`}
-            </Button>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {cartItems}
+              </Box>
+            </Box>
+
+            {/* Footer section */}
+            <Box
+              sx={{
+                flexShrink: 0,
+                marginTop: 'auto',
+              }}
+            >
+              <Divider />
+              <Box sx={{ p: 2 }}>
+                <TextBlock
+                  text="Taxes and shipping calculated at checkout"
+                  variant="body2"
+                  component="p"
+                  sx={{ fontWeight: 500, mb: 2 }}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="secondary"
+                  fullWidth
+                  onClick={handleClose}
+                  aria-label={checkoutTotal}
+                  component={Link}
+                  href={ROUTES.checkout}
+                >
+                  {checkoutTotal}
+                </Button>
+              </Box>
+            </Box>
+          </>
+        ) : (
+          <Box
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              flexGrow: 1,
+              justifyContent: 'center',
+            }}
+            aria-live="polite"
+          >
+            <TextBlock text="Your Cart is Empty" variant="h6" component="p" />
           </Box>
-        </Box>
+        )}
       </Box>
     </SwipeDrawer>
   );
 }
-export default CartDrawerContainer;
+
+export default React.memo(CartDrawerContainer);

@@ -6,35 +6,26 @@ import { CookieStorage } from 'redux-persist-cookie-storage';
 
 import { cartReducer } from './features/cart/cartSlice';
 import { cartDrawerReducer } from './features/cart-drawer/cartDrawerSlice';
-import { productSelectionReducer } from './features/product-selection/productSelectionSlice';
 
-const cookieStorage = new CookieStorage(Cookies, {
+const cartExpiry = 60 * 60 * 24 * 7; // 7 days
+
+const cartCookieStorage = new CookieStorage(Cookies, {
   expiration: {
-    default: 60 * 60, // 1 hour
+    default: cartExpiry,
   },
   httpOnly: false,
   secure: process.env.NODE_ENV === 'production',
 });
 
-// Persistence configurations at store level
-const productSelectionPersistConfig = {
-  key: 'productSelection',
-  storage: cookieStorage,
-};
-
 const cartPersistConfig = {
-  blacklist: ['loading', 'error'],
+  blacklist: ['loading', 'loadingStates', 'error', 'itemLoadingStates'],
   key: 'cart',
-  storage: cookieStorage,
+  storage: cartCookieStorage,
 };
 
 const rootReducer = combineReducers({
   cart: persistReducer(cartPersistConfig, cartReducer),
   cartDrawer: cartDrawerReducer,
-  productSelection: persistReducer(
-    productSelectionPersistConfig,
-    productSelectionReducer
-  ),
 });
 
 export const store = configureStore({

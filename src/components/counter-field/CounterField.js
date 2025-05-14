@@ -3,16 +3,18 @@ import React from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 import Fab from '@mui/material/Fab';
 import Typography from '@mui/material/Typography';
 
 function CounterField({
-  value = 1,
+  quantity = 1,
+  loading = false,
   onIncrement = null,
   onDecrement = null,
   fabSize = 'small', // 'small' | 'medium' | 'tiny' (custom)
   minValue = 1,
-  typographyVariant = 'h6',
+  typographyVariant = 'subtitle1',
   typographySx = {},
   disabled = false,
   sx = {},
@@ -45,16 +47,22 @@ function CounterField({
         color="primary"
         size={resolvedFabSize}
         onClick={onDecrement}
-        disabled={disabled || value <= minValue}
+        disabled={disabled || quantity <= minValue}
         sx={fabSx}
       >
         <RemoveIcon fontSize={fabSize === 'tiny' ? 'small' : 'medium'} />
       </Fab>
-
-      <Typography variant={typographyVariant} sx={typographySx}>
-        {value}
-      </Typography>
-
+      {loading ? (
+        <CircularProgress size={15} />
+      ) : (
+        <Typography
+          variant={typographyVariant}
+          sx={typographySx}
+          component="span"
+        >
+          {quantity}
+        </Typography>
+      )}
       <Fab
         color="secondary"
         size={resolvedFabSize}
@@ -68,4 +76,4 @@ function CounterField({
   );
 }
 
-export default CounterField;
+export default React.memo(CounterField);

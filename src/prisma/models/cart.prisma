@@ -1,4 +1,3 @@
-/// CART SYSTEM
 model Cart {
   id            String             @id @default(uuid())
   userId        String?
@@ -14,5 +13,9 @@ model Cart {
   cost          CartCost?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
-  sessions      Session[]          @relation("CartSessions") // Add this
+  sessions      Session[]          @relation("CartSessions")
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([updatedAt])
 }

@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+import { shallowEqual } from 'react-redux';
+
 import {
   fetchCart,
   addCartItem,
@@ -11,39 +13,54 @@ import {
 } from '../services/redux/features/cart/cartSlice';
 import { useAppDispatch, useAppSelector } from '../services/redux/store';
 
+let cartInitialized = false;
+let mergeAttempted = false;
+
 export function useCart() {
   const dispatch = useAppDispatch();
-  const user = false;
+  const user = null;
 
-  const {
-    cart,
-    loading,
-    error: cartError,
-  } = useAppSelector((state) => state.cart);
+  const { cart, loading, loadingStates, itemLoadingStates, error } =
+    useAppSelector(
+      (state) => ({
+        cart: state.cart.cart,
+        error: state.cart.error,
+        itemLoadingStates: state.cart.itemLoadingStates,
+        loading: state.cart.loading,
+        loadingStates: state.cart.loadingStates,
+      }),
+      shallowEqual
+    );
 
+  // Singleton initialization
   useEffect(() => {
-    dispatch(fetchCart());
+    if (!cartInitialized) {
+      cartInitialized = true;
+      dispatch(fetchCart());
+    }
   }, [dispatch]);
 
   useEffect(() => {
-    if (user) {
+    if (user && !mergeAttempted && cart?.lines?.length > 0) {
+      mergeAttempted = true;
       dispatch(mergeCarts());
     }
-  }, [dispatch, user]);
+  }, [dispatch, user, cart?.lines]);
 
-  const addItem = ({ productVariantId, quantity = 1 }) =>
-    dispatch(addCartItem({ productVariantId, quantity })).unwrap();
+  const addItem = (payload) => dispatch(addCartItem(payload));
 
-  const updateItem = ({ itemId, quantity }) =>
-    dispatch(updateCartItem({ itemId, quantity })).unwrap();
+  const updateItem = ({ id, quantity }) =>
+    dispatch(updateCartItem({ id, quantity }));
 
-  const removeItem = ({ itemId }) => dispatch(removeCartItem(itemId)).unwrap();
+  const removeItem = (payload) => dispatch(removeCartItem(payload));
 
   return {
     addItem,
     cart,
-    error: cartError,
+    error,
+    itemLoadingStates,
     loading,
+    loadingStates,
     removeItem,
     updateItem,
   };

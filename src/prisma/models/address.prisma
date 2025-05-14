@@ -1,4 +1,3 @@
-/// ADDRESS MANAGEMENT
 model Address {
   id             String   @id @default(uuid())
   userId         String
@@ -8,10 +7,13 @@ model Address {
   city           String
   state          String
   postalCode     String
-  country        String
+  country        String   @default("US")
   isDefault      Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   shippingOrders Order[]  @relation("OrderShippingAddress")
   billingOrders  Order[]  @relation("OrderBillingAddress")
+
+  @@index([userId, isDefault])
+  @@index([postalCode, country])
 }
