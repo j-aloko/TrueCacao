@@ -1,21 +1,25 @@
 model ProductVariant {
-  id            String      @id @default(uuid())
-  productId     String
-  product       Product     @relation(fields: [productId], references: [id])
-  weight        Int         // In grams
-  packaging     Json
-  price         Money       @relation("VariantPrice", fields: [priceId], references: [id])
-  priceId       String
-  stock         Int
-  reservedStock Int         @default(0)
-  sku           String?     @unique
-  images        String[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  cartLines     CartLine[]
-  orderItems    OrderItem[]
-  wishlistItems Wishlist[]
+  id                String                 @id @default(uuid())
+  productId         String
+  product           Product                @relation(fields: [productId], references: [id])
+  weight            Int // In grams
+  packaging         Json
+  price             Money                  @relation("VariantPrice", fields: [priceId], references: [id])
+  priceId           String
+  stock             Int                    @default(0)
+  reservedStock     Int                    @default(0)
+  lowStockThreshold Int?                   @default(10)
+  sku               String?                @unique
+  images            String[]
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  cartLines         CartLine[]
+  orderItems        OrderItem[]
+  wishlistItems     Wishlist[]
+  transactions      InventoryTransaction[]
 
   @@index([productId])
   @@index([sku])
+  @@index([stock])
+  @@index([reservedStock])
 }

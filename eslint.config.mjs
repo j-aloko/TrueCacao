@@ -95,7 +95,7 @@ const eslintConfig = [
       'no-underscore-dangle': [
         'error',
         {
-          allow: ['__filename', '__dirname', '_count', '_avg'],
+          allow: ['__filename', '__dirname', '_count', '_avg', '_sum'],
         },
       ],
       'no-unsafe-optional-chaining': 'warn',

@@ -28,6 +28,8 @@ model Order {
   fulfillmentDate   DateTime?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+  cart              Cart?
+  cartId            String?
 
   @@index([userId])
   @@index([status])

@@ -3,7 +3,7 @@ model Cart {
   userId        String?
   user          User?              @relation("UserCarts", fields: [userId], references: [id])
   sessionId     String?            @unique
-  checkoutUrl   String             @unique
+  checkoutUrl   String?            @unique
   lines         CartLine[]
   giftCards     AppliedGiftCard[]
   discountCodes CartDiscountCode[]
@@ -11,6 +11,8 @@ model Cart {
   totalQuantity Int                @default(0)
   abandonedCart AbandonedCart?
   cost          CartCost?
+  order         Order?             @relation(fields: [orderId], references: [id])
+  orderId       String?            @unique
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   sessions      Session[]          @relation("CartSessions")
@@ -18,4 +20,5 @@ model Cart {
   @@index([userId])
   @@index([sessionId])
   @@index([updatedAt])
+  @@index([orderId])
 }

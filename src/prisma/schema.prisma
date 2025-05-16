@@ -87,6 +87,19 @@ enum DiscountCodeStatus {
   DISABLED
 }
 
+enum TRANSACTION_TYPE {
+  PURCHASE // When inventory is purchased from supplier
+  SALE // When sold to customer
+  RETURN // When customer returns item
+  ADJUSTMENT // Manual inventory adjustment
+  RESERVATION // When reserved for cart/order
+  RELEASE // When reservation is released
+  DAMAGE // When items are marked as damaged
+  LOSS // When items are lost
+  TRANSFER_IN // Inventory transferred in from another location
+  TRANSFER_OUT // Inventory transferred out to another location
+}
+
 
 model AbandonedCart {
   id              String    @id @default(uuid())
@@ -164,7 +177,7 @@ model Cart {
   userId        String?
   user          User?              @relation("UserCarts", fields: [userId], references: [id])
   sessionId     String?            @unique
-  checkoutUrl   String             @unique
+  checkoutUrl   String?            @unique
   lines         CartLine[]
   giftCards     AppliedGiftCard[]
   discountCodes CartDiscountCode[]
@@ -172,6 +185,8 @@ model Cart {
   totalQuantity Int                @default(0)
   abandonedCart AbandonedCart?
   cost          CartCost?
+  order         Order?             @relation(fields: [orderId], references: [id])
+  orderId       String?            @unique
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   sessions      Session[]          @relation("CartSessions")
@@ -179,6 +194,7 @@ model Cart {
   @@index([userId])
   @@index([sessionId])
   @@index([updatedAt])
+  @@index([orderId])
 }
 
 
@@ -313,6 +329,24 @@ model GiftCard {
 }
 
 
+model InventoryTransaction {
+    id        String           @id @default(uuid())
+    variantId String
+    variant   ProductVariant   @relation(fields: [variantId], references: [id])
+    quantity  Int // Positive for additions, negative for deductions
+    type      TRANSACTION_TYPE
+    reference String? // Order ID, PO number, etc.
+    notes     String? // Additional information about the transaction
+    createdAt DateTime         @default(now())
+    createdBy String? // User ID or system process that created this
+
+    @@index([variantId])
+    @@index([type])
+    @@index([reference])
+    @@index([createdAt])
+}
+
+
 model Money {
   id                     String               @id @default(uuid())
   amount                 Decimal
@@ -395,6 +429,8 @@ model Order {
   fulfillmentDate   DateTime?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+  cart              Cart?
+  cartId            String?
 
   @@index([userId])
   @@index([status])
@@ -446,11 +482,8 @@ model Product {
   id                     String           @id @default(uuid())
   name                   String
   slug                   String           @unique
-  descriptionSummary     String?          @db.Text // Short summary description
-  descriptionHtml        String?          @db.Text // Detailed HTML description
-  stock                  Int              @default(0)
-  reservedStock          Int              @default(0)
-  lowStockThreshold      Int?             @default(10)
+  descriptionSummary     String?          @db.Text
+  descriptionHtml        String?          @db.Text
   tag                    PRODUCT_TAG?
   categoryId             String
   category               Category         @relation(fields: [categoryId], references: [id])
@@ -468,31 +501,34 @@ model Product {
   taxRates               TaxRate[]        @relation("ProductTaxRates")
 
   @@index([categoryId])
-  @@index([stock])
   @@index([slug])
 }
 
 
 model ProductVariant {
-  id            String      @id @default(uuid())
-  productId     String
-  product       Product     @relation(fields: [productId], references: [id])
-  weight        Int         // In grams
-  packaging     Json
-  price         Money       @relation("VariantPrice", fields: [priceId], references: [id])
-  priceId       String
-  stock         Int
-  reservedStock Int         @default(0)
-  sku           String?     @unique
-  images        String[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  cartLines     CartLine[]
-  orderItems    OrderItem[]
-  wishlistItems Wishlist[]
+  id                String                 @id @default(uuid())
+  productId         String
+  product           Product                @relation(fields: [productId], references: [id])
+  weight            Int // In grams
+  packaging         Json
+  price             Money                  @relation("VariantPrice", fields: [priceId], references: [id])
+  priceId           String
+  stock             Int                    @default(0)
+  reservedStock     Int                    @default(0)
+  lowStockThreshold Int?                   @default(10)
+  sku               String?                @unique
+  images            String[]
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  cartLines         CartLine[]
+  orderItems        OrderItem[]
+  wishlistItems     Wishlist[]
+  transactions      InventoryTransaction[]
 
   @@index([productId])
   @@index([sku])
+  @@index([stock])
+  @@index([reservedStock])
 }
 
 

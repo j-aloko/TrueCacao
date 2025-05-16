@@ -206,6 +206,11 @@ const cartSlice = createSlice({
         state.error = action.error.message;
       })
 
+      // Add cart Item
+      .addCase(addCartItem.fulfilled, (state, action) => {
+        state.cart = action.payload;
+      })
+
       // Merge Carts
       .addCase(mergeCarts.pending, (state) => {
         state.loading = true;

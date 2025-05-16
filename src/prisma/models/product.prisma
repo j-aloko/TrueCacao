@@ -2,11 +2,8 @@ model Product {
   id                     String           @id @default(uuid())
   name                   String
   slug                   String           @unique
-  descriptionSummary     String?          @db.Text // Short summary description
-  descriptionHtml        String?          @db.Text // Detailed HTML description
-  stock                  Int              @default(0)
-  reservedStock          Int              @default(0)
-  lowStockThreshold      Int?             @default(10)
+  descriptionSummary     String?          @db.Text
+  descriptionHtml        String?          @db.Text
   tag                    PRODUCT_TAG?
   categoryId             String
   category               Category         @relation(fields: [categoryId], references: [id])
@@ -24,6 +21,5 @@ model Product {
   taxRates               TaxRate[]        @relation("ProductTaxRates")
 
   @@index([categoryId])
-  @@index([stock])
   @@index([slug])
 }

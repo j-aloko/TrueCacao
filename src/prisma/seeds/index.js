@@ -23,6 +23,7 @@ async function main() {
   await prisma.cart.deleteMany();
   await prisma.giftCard.deleteMany();
   await prisma.discount.deleteMany();
+  await prisma.inventoryTransaction.deleteMany();
   await prisma.productVariant.deleteMany();
   await prisma.product.deleteMany();
   await prisma.taxRate.deleteMany();

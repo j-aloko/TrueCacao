@@ -168,12 +168,12 @@ export function getProductSchema(customFields = {}) {
     images: true,
     name: true,
     slug: true,
-    stock: true,
     totalReviews: true,
     variants: {
       select: {
         id: true,
         images: true,
+        lowStockThreshold: true,
         packaging: true,
         price: { select: { amount: true, currencyCode: true } },
         reservedStock: true,

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { updateItem, deleteItem } from '@/lib/cart/itemUtils';
+import { removeCartItem, updateCartItem } from '@/lib/cart/itemUtils';
 import { cartItemSchema } from '@/lib/cart/validators';
 
 export async function PUT(request, { params }) {
@@ -9,7 +9,7 @@ export async function PUT(request, { params }) {
 
   try {
     cartItemSchema.partial().parse({ quantity });
-    const cart = await updateItem(id, quantity);
+    const cart = await updateCartItem(id, quantity);
     return NextResponse.json(cart);
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 400 });
@@ -20,7 +20,7 @@ export async function DELETE(request, { params }) {
   const { id } = await params;
 
   try {
-    const cart = await deleteItem(id);
+    const cart = await removeCartItem(id);
     return NextResponse.json(cart);
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 400 });

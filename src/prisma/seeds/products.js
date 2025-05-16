@@ -93,7 +93,6 @@ async function seedProducts(prisma) {
         '/product-images/royale-cocoa-powder-1.jpg',
         '/product-images/royale-cocoa-powder-3.jpg',
       ],
-      lowStockThreshold: 10,
       name: 'Raw Cocoa Powder',
       reviews: {
         create: [
@@ -128,7 +127,6 @@ async function seedProducts(prisma) {
         ],
       },
       slug: slugify('Raw Cocoa Powder'),
-      stock: 280,
       tag: 'BEST_SELLER',
       variants: [
         {
@@ -285,7 +283,6 @@ async function seedProducts(prisma) {
         '/product-images/TQ-premium-dark-chocolate-70.jpg',
         '/product-images/TQ-premium-dark-chocolate-90.jpg',
       ],
-      lowStockThreshold: 20,
       name: 'Dark Chocolate Bar',
       reviews: {
         create: [
@@ -327,7 +324,6 @@ async function seedProducts(prisma) {
         ],
       },
       slug: slugify('Dark Chocolate Bar'),
-      stock: 200,
       tag: 'BEST_SELLER',
       variants: [
         {

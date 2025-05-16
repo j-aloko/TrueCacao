@@ -1,19 +1,17 @@
-import { invalidateStockCache } from '@/lib/cache/redisUtils';
+import { reserveStock, releaseStock } from '@/lib/inventory/stockUtils';
 import prisma from '@/lib/prisma';
 
 import { calculateAndUpdateCartCost } from './costCalculator';
+import { updateCartTotals } from './utils';
 
-export async function updateItem(lineId, newQuantity) {
+export async function updateCartItem(lineId, newQuantity) {
   return prisma.$transaction(async (tx) => {
     const line = await tx.cartLine.findUnique({
-      select: {
-        cartId: true,
-        id: true,
+      include: {
+        cart: { select: { id: true } },
         productVariant: {
-          select: { reservedStock: true, stock: true },
+          select: { id: true, reservedStock: true, stock: true },
         },
-        productVariantId: true,
-        quantity: true,
       },
       where: { id: lineId },
     });
@@ -21,68 +19,50 @@ export async function updateItem(lineId, newQuantity) {
     if (!line) throw new Error('Cart item not found');
 
     const quantityDiff = newQuantity - line.quantity;
-    const availableStock =
-      line.productVariant.stock - line.productVariant.reservedStock;
 
-    if (availableStock < quantityDiff) {
-      throw new Error('Insufficient stock');
+    if (quantityDiff > 0) {
+      await reserveStock(line.productVariant.id, quantityDiff, tx);
+    } else if (quantityDiff < 0) {
+      await releaseStock(line.productVariant.id, -quantityDiff, tx);
     }
-
     await tx.cartLine.update({
       data: { quantity: newQuantity },
       where: { id: lineId },
     });
-
-    await tx.productVariant.update({
-      data: { reservedStock: { increment: quantityDiff } },
-      where: { id: line.productVariantId },
-    });
-
-    await tx.cart.update({
-      data: { totalQuantity: { increment: quantityDiff } },
-      where: { id: line.cartId },
-    });
-
-    await invalidateStockCache(line.productVariantId);
-
-    return calculateAndUpdateCartCost(line.cartId, tx);
+    await updateCartTotals(line.cart.id, tx);
+    return calculateAndUpdateCartCost(line.cart.id, tx);
   });
 }
 
-export async function deleteItem(lineId) {
+export async function removeCartItem(lineId) {
   return prisma.$transaction(async (tx) => {
     const line = await tx.cartLine.findUnique({
-      select: {
-        cartId: true,
-        id: true,
-        position: true,
-        productVariantId: true,
-        quantity: true,
+      include: {
+        cart: { select: { id: true } },
+        productVariant: { select: { id: true } },
       },
       where: { id: lineId },
     });
 
     if (!line) throw new Error('Cart item not found');
 
-    await tx.productVariant.update({
-      data: { reservedStock: { decrement: line.quantity } },
-      where: { id: line.productVariantId },
+    await releaseStock(line.productVariant.id, line.quantity, tx);
+
+    // Delete the line
+    await tx.cartLine.delete({
+      where: { id: lineId },
     });
-
-    await tx.cartLine.delete({ where: { id: lineId } });
-
-    await tx.cart.update({
-      data: { totalQuantity: { decrement: line.quantity } },
-      where: { id: line.cartId },
-    });
-
+    // Reorder remaining items
     await tx.cartLine.updateMany({
-      data: { position: { decrement: 1 } },
-      where: { cartId: line.cartId, position: { gt: line.position } },
+      data: {
+        position: { decrement: 1 },
+      },
+      where: {
+        cartId: line.cart.id,
+        position: { gt: line.position },
+      },
     });
-
-    await invalidateStockCache(line.productVariantId);
-
-    return calculateAndUpdateCartCost(line.cartId, tx);
+    await updateCartTotals(line.cart.id, tx);
+    return calculateAndUpdateCartCost(line.cart.id, tx);
   });
 }

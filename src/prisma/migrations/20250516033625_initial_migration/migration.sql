@@ -31,6 +31,9 @@ CREATE TYPE "CURRENCY_CODE" AS ENUM ('GHS', 'NGN', 'USD');
 -- CreateEnum
 CREATE TYPE "DiscountCodeStatus" AS ENUM ('ACTIVE', 'EXPIRED', 'DISABLED');
 
+-- CreateEnum
+CREATE TYPE "TRANSACTION_TYPE" AS ENUM ('PURCHASE', 'SALE', 'RETURN', 'ADJUSTMENT', 'RESERVATION', 'RELEASE', 'DAMAGE', 'LOSS', 'TRANSFER_IN', 'TRANSFER_OUT');
+
 -- CreateTable
 CREATE TABLE "AbandonedCart" (
     "id" TEXT NOT NULL,
@@ -94,9 +97,10 @@ CREATE TABLE "Cart" (
     "id" TEXT NOT NULL,
     "userId" TEXT,
     "sessionId" TEXT,
-    "checkoutUrl" TEXT NOT NULL,
+    "checkoutUrl" TEXT,
     "note" TEXT,
     "totalQuantity" INTEGER NOT NULL DEFAULT 0,
+    "orderId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -208,6 +212,20 @@ CREATE TABLE "GiftCard" (
 );
 
 -- CreateTable
+CREATE TABLE "InventoryTransaction" (
+    "id" TEXT NOT NULL,
+    "variantId" TEXT NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "type" "TRANSACTION_TYPE" NOT NULL,
+    "reference" TEXT,
+    "notes" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdBy" TEXT,
+
+    CONSTRAINT "InventoryTransaction_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Money" (
     "id" TEXT NOT NULL,
     "amount" DECIMAL(65,30) NOT NULL,
@@ -249,6 +267,7 @@ CREATE TABLE "Order" (
     "fulfillmentDate" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "cartId" TEXT,
 
     CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
 );
@@ -289,9 +308,6 @@ CREATE TABLE "Product" (
     "slug" TEXT NOT NULL,
     "descriptionSummary" TEXT,
     "descriptionHtml" TEXT,
-    "stock" INTEGER NOT NULL DEFAULT 0,
-    "reservedStock" INTEGER NOT NULL DEFAULT 0,
-    "lowStockThreshold" INTEGER DEFAULT 10,
     "tag" "PRODUCT_TAG",
     "categoryId" TEXT NOT NULL,
     "images" TEXT[],
@@ -312,8 +328,9 @@ CREATE TABLE "ProductVariant" (
     "weight" INTEGER NOT NULL,
     "packaging" JSONB NOT NULL,
     "priceId" TEXT NOT NULL,
-    "stock" INTEGER NOT NULL,
+    "stock" INTEGER NOT NULL DEFAULT 0,
     "reservedStock" INTEGER NOT NULL DEFAULT 0,
+    "lowStockThreshold" INTEGER DEFAULT 10,
     "sku" TEXT,
     "images" TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -486,6 +503,9 @@ CREATE UNIQUE INDEX "Cart_sessionId_key" ON "Cart"("sessionId");
 CREATE UNIQUE INDEX "Cart_checkoutUrl_key" ON "Cart"("checkoutUrl");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Cart_orderId_key" ON "Cart"("orderId");
+
+-- CreateIndex
 CREATE INDEX "Cart_userId_idx" ON "Cart"("userId");
 
 -- CreateIndex
@@ -493,6 +513,9 @@ CREATE INDEX "Cart_sessionId_idx" ON "Cart"("sessionId");
 
 -- CreateIndex
 CREATE INDEX "Cart_updatedAt_idx" ON "Cart"("updatedAt");
+
+-- CreateIndex
+CREATE INDEX "Cart_orderId_idx" ON "Cart"("orderId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "CartCost_cartId_key" ON "CartCost"("cartId");
@@ -543,6 +566,18 @@ CREATE INDEX "GiftCard_code_idx" ON "GiftCard"("code");
 CREATE INDEX "GiftCard_expiresAt_idx" ON "GiftCard"("expiresAt");
 
 -- CreateIndex
+CREATE INDEX "InventoryTransaction_variantId_idx" ON "InventoryTransaction"("variantId");
+
+-- CreateIndex
+CREATE INDEX "InventoryTransaction_type_idx" ON "InventoryTransaction"("type");
+
+-- CreateIndex
+CREATE INDEX "InventoryTransaction_reference_idx" ON "InventoryTransaction"("reference");
+
+-- CreateIndex
+CREATE INDEX "InventoryTransaction_createdAt_idx" ON "InventoryTransaction"("createdAt");
+
+-- CreateIndex
 CREATE INDEX "Notification_userId_read_idx" ON "Notification"("userId", "read");
 
 -- CreateIndex
@@ -585,9 +620,6 @@ CREATE UNIQUE INDEX "Product_slug_key" ON "Product"("slug");
 CREATE INDEX "Product_categoryId_idx" ON "Product"("categoryId");
 
 -- CreateIndex
-CREATE INDEX "Product_stock_idx" ON "Product"("stock");
-
--- CreateIndex
 CREATE INDEX "Product_slug_idx" ON "Product"("slug");
 
 -- CreateIndex
@@ -598,6 +630,12 @@ CREATE INDEX "ProductVariant_productId_idx" ON "ProductVariant"("productId");
 
 -- CreateIndex
 CREATE INDEX "ProductVariant_sku_idx" ON "ProductVariant"("sku");
+
+-- CreateIndex
+CREATE INDEX "ProductVariant_stock_idx" ON "ProductVariant"("stock");
+
+-- CreateIndex
+CREATE INDEX "ProductVariant_reservedStock_idx" ON "ProductVariant"("reservedStock");
 
 -- CreateIndex
 CREATE INDEX "Review_productId_idx" ON "Review"("productId");
@@ -708,6 +746,9 @@ ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userI
 ALTER TABLE "Cart" ADD CONSTRAINT "Cart_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Cart" ADD CONSTRAINT "Cart_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "CartCost" ADD CONSTRAINT "CartCost_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "Cart"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -763,6 +804,9 @@ ALTER TABLE "GiftCard" ADD CONSTRAINT "GiftCard_initialValueId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "GiftCard" ADD CONSTRAINT "GiftCard_balanceId_fkey" FOREIGN KEY ("balanceId") REFERENCES "Money"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "InventoryTransaction" ADD CONSTRAINT "InventoryTransaction_variantId_fkey" FOREIGN KEY ("variantId") REFERENCES "ProductVariant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
