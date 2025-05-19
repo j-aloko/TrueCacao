@@ -48,10 +48,7 @@ export function useCart() {
   }, [dispatch, user, cart?.lines]);
 
   const addItem = (payload) => dispatch(addCartItem(payload));
-
-  const updateItem = ({ id, quantity }) =>
-    dispatch(updateCartItem({ id, quantity }));
-
+  const updateItem = (payload) => dispatch(updateCartItem(payload));
   const removeItem = (payload) => dispatch(removeCartItem(payload));
 
   return {

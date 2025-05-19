@@ -1,4 +1,4 @@
-import { releaseStock, reserveStock } from '@/lib/inventory/stockUtils';
+import { reserveStock } from '@/lib/inventory/stockUtils';
 import prisma from '@/lib/prisma';
 
 import { trackAbandonedCart } from './abondoned';
@@ -50,10 +50,7 @@ export async function addItemToCart(
   quantity
 ) {
   return prisma.$transaction(async (tx) => {
-    // Verify stock availability and reserve
     await reserveStock(productVariantId, quantity, tx);
-
-    // Get or create cart
     const cart = await tx.cart.upsert({
       create: {
         checkoutUrl: generateCheckoutUrl(),
@@ -66,13 +63,13 @@ export async function addItemToCart(
       where: { sessionId },
     });
 
+    let cartLine;
     // Check for existing line
     const existingLine = cart.lines.find(
       (line) => line.productVariantId === productVariantId
     );
-
     if (existingLine) {
-      await tx.cartLine.update({
+      cartLine = await tx.cartLine.update({
         data: { quantity: { increment: quantity } },
         where: { id: existingLine.id },
       });
@@ -84,7 +81,7 @@ export async function addItemToCart(
       if (!variant) {
         throw new Error('Product variant not found');
       }
-      await tx.cartLine.create({
+      cartLine = await tx.cartLine.create({
         data: {
           cartId: cart.id,
           position: await getNextPosition(cart.id),
@@ -94,8 +91,20 @@ export async function addItemToCart(
         },
       });
     }
-    await updateCartTotals(cart.id, tx);
-    return calculateAndUpdateCartCost(cart.id, tx);
+    await updateCartQuantityTotals(cart.id, tx);
+    const updatedCost = await calculateAndUpdateCartCost(cart.id, tx);
+    return {
+      cartLineId: cartLine.id,
+      costSummary: {
+        discount: updatedCost.cost.discount,
+        estimatedShipping: updatedCost.cost.estimatedShipping,
+        estimatedTax: updatedCost.cost.estimatedTax,
+        shipping: updatedCost.cost.shipping,
+        subtotal: updatedCost.cost.subtotal,
+        total: updatedCost.cost.total,
+        totalTax: updatedCost.cost.totalTax,
+      },
+    };
   });
 }
 
@@ -105,57 +114,22 @@ export async function mergeCarts(sessionId, userId) {
   }
   return prisma.$transaction(async (tx) => {
     const guestCart = await tx.cart.findUnique({
-      include: { lines: true },
       where: { sessionId },
     });
-    if (!guestCart) throw new Error('Guest cart not found');
-    const userCart = await tx.cart.upsert({
-      create: {
-        checkoutUrl: generateCheckoutUrl(),
-        totalQuantity: 0,
-        userId,
-      },
-      include: { lines: true },
-      update: {
-        checkoutUrl: generateCheckoutUrl(),
-      },
-      where: { userId },
+    if (!guestCart) {
+      throw new Error('Guest cart not found');
+    }
+    if (guestCart.userId) {
+      return guestCart;
+    }
+    return tx.cart.update({
+      data: { userId },
+      where: { id: guestCart.id },
     });
-    const nextPosition = await getNextPosition(userCart.id);
-    await Promise.all(
-      guestCart.lines.map(async (line, index) => {
-        const existingLine = userCart.lines.find(
-          (l) => l.productVariantId === line.productVariantId
-        );
-        if (existingLine) {
-          return tx.cartLine.update({
-            data: { quantity: { increment: line.quantity } },
-            where: { id: existingLine.id },
-          });
-        }
-        return tx.cartLine.create({
-          data: {
-            cartId: userCart.id,
-            position: nextPosition + index,
-            priceId: line.priceId,
-            productVariantId: line.productVariantId,
-            quantity: line.quantity,
-          },
-        });
-      })
-    );
-    // Release all stock reservations from guest cart
-    await Promise.all(
-      guestCart.lines.map((line) =>
-        releaseStock(line.productVariantId, line.quantity, tx)
-      )
-    );
-    await tx.cart.delete({ where: { id: guestCart.id } });
-    return calculateAndUpdateCartCost(userCart.id, tx);
   });
 }
 
-export async function updateCartTotals(cartId, tx) {
+export async function updateCartQuantityTotals(cartId, tx) {
   const aggregation = await tx.cartLine.aggregate({
     _sum: { quantity: true },
     where: { cartId },

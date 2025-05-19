@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
-// import { omit } from 'lodash';
 
 import { showErrorToast } from '@/lib/toast/toast';
 
@@ -43,20 +42,21 @@ export const fetchCart = createAsyncThunk(
 
 export const addCartItem = createAsyncThunk(
   'cart/addItem',
-  async ({ productVariant, quantity = 1 }, { dispatch, rejectWithValue }) => {
+  async (
+    { productVariant, quantity = 1 },
+    { dispatch, rejectWithValue, getState }
+  ) => {
     const sessionId = Cookies.get('sessionId');
-
+    const state = getState();
     const tempItem = {
       id: `temp-${productVariant?.id}-${Date.now()}`,
       isTemporary: true,
       productVariant,
       quantity,
     };
-
     dispatch(optimisticAddItem(tempItem));
     dispatch(optimisticUpdateCost());
     dispatch(toggleDrawer());
-
     try {
       const response = await fetch('/api/v1/cart', {
         body: JSON.stringify({
@@ -70,17 +70,21 @@ export const addCartItem = createAsyncThunk(
         },
         method: 'POST',
       });
-
       if (!response.ok) {
         throw new Error(
           (await response.json().message) || 'Failed to add item'
         );
       }
-
-      return response.json();
+      const { cartLineId, costSummary } = await response.json();
+      return { costSummary, realId: cartLineId, tempId: tempItem.id };
     } catch (error) {
       showErrorToast(error.message);
-      dispatch(rollbackAddItem(tempItem.id));
+      dispatch(
+        rollbackAddItem({
+          originalCost: state.cart.cost,
+          tempId: tempItem.id,
+        })
+      );
       return rejectWithValue(error.message);
     }
   }
@@ -88,10 +92,13 @@ export const addCartItem = createAsyncThunk(
 
 export const updateCartItem = createAsyncThunk(
   'cart/updateItem',
-  async ({ id, quantity }, { dispatch, rejectWithValue }) => {
+  async (
+    { id, quantity, previousQuantity },
+    { dispatch, rejectWithValue, getState }
+  ) => {
+    const state = getState();
     dispatch(optimisticUpdateItem({ id, newQuantity: quantity }));
     dispatch(optimisticUpdateCost());
-
     try {
       const response = await fetch(`/api/v1/cart/cart-items/${id}`, {
         body: JSON.stringify({ quantity }),
@@ -99,17 +106,21 @@ export const updateCartItem = createAsyncThunk(
         headers: { 'Content-Type': 'application/json' },
         method: 'PUT',
       });
-
       if (!response.ok) {
         throw new Error(
           (await response.json().message) || 'Failed to update item'
         );
       }
-
       return await response.json();
     } catch (error) {
       showErrorToast(error.message);
-      dispatch(rollbackUpdateItem({ id }));
+      dispatch(
+        rollbackUpdateItem({
+          id,
+          originalCost: state.cart.cost,
+          originalQuantity: previousQuantity,
+        })
+      );
       return rejectWithValue(error.message);
     }
   }
@@ -118,25 +129,28 @@ export const updateCartItem = createAsyncThunk(
 export const removeCartItem = createAsyncThunk(
   'cart/removeItem',
   async ({ id }, { dispatch, getState, rejectWithValue }) => {
-    const item = getState().cart.cart.lines.find((line) => line.id === id);
+    const state = getState();
+    const item = state.cart.cart.lines.find((line) => line.id === id);
     dispatch(optimisticRemoveItem(id));
     dispatch(optimisticUpdateCost());
-
     try {
       const response = await fetch(`/api/v1/cart/cart-items/${id}`, {
         method: 'DELETE',
       });
-
       if (!response.ok) {
         throw new Error(
           (await response.json().message) || 'Failed to remove item'
         );
       }
-
       return await response.json();
     } catch (error) {
       showErrorToast(error.message);
-      dispatch(rollbackRemoveItem(item));
+      dispatch(
+        rollbackRemoveItem({
+          item,
+          originalCost: state.cart.cost,
+        })
+      );
       return rejectWithValue(error.message);
     }
   }
@@ -171,7 +185,7 @@ export const mergeCarts = createAsyncThunk(
 
 // Initial State
 const initialState = {
-  cart: { lines: [] },
+  cart: { lines: [] }, // Stores temp ID -> real ID mapping
   error: null,
   itemLoadingStates: {},
   lastUpdated: null,
@@ -183,6 +197,7 @@ const initialState = {
     remove: false,
     update: false,
   },
+  pendingCartItems: {},
 };
 
 // Cart Slice Definition
@@ -206,9 +221,60 @@ const cartSlice = createSlice({
         state.error = action.error.message;
       })
 
-      // Add cart Item
+      // Add items to cart
       .addCase(addCartItem.fulfilled, (state, action) => {
-        state.cart = action.payload;
+        const { tempId, realId, costSummary } = action.payload;
+        const updatedLines = state.cart.lines.map((item) =>
+          item.id === tempId
+            ? { ...item, id: realId, isTemporary: false }
+            : item
+        );
+        return {
+          ...state,
+          cart: {
+            ...state.cart,
+            cost: {
+              ...state.cart.cost,
+              ...costSummary,
+            },
+            lines: updatedLines,
+          },
+          pendingCartItems: Object.fromEntries(
+            Object.entries(state.pendingCartItems).filter(
+              ([id]) => id !== tempId
+            )
+          ),
+        };
+      })
+
+      // Updating items in cart
+      .addCase(updateCartItem.fulfilled, (state, action) => {
+        const { costSummary } = action.payload;
+        return {
+          ...state,
+          cart: {
+            ...state.cart,
+            cost: {
+              ...state.cart.cost,
+              ...costSummary,
+            },
+          },
+        };
+      })
+
+      // Removing items in cart
+      .addCase(removeCartItem.fulfilled, (state, action) => {
+        const { costSummary } = action.payload;
+        return {
+          ...state,
+          cart: {
+            ...state.cart,
+            cost: {
+              ...state.cart.cost,
+              ...costSummary,
+            },
+          },
+        };
       })
 
       // Merge Carts
@@ -267,7 +333,6 @@ const cartSlice = createSlice({
           sum + (line.productVariant.price?.amount || 0) * line.quantity,
         0
       );
-
       state.cart.cost = {
         subtotal: {
           amount: parseFloat(subtotalAmount.toFixed(2)),
@@ -281,17 +346,31 @@ const cartSlice = createSlice({
       if (cartItem) cartItem.quantity = newQuantity;
     },
     rollbackAddItem: (state, action) => {
-      state.cart.lines = state.cart.lines.filter(
-        (item) => item.id !== action.payload
-      );
+      const { tempId, originalCost } = action.payload;
+      state.cart.lines = state.cart.lines.filter((item) => item.id !== tempId);
+      state.cart.cost = {
+        ...state.cart.cost,
+        ...originalCost,
+      };
     },
     rollbackRemoveItem: (state, action) => {
-      state.cart.lines.push(action.payload);
+      const { item, originalCost } = action.payload;
+      state.cart.lines.push(item);
+      state.cart.cost = {
+        ...state.cart.cost,
+        ...originalCost,
+      };
     },
     rollbackUpdateItem: (state, action) => {
-      const { id } = action.payload;
+      const { id, originalQuantity, originalCost } = action.payload;
       const cartItem = state.cart.lines.find((item) => item.id === id);
-      if (cartItem) cartItem.quantity = action.payload.originalQuantity;
+      if (cartItem) {
+        cartItem.quantity = originalQuantity;
+      }
+      state.cart.cost = {
+        ...state.cart.cost,
+        ...originalCost,
+      };
     },
   },
 });
