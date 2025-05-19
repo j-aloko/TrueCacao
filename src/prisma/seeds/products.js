@@ -1,5 +1,3 @@
-const { round } = require('mathjs');
-
 function calculateReviewStats(reviews) {
   if (!reviews?.create?.length) {
     return { averageRating: 0, averageRatingPrecision: 0, totalReviews: 0 };
@@ -23,7 +21,7 @@ const formatAmount = (amount) => {
     throw new Error('Amount must be a number');
   }
 
-  return round(amount, 2);
+  return parseFloat(amount.toFixed(2));
 };
 
 const moneyRecord = (amount, currencyCode = 'USD') => ({

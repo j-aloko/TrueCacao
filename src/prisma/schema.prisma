@@ -349,7 +349,7 @@ model InventoryTransaction {
 
 model Money {
   id                     String               @id @default(uuid())
-  amount                 Decimal
+  amount                 Decimal              @db.Decimal(10, 2)
   currencyCode           CURRENCY_CODE
   createdAt              DateTime             @default(now())
   cartCosts              CartCost[]           @relation("SubtotalMoney")

@@ -228,7 +228,7 @@ CREATE TABLE "InventoryTransaction" (
 -- CreateTable
 CREATE TABLE "Money" (
     "id" TEXT NOT NULL,
-    "amount" DECIMAL(65,30) NOT NULL,
+    "amount" DECIMAL(10,2) NOT NULL,
     "currencyCode" "CURRENCY_CODE" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
