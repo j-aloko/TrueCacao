@@ -198,6 +198,7 @@ const initialState = {
     update: false,
   },
   pendingCartItems: {},
+  pendingOperations: 0,
 };
 
 // Cart Slice Definition
@@ -223,58 +224,56 @@ const cartSlice = createSlice({
 
       // Add items to cart
       .addCase(addCartItem.fulfilled, (state, action) => {
+        state.pendingOperations -= 1;
         const { tempId, realId, costSummary } = action.payload;
         const updatedLines = state.cart.lines.map((item) =>
           item.id === tempId
             ? { ...item, id: realId, isTemporary: false }
             : item
         );
-        return {
-          ...state,
-          cart: {
-            ...state.cart,
-            cost: {
-              ...state.cart.cost,
-              ...costSummary,
-            },
-            lines: updatedLines,
-          },
-          pendingCartItems: Object.fromEntries(
-            Object.entries(state.pendingCartItems).filter(
-              ([id]) => id !== tempId
-            )
-          ),
-        };
+        state.cart.lines = updatedLines;
+        state.pendingCartItems = Object.fromEntries(
+          Object.entries(state.pendingCartItems).filter(([id]) => id !== tempId)
+        );
+        if (state.pendingOperations === 0) {
+          state.cart.cost = {
+            ...state.cart.cost,
+            ...costSummary,
+          };
+        }
+      })
+      .addCase(addCartItem.rejected, (state) => {
+        state.pendingOperations -= 1;
       })
 
       // Updating items in cart
       .addCase(updateCartItem.fulfilled, (state, action) => {
-        const { costSummary } = action.payload;
-        return {
-          ...state,
-          cart: {
-            ...state.cart,
-            cost: {
-              ...state.cart.cost,
-              ...costSummary,
-            },
-          },
-        };
+        state.pendingOperations -= 1;
+        if (state.pendingOperations === 0) {
+          const { costSummary } = action.payload;
+          state.cart.cost = {
+            ...state.cart.cost,
+            ...costSummary,
+          };
+        }
+      })
+      .addCase(updateCartItem.rejected, (state) => {
+        state.pendingOperations -= 1;
       })
 
       // Removing items in cart
       .addCase(removeCartItem.fulfilled, (state, action) => {
-        const { costSummary } = action.payload;
-        return {
-          ...state,
-          cart: {
-            ...state.cart,
-            cost: {
-              ...state.cart.cost,
-              ...costSummary,
-            },
-          },
-        };
+        state.pendingOperations -= 1;
+        if (state.pendingOperations === 0) {
+          const { costSummary } = action.payload;
+          state.cart.cost = {
+            ...state.cart.cost,
+            ...costSummary,
+          };
+        }
+      })
+      .addCase(removeCartItem.rejected, (state) => {
+        state.pendingOperations -= 1;
       })
 
       // Merge Carts
@@ -328,6 +327,7 @@ const cartSlice = createSlice({
       );
     },
     optimisticUpdateCost: (state) => {
+      state.pendingOperations += 1; // Increment on each operation start
       const subtotalAmount = state.cart.lines.reduce(
         (sum, line) =>
           sum + (line.productVariant.price?.amount || 0) * line.quantity,
