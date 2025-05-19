@@ -9,7 +9,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Fab from '@mui/material/Fab';
 import Stack from '@mui/material/Stack';
 
-import { formatString } from '@/util/formatString';
+import { formatString } from '@/utils/formatString';
 
 import CounterField from '../counter-field/CounterField';
 import TextBlock from '../text-block/TextBlock';

@@ -7,8 +7,8 @@ import Stack from '@mui/material/Stack';
 import Link from 'next/link';
 
 import { ROUTES } from '@/constants/routes';
-import { formatString } from '@/util/formatString';
-import { truncateForMetaDescription } from '@/util/seoTruncate';
+import { formatString } from '@/utils/formatString';
+import { truncateForMetaDescription } from '@/utils/seoTruncate';
 
 import AspectRatioImage from '../aspect-ratio-image/AspectRatioImage';
 import ProductName from '../product-name/ProductName';

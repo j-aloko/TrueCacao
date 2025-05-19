@@ -13,7 +13,7 @@ import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
 import TextBlock from '@/components/text-block/TextBlock';
 import Tooltip from '@/components/tooltip/Tooltip';
-import { formValidation, Yup } from '@/util/formValidation';
+import { formValidation, Yup } from '@/utils/formValidation';
 
 const fields = [
   {

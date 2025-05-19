@@ -2,7 +2,7 @@
 
 import { useCallback, useReducer } from 'react';
 
-import { getNestedProperty } from '@/util/getNestedProperty';
+import { getNestedProperty } from '@/utils/getNestedProperty';
 
 const initialState = {
   allVariantProperties: {},

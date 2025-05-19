@@ -21,8 +21,8 @@ import TabHeading from '@/components/tab-heading/TabHeading';
 import TextBlock from '@/components/text-block/TextBlock';
 import { useCart } from '@/hooks/useCart';
 import { useProductSelection } from '@/hooks/useProductSelection';
-import { formatString } from '@/util/formatString';
-import { getNestedProperty } from '@/util/getNestedProperty';
+import { formatString } from '@/utils/formatString';
+import { getNestedProperty } from '@/utils/getNestedProperty';
 
 import PurchasePerksContainer from '../purchase-perks-container/PurchasePerksContainer';
 import ReviewsContainer from '../reviews-container/ReviewsContainer';

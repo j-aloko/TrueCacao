@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import CardMedia from '@mui/material/CardMedia';
 import Stack from '@mui/material/Stack';
 
-import { formatString } from '@/util/formatString';
+import { formatString } from '@/utils/formatString';
 
 import TextBlock from '../text-block/TextBlock';
 

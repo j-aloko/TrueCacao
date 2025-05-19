@@ -6,7 +6,7 @@ import CheckoutItem from '@/components/checkout-item/CheckoutItem';
 import CheckoutTotals from '@/components/checkout-totals/CheckoutTotals';
 import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
-import { formatCurrency } from '@/util/formatCurrency';
+import { formatCurrency } from '@/utils/formatCurrency';
 
 const fields = [
   {
