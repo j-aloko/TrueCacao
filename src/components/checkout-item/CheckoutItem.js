@@ -33,7 +33,6 @@ function CheckoutItem({
             horizontal: 'right',
             vertical: 'top',
           }}
-          color="secondary"
           sx={{
             '& .MuiBadge-badge': {
               borderRadius: '50%',

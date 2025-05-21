@@ -11,6 +11,14 @@ const inter = interFont({
 
 const baseTheme = createTheme({
   components: {
+    MuiBadge: {
+      styleOverrides: {
+        badge: ({ theme }) => ({
+          backgroundColor: theme.palette.secondary.light,
+          color: theme.palette.secondary.contrastText,
+        }),
+      },
+    },
     MuiCard: {
       styleOverrides: {
         root: {
@@ -62,48 +70,47 @@ const baseTheme = createTheme({
     },
     MuiSelect: {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'var(--border-color)',
+            borderColor: theme.palette.divider,
           },
           '& select:-webkit-autofill': {
-            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
-            WebkitTextFillColor: 'var(--text-primary)',
+            WebkitBoxShadow: `0 0 0 1000px ${theme.palette.common.white} inset`,
+            WebkitTextFillColor: theme.palette.text.primary,
           },
-
           '& select:-webkit-autofill:focus': {
-            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
+            WebkitBoxShadow: `0 0 0 1000px ${theme.palette.common.white} inset`,
           },
           '& select:-webkit-autofill:hover': {
-            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
+            WebkitBoxShadow: `0 0 0 1000px ${theme.palette.common.white} inset`,
           },
-          backgroundColor: 'var(--common-white)',
-          color: 'var(--text-primary)',
-        },
+          backgroundColor: theme.palette.common.white,
+          color: theme.palette.text.primary,
+        }),
       },
     },
     MuiTextField: {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           '& .MuiOutlinedInput-root': {
             '& fieldset': {
-              borderColor: 'var(--border-color)',
+              borderColor: theme.palette.divider,
             },
-            backgroundColor: 'var(--common-white)',
-            color: 'var(--text-primary)',
+            backgroundColor: theme.palette.common.white,
+            color: theme.palette.text.primary,
           },
           '& input:-webkit-autofill': {
-            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
-            WebkitTextFillColor: 'var(--text-primary)',
+            WebkitBoxShadow: `0 0 0 1000px ${theme.palette.common.white} inset`,
+            WebkitTextFillColor: theme.palette.text.primary,
             borderRadius: 'inherit',
           },
           '& input:-webkit-autofill:focus': {
-            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
+            WebkitBoxShadow: `0 0 0 1000px ${theme.palette.common.white} inset`,
           },
           '& input:-webkit-autofill:hover': {
-            WebkitBoxShadow: '0 0 0 1000px var(--common-white) inset',
+            WebkitBoxShadow: `0 0 0 1000px ${theme.palette.common.white} inset`,
           },
-        },
+        }),
       },
     },
   },

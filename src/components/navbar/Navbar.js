@@ -104,8 +104,6 @@ function Navbar({
                   badgeContent={cart?.lines?.length || 0}
                   sx={{
                     '& .MuiBadge-badge': {
-                      backgroundColor: 'secondary.light',
-                      color: 'secondary.contrastText',
                       fontSize: '0.85rem',
                       top: 2,
                     },
