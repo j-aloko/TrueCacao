@@ -300,13 +300,7 @@ const cartSlice = createSlice({
       if (existingItem) {
         existingItem.quantity += quantity;
       } else {
-        const tempItem = {
-          id: `temp-${productVariant.id}-${Date.now()}`,
-          isTemporary: true,
-          productVariant,
-          quantity,
-        };
-        state.cart.lines.push(tempItem);
+        state.cart.lines.push(action.payload);
       }
     },
     optimisticRemoveItem: (state, action) => {

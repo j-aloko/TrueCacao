@@ -36,14 +36,22 @@ function CartDrawerContainer() {
 
   const handleCartItemIncrement = useCallback(
     (id, currentQuantity) => {
-      updateItem({ id, quantity: currentQuantity + 1 });
+      updateItem({
+        id,
+        previousQuantity: currentQuantity,
+        quantity: currentQuantity + 1,
+      });
     },
     [updateItem]
   );
 
   const handleCartItemDecrement = useCallback(
     (id, currentQuantity) => {
-      updateItem({ id, quantity: currentQuantity - 1 });
+      updateItem({
+        id,
+        previousQuantity: currentQuantity,
+        quantity: currentQuantity - 1,
+      });
     },
     [updateItem]
   );
