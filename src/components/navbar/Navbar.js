@@ -102,14 +102,16 @@ function Navbar({
               <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
                 <Badge
                   badgeContent={cart?.lines?.length || 0}
-                  color="secondary"
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      backgroundColor: 'secondary.light',
+                      color: 'secondary.contrastText',
+                      fontSize: '0.85rem',
+                      top: 2,
+                    },
+                  }}
                 >
-                  <ShoppingCartIcon
-                    fontSize="medium"
-                    sx={(theme) => ({
-                      color: theme.palette.primary.main,
-                    })}
-                  />
+                  <ShoppingCartIcon fontSize="large" color="primary" />
                 </Badge>
               </IconButton>
             </Tooltip>
