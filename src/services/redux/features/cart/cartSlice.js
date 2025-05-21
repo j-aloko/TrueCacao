@@ -226,21 +226,19 @@ const cartSlice = createSlice({
       .addCase(addCartItem.fulfilled, (state, action) => {
         state.pendingOperations -= 1;
         const { tempId, realId, costSummary } = action.payload;
-        const updatedLines = state.cart.lines.map((item) =>
+        state.cart.lines = state.cart.lines.map((item) =>
           item.id === tempId
             ? { ...item, id: realId, isTemporary: false }
             : item
         );
-        state.cart.lines = updatedLines;
-        state.pendingCartItems = Object.fromEntries(
-          Object.entries(state.pendingCartItems).filter(([id]) => id !== tempId)
-        );
         if (state.pendingOperations === 0) {
-          state.cart.cost = {
-            ...state.cart.cost,
-            ...costSummary,
-          };
+          state.cart.cost = { ...state.cart.cost, ...costSummary };
         }
+        Object.keys(state.pendingCartItems).forEach((id) => {
+          if (id === tempId) {
+            delete state.pendingCartItems[id];
+          }
+        });
       })
       .addCase(addCartItem.rejected, (state) => {
         state.pendingOperations -= 1;
@@ -249,12 +247,9 @@ const cartSlice = createSlice({
       // Updating items in cart
       .addCase(updateCartItem.fulfilled, (state, action) => {
         state.pendingOperations -= 1;
+        const { costSummary } = action.payload;
         if (state.pendingOperations === 0) {
-          const { costSummary } = action.payload;
-          state.cart.cost = {
-            ...state.cart.cost,
-            ...costSummary,
-          };
+          state.cart.cost = { ...state.cart.cost, ...costSummary };
         }
       })
       .addCase(updateCartItem.rejected, (state) => {
@@ -264,12 +259,9 @@ const cartSlice = createSlice({
       // Removing items in cart
       .addCase(removeCartItem.fulfilled, (state, action) => {
         state.pendingOperations -= 1;
+        const { costSummary } = action.payload;
         if (state.pendingOperations === 0) {
-          const { costSummary } = action.payload;
-          state.cart.cost = {
-            ...state.cart.cost,
-            ...costSummary,
-          };
+          state.cart.cost = { ...state.cart.cost, ...costSummary };
         }
       })
       .addCase(removeCartItem.rejected, (state) => {
