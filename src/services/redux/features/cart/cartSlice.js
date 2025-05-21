@@ -12,7 +12,7 @@ export const fetchCart = createAsyncThunk(
       const sessionId = Cookies.get('sessionId') || crypto.randomUUID();
       if (!Cookies.get('sessionId')) {
         Cookies.set('sessionId', sessionId, {
-          expires: 60 * 60 * 24 * 7, // 7 days
+          expires: 14 * 24 * 60 * 60, // 14 days
           secure: process.env.NODE_ENV === 'production',
         });
       }
@@ -184,11 +184,10 @@ export const mergeCarts = createAsyncThunk(
 );
 
 // Initial State
-const initialState = {
+export const initialState = {
   cart: { lines: [] }, // Stores temp ID -> real ID mapping
   error: null,
   itemLoadingStates: {},
-  lastUpdated: null,
   loading: false,
   loadingStates: {
     add: false,
@@ -214,7 +213,6 @@ const cartSlice = createSlice({
         state.cart = action.payload;
         state.loading = false;
         state.loadingStates.fetch = false;
-        state.lastUpdated = Date.now();
       })
       .addCase(fetchCart.rejected, (state, action) => {
         state.loading = false;
@@ -278,7 +276,6 @@ const cartSlice = createSlice({
           state.cart = action.payload;
           state.loading = false;
           state.loadingStates.merge = false;
-          state.lastUpdated = Date.now();
         }
       })
       .addCase(mergeCarts.rejected, (state, action) => {
@@ -292,7 +289,6 @@ const cartSlice = createSlice({
   reducers: {
     clearCart: (state) => {
       state.cart = { lines: [] };
-      state.lastUpdated = Date.now();
     },
     optimisticAddItem: (state, action) => {
       const { productVariant, quantity } = action.payload;

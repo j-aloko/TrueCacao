@@ -7,6 +7,7 @@ import storage from 'redux-persist/lib/storage';
 
 import { cartReducer } from './features/cart/cartSlice';
 import { cartDrawerReducer } from './features/cart-drawer/cartDrawerSlice';
+import { cartExpirationMiddleware } from './middleware/cartMiddleware';
 
 // const sessionExpiry = 60 * 60 * 24 * 7; // 7 days
 
@@ -38,9 +39,9 @@ const rootReducer = combineReducers({
 
 export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: false,
-    }),
+    getDefaultMiddleware({ serializableCheck: false }).concat(
+      cartExpirationMiddleware
+    ),
   reducer: rootReducer,
 });
 
