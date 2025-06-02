@@ -1,6 +1,7 @@
 import React from 'react';
 
 import MenuIcon from '@mui/icons-material/Menu';
+import PersonIcon from '@mui/icons-material/Person';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
@@ -12,11 +13,15 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import Link from 'next/link';
+
+import { ROUTES } from '@/constants/routes';
 
 import Logo from '../logo/Logo';
 import Tooltip from '../tooltip/Tooltip';
 
 function Navbar({
+  user,
   pages,
   cart,
   settings,
@@ -97,7 +102,29 @@ function Navbar({
               </Typography>
             ))}
           </Box>
+
           <Box sx={{ display: 'flex', flexGrow: 0, gap: 2 }}>
+            <Tooltip title={user ? 'Open settings' : 'Login'}>
+              <IconButton onClick={user ? onOpenUserMenu : null} sx={{ p: 0 }}>
+                {user ? (
+                  <Avatar
+                    sx={{
+                      bgcolor: 'primary.main',
+                      color: 'primary.contrastText',
+                    }}
+                  >
+                    RS
+                  </Avatar>
+                ) : (
+                  <Link
+                    href={`${ROUTES.login}?redirect=${encodeURIComponent(window.location.pathname)}`}
+                  >
+                    <PersonIcon fontSize="large" color="primary" />
+                  </Link>
+                )}
+              </IconButton>
+            </Tooltip>
+
             <Tooltip title="Cart">
               <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
                 <Badge
@@ -114,18 +141,6 @@ function Navbar({
               </IconButton>
             </Tooltip>
 
-            <Tooltip title="Open settings">
-              <IconButton onClick={onOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar
-                  sx={{
-                    bgcolor: 'primary.main',
-                    color: 'primary.contrastText',
-                  }}
-                >
-                  RS
-                </Avatar>
-              </IconButton>
-            </Tooltip>
             <Menu
               sx={{ mt: '45px' }}
               id="menu-appbar"

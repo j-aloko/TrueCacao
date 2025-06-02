@@ -14,6 +14,8 @@ function NavbarContainer() {
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
 
+  const user = false;
+
   const { cart } = useCart();
 
   const dispatch = useAppDispatch();
@@ -35,6 +37,7 @@ function NavbarContainer() {
 
   return (
     <Navbar
+      user={user}
       pages={pages}
       cart={cart}
       settings={settings}

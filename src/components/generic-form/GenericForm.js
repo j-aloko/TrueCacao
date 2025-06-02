@@ -6,7 +6,13 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { Form, Field } from 'react-final-form';
 
-function DefaultSubmitButton({ submitting, pristine, buttonText, buttonSize }) {
+function DefaultSubmitButton({
+  submitting,
+  pristine,
+  buttonText,
+  buttonSize,
+  buttonFullWidth,
+}) {
   return (
     <Box>
       <Button
@@ -14,6 +20,7 @@ function DefaultSubmitButton({ submitting, pristine, buttonText, buttonSize }) {
         variant="contained"
         size={buttonSize}
         disabled={submitting || pristine}
+        fullWidth={buttonFullWidth}
       >
         {buttonText}
       </Button>
@@ -29,6 +36,7 @@ function GenericForm({
   buttonOrientation = 'column',
   buttonText = 'Submit',
   buttonSize = 'large',
+  buttonFullWidth = false,
   renderButtons = null,
 }) {
   return (
@@ -104,6 +112,7 @@ function GenericForm({
                 pristine={pristine}
                 buttonText={buttonText}
                 buttonSize={buttonSize}
+                buttonFullWidth={buttonFullWidth}
               />
             )}
           </Box>

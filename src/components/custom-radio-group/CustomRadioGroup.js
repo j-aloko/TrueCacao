@@ -54,7 +54,7 @@ function CustomRadioGroup({ name, label, options = [] }) {
                   control={<Radio checked={input.value === option.value} />}
                   label={option.label}
                 />
-                <Box>{option.icon}</Box>
+                {option?.icon ? <Box>{option.icon}</Box> : null}
               </Box>
             ))}
           </RadioGroup>

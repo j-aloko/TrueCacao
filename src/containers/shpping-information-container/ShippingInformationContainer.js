@@ -6,6 +6,7 @@ import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import Link from 'next/link';
 
 import CustomCheckbox from '@/components/custom-checkbox/CustomCheckbox';
 import CustomRadioGroup from '@/components/custom-radio-group/CustomRadioGroup';
@@ -13,6 +14,7 @@ import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
 import TextBlock from '@/components/text-block/TextBlock';
 import Tooltip from '@/components/tooltip/Tooltip';
+import { ROUTES } from '@/constants/routes';
 import { formValidation, Yup } from '@/utils/formValidation';
 
 const fields = [
@@ -178,6 +180,8 @@ function ShippingInformationContainer() {
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <TextBlock text="Contact" variant="h6" component="h2" />
         <Button
+          component={Link}
+          href={`${ROUTES.login}?redirect=${encodeURIComponent(window.location.pathname)}`}
           size="small"
           variant="text"
           aria-label="login"
