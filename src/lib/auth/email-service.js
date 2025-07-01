@@ -1,44 +1,46 @@
 import emailjs from '@emailjs/browser';
-import 'dotenv/config';
 
-export async function sendVerificationEmail(email, token) {
-  const verificationLink = `${process.env.NEXTAUTH_URL}/verify-email?token=${token}`;
+emailjs.init({
+  // Optionally add these for better security:
+  blockHeadless: true,
 
-  const params = {
-    to_email: email,
-    to_name: email.split('@')[0],
-    verification_link: verificationLink,
-  };
+  // Blocks automated requests
+  blockList: {
+    // Block specific elements from being auto-filled
+    // by EmailJS's smart form detection
+    '*': false,
+  },
+  publicKey: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
+});
 
+export async function sendVerificationEmail(email, verificationLink) {
   try {
-    await emailjs.send(
-      process.env.EMAILJS_SERVICE_ID,
-      'verification_email',
-      params,
-      process.env.EMAILJS_PUBLIC_KEY
+    const response = await emailjs.send(
+      process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+      process.env.NEXT_PUBLIC_EMAILJS_EMAIL_CONFIRMATION_TEMPLATEID,
+      {
+        email,
+        link: verificationLink,
+      }
     );
-  } catch {
-    throw new Error('Failed to send verification email');
+    return response;
+  } catch (error) {
+    throw new Error(error);
   }
 }
 
-export async function sendPasswordResetEmail(email, token) {
-  const resetLink = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
-
-  const params = {
-    reset_link: resetLink,
-    to_email: email,
-    to_name: email.split('@')[0],
-  };
-
+export async function sendPasswordResetEmail(email, resetLink) {
   try {
-    await emailjs.send(
-      process.env.EMAILJS_SERVICE_ID,
-      'password_reset_email',
-      params,
-      process.env.EMAILJS_PUBLIC_KEY
+    const response = await emailjs.send(
+      process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
+      process.env.NEXT_PUBLIC_EMAILJS_PASSWORD_RESET_TEMPLATEID,
+      {
+        email,
+        link: resetLink,
+      }
     );
-  } catch {
-    throw new Error('Failed to send password reset email');
+    return response;
+  } catch (error) {
+    throw new Error(error);
   }
 }

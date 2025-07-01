@@ -12,6 +12,8 @@ import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
 import TextBlock from '@/components/text-block/TextBlock';
 import { ROUTES } from '@/constants/routes';
+import { registerUser } from '@/services/redux/features/auth/authSlice';
+import { useAppDispatch } from '@/services/redux/store';
 import { formValidation, Yup } from '@/utils/formValidation';
 
 const signupValidationSchema = Yup.object().shape({
@@ -32,6 +34,7 @@ const signupValidationSchema = Yup.object().shape({
 });
 
 function SignupContainer() {
+  const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const router = useRouter();
   const redirectPath = searchParams.get('redirect') || '/';
@@ -57,13 +60,7 @@ function SignupContainer() {
   ];
 
   const handleSignup = (values) => {
-    console.log(values);
-    // TODO: Implement actual signup logic
-    // After successful signup, you might:
-    // 1. Redirect to verification page (if email verification is required)
-    // 2. Auto-login and redirect to original path
-    // 3. Show success message and redirect to login with original redirect
-    router.push(`${ROUTES.login}?redirect=${encodeURIComponent(redirectPath)}`);
+    dispatch(registerUser({ ...values, router }));
   };
 
   return (

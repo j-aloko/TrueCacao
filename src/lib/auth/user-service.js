@@ -1,6 +1,5 @@
 import prisma from '@/lib/prisma';
 
-import { sendVerificationEmail } from './email-service';
 import { generateHash, generateToken, hashPassword } from './security';
 
 export async function createUser(email, password, name, role = 'CUSTOMER') {
@@ -13,7 +12,8 @@ export async function createUser(email, password, name, role = 'CUSTOMER') {
   }
 
   const hashedPassword = await hashPassword(password);
-  const verificationToken = generateToken();
+  const verificationToken = await generateToken();
+  const hashedVerificationToken = await generateHash(verificationToken);
 
   const user = await prisma.user.create({
     data: {
@@ -21,12 +21,15 @@ export async function createUser(email, password, name, role = 'CUSTOMER') {
       name,
       passwordHash: hashedPassword,
       role,
-      verificationToken: generateHash(verificationToken),
+      verificationToken: hashedVerificationToken,
       verificationTokenExpires: new Date(Date.now() + 86400000), // 1 day
+    },
+    select: {
+      email: true,
+      verificationToken: true,
     },
   });
 
-  await sendVerificationEmail(email, verificationToken);
   return user;
 }
 

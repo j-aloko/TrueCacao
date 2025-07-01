@@ -434,7 +434,10 @@ CREATE TABLE "User" (
     "name" TEXT NOT NULL,
     "role" "USER_ROLE" NOT NULL DEFAULT 'CUSTOMER',
     "verificationToken" TEXT,
+    "verificationTokenExpires" TIMESTAMP(3),
+    "verified" BOOLEAN NOT NULL DEFAULT false,
     "resetToken" TEXT,
+    "resetTokenExpires" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -698,7 +701,13 @@ CREATE INDEX "User_role_idx" ON "User"("role");
 CREATE INDEX "User_verificationToken_idx" ON "User"("verificationToken");
 
 -- CreateIndex
+CREATE INDEX "User_verificationTokenExpires_idx" ON "User"("verificationTokenExpires");
+
+-- CreateIndex
 CREATE INDEX "User_resetToken_idx" ON "User"("resetToken");
+
+-- CreateIndex
+CREATE INDEX "User_resetTokenExpires_idx" ON "User"("resetTokenExpires");
 
 -- CreateIndex
 CREATE INDEX "User_createdAt_idx" ON "User"("createdAt");

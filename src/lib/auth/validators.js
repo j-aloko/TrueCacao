@@ -4,7 +4,8 @@ import { z } from 'zod';
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Password requirements: min 8 chars, 1 uppercase, 1 lowercase, 1 number
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Z\d!@#$%^&*]{8,}$/;
 
 export const registerSchema = z.object({
   email: z.string().regex(emailRegex, 'Invalid email format'),
@@ -13,7 +14,7 @@ export const registerSchema = z.object({
     .string()
     .regex(
       passwordRegex,
-      'Password must contain at least 8 characters, one uppercase, one lowercase and one number'
+      'Password must contain at least 8 characters, one uppercase, one lowercase, one number and at least one special character'
     ),
 });
 
