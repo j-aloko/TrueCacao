@@ -1,0 +1,109 @@
+export const USER_ROLE = {
+  ADMIN: 'ADMIN',
+  CUSTOMER: 'CUSTOMER',
+  MANAGER: 'MANAGER',
+};
+
+export const ORDER_STATUS = {
+  CANCELED: 'CANCELED',
+  CONFIRMED: 'CONFIRMED',
+  DELIVERED: 'DELIVERED',
+  DRAFT: 'DRAFT',
+  FULFILLED: 'FULFILLED',
+  OUT_FOR_DELIVERY: 'OUT_FOR_DELIVERY',
+  PROCESSING: 'PROCESSING',
+  REFUNDED: 'REFUNDED',
+  RETURNED: 'RETURNED',
+  SHIPPED: 'SHIPPED',
+};
+
+export const CATEGORY_TYPE = {
+  COCOA_BAR: 'COCOA_BAR',
+  COCOA_POWDER: 'COCOA_POWDER',
+};
+
+export const COCOA_POWDER_PACKAGING = {
+  CARTON_OF_JARS: 'CARTON_OF_JARS',
+  CARTON_OF_SACHETS: 'CARTON_OF_SACHETS',
+  JAR: 'JAR',
+  SACHET: 'SACHET',
+};
+
+export const COCOA_BAR_PACKAGING = {
+  BOX_70_PERCENT: 'BOX_70_PERCENT',
+  BOX_80_PERCENT: 'BOX_80_PERCENT',
+  BOX_90_PERCENT: 'BOX_90_PERCENT',
+  CARTON_70_PERCENT: 'CARTON_70_PERCENT',
+  CARTON_80_PERCENT: 'CARTON_80_PERCENT',
+  CARTON_90_PERCENT: 'CARTON_90_PERCENT',
+};
+
+export const PRODUCT_TAG = {
+  BEST_SELLER: 'BEST_SELLER',
+  NEW_ARRIVAL: 'NEW_ARRIVAL',
+};
+
+export const DISCOUNT_TYPE = {
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
+  PERCENTAGE: 'PERCENTAGE',
+};
+
+export const PAYMENT_STATUS = {
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  PARTIALLY_REFUNDED: 'PARTIALLY_REFUNDED',
+  PENDING: 'PENDING',
+  REFUNDED: 'REFUNDED',
+};
+
+export const PAYMENT_METHOD = {
+  BANK_TRANSFER: 'BANK_TRANSFER',
+  CREDIT_CARD: 'CREDIT_CARD',
+  PAYPAL: 'PAYPAL',
+  SHOP_PAY: 'SHOP_PAY',
+};
+
+export const CURRENCY_CODE = {
+  GHS: 'GHS',
+  NGN: 'NGN',
+  USD: 'USD',
+};
+
+export const DISCOUNT_CODE_STATUS = {
+  ACTIVE: 'ACTIVE',
+  DISABLED: 'DISABLED',
+  EXPIRED: 'EXPIRED',
+};
+
+export const TRANSACTION_TYPE = {
+  // When customer returns item
+  ADJUSTMENT: 'ADJUSTMENT',
+
+  // When reservation is released
+  DAMAGE: 'DAMAGE',
+
+  // When items are marked as damaged
+  LOSS: 'LOSS',
+
+  PURCHASE: 'PURCHASE',
+  // When reserved for cart/order
+  RELEASE: 'RELEASE',
+
+  // Manual inventory adjustment
+  RESERVATION: 'RESERVATION',
+
+  // When sold to customer
+  RETURN: 'RETURN',
+
+  // When inventory is purchased from supplier
+  SALE: 'SALE', // When items are lost
+  TRANSFER_IN: 'TRANSFER_IN', // Inventory transferred in from another location
+  TRANSFER_OUT: 'TRANSFER_OUT', // Inventory transferred out to another location
+};
+
+export const EMAIL_VERIFICATION_STATUS = {
+  FAILED: 'FAILED',
+  IDLE: 'IDLE',
+  PENDING: 'PENDING',
+  VERIFIED: 'VERIFIED',
+};

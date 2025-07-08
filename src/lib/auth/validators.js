@@ -3,7 +3,8 @@ import { z } from 'zod';
 // Email validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Password requirements: min 8 chars, 1 uppercase, 1 lowercase, 1 number
+// Password requirements: min 8 chars, 1 uppercase, 1 lowercase, 1 number, at least one special character
+
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[a-zA-Z\d!@#$%^&*]{8,}$/;
 

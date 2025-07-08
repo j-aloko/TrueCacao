@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { USER_ROLE } from '@/constants/constants';
 import { createUser } from '@/lib/auth/user-service';
 import { validateRegistration } from '@/lib/auth/validators';
 
@@ -9,7 +10,7 @@ export async function POST(request) {
       email,
       password,
       name,
-      role = 'CUSTOMER',
+      role = USER_ROLE.CUSTOMER,
     } = await validateRegistration(request);
     const user = await createUser(email, password, name, role);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -10,39 +10,44 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
 import TextBlock from '@/components/text-block/TextBlock';
+import { EMAIL_VERIFICATION_STATUS } from '@/constants/constants';
 import { ROUTES } from '@/constants/routes';
+import {
+  resendEmailVerification,
+  verifyEmail,
+} from '@/services/redux/features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 
 function VerifyEmailContainer() {
   const searchParams = useSearchParams();
+
+  const dispatch = useAppDispatch();
+
+  const pendingEmail =
+    useAppSelector((state) => state.auth.pendingVerificationEmail) ||
+    searchParams.get('email');
+
+  const isResendVerificationLoading = useAppSelector(
+    (state) => state.auth.isLoading
+  );
+  const emailVerifictionStatus = useAppSelector(
+    (state) => state.auth.verificationStatus
+  );
+
   const token = searchParams.get('token');
   const redirectPath = searchParams.get('redirect') || '/';
-  const [isVerified, setIsVerified] = useState(false);
-  const [isLoading, setIsLoading] = useState(!!token); // Loading only if we have a token to verify
+
+  const handleResendVerificationLink = () => {
+    dispatch(resendEmailVerification({ email: pendingEmail }));
+  };
 
   useEffect(() => {
     if (token) {
-      // Verify the token with your API
-      const verifyEmail = async () => {
-        try {
-          console.log('Verifying token:', token);
-          // Simulate API call
-          // await api.verifyEmail(token);
-          await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-
-          setIsVerified(true);
-          setIsLoading(false);
-        } catch (error) {
-          console.error('Verification failed:', error);
-          setIsLoading(false);
-          // Handle error state if needed
-        }
-      };
-
-      verifyEmail();
+      dispatch(verifyEmail(token));
     }
-  }, [token]);
+  }, [dispatch, token]);
 
-  if (isLoading) {
+  if (token && emailVerifictionStatus === EMAIL_VERIFICATION_STATUS.PENDING) {
     return (
       <Box maxWidth={420} width="100%">
         <Stack spacing={2} textAlign="center">
@@ -63,7 +68,7 @@ function VerifyEmailContainer() {
     );
   }
 
-  if (isVerified) {
+  if (token && emailVerifictionStatus === EMAIL_VERIFICATION_STATUS.VERIFIED) {
     return (
       <Box maxWidth={420} width="100%">
         <Stack spacing={2} textAlign="center">
@@ -113,7 +118,14 @@ function VerifyEmailContainer() {
           variant="body1"
           component="p"
         />
-        <Button variant="contained" fullWidth sx={{ mt: 2 }}>
+        <Button
+          variant="contained"
+          loading={isResendVerificationLoading}
+          disabled={isResendVerificationLoading}
+          fullWidth
+          sx={{ mt: 2 }}
+          onClick={handleResendVerificationLink}
+        >
           Resend Confirmation Email
         </Button>
       </Stack>

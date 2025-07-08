@@ -13,7 +13,7 @@ import GenericForm from '@/components/generic-form/GenericForm';
 import TextBlock from '@/components/text-block/TextBlock';
 import { ROUTES } from '@/constants/routes';
 import { registerUser } from '@/services/redux/features/auth/authSlice';
-import { useAppDispatch } from '@/services/redux/store';
+import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 import { formValidation, Yup } from '@/utils/formValidation';
 
 const signupValidationSchema = Yup.object().shape({
@@ -35,6 +35,7 @@ const signupValidationSchema = Yup.object().shape({
 
 function SignupContainer() {
   const dispatch = useAppDispatch();
+  const isSigningUpLoading = useAppSelector((state) => state.auth.isLoading);
   const searchParams = useSearchParams();
   const router = useRouter();
   const redirectPath = searchParams.get('redirect') || '/';
@@ -85,6 +86,7 @@ function SignupContainer() {
           validate={formValidation(signupValidationSchema)}
           buttonText="Create My Account"
           buttonFullWidth
+          submitting={isSigningUpLoading}
           renderButtons={null}
         />
         <Typography variant="body1" component="div" textAlign="center">

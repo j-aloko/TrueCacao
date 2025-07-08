@@ -19,6 +19,7 @@ function DefaultSubmitButton({
         type="submit"
         variant="contained"
         size={buttonSize}
+        loading={submitting}
         disabled={submitting || pristine}
         fullWidth={buttonFullWidth}
       >
@@ -37,6 +38,7 @@ function GenericForm({
   buttonText = 'Submit',
   buttonSize = 'large',
   buttonFullWidth = false,
+  submitting = false,
   renderButtons = null,
 }) {
   return (
@@ -44,7 +46,7 @@ function GenericForm({
       onSubmit={onSubmit}
       initialValues={initialValues}
       validate={validate}
-      render={({ handleSubmit, submitting, pristine }) => (
+      render={({ handleSubmit, pristine }) => (
         <form onSubmit={handleSubmit}>
           <Box
             sx={{

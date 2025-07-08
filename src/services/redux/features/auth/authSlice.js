@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
+import { EMAIL_VERIFICATION_STATUS, USER_ROLE } from '@/constants/constants';
 import { ROUTES } from '@/constants/routes';
 import { sendVerificationEmail } from '@/lib/auth/email-service';
 import { showErrorToast, showSuccessToast } from '@/lib/toast/toast';
@@ -24,7 +25,7 @@ export const loginUser = createAsyncThunk(
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (
-    { name, email, password, role = 'CUSTOMER', router },
+    { name, email, password, role = USER_ROLE.CUSTOMER, router },
     { rejectWithValue }
   ) => {
     try {
@@ -44,11 +45,39 @@ export const registerUser = createAsyncThunk(
       const { user, message } = await response.json();
 
       // Create verification link
-      const verificationLink = `${window.location.origin}${ROUTES.verifyEmail}?token=${user.verificationToken}`;
+      const verificationLink = `${window.location.origin}${ROUTES.verifyEmail}?token=${user.verificationToken}&email=${encodeURIComponent(user.email)}`;
       await sendVerificationEmail(user.email, verificationLink);
       showSuccessToast(message);
-      router.push(ROUTES.verifyEmail);
-      return await response.json();
+      return { router, user };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const resendEmailVerification = createAsyncThunk(
+  'auth/resendEmailverification',
+  async ({ email }, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/v1/auth/resend-verification', {
+        body: JSON.stringify({ email }),
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        showErrorToast(error.message || 'Failed to resend verification');
+        return rejectWithValue(
+          error.message || 'Failed to resend verification'
+        );
+      }
+      const { message, user } = await response.json();
+      // Create verification link
+      const verificationLink = `${window.location.origin}${ROUTES.verifyEmail}?token=${user.verificationToken}&email=${encodeURIComponent(user.email)}`;
+      await sendVerificationEmail(user.email, verificationLink);
+      showSuccessToast(message);
+      return message;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -64,6 +93,11 @@ export const verifyEmail = createAsyncThunk(
         headers: { 'Content-Type': 'application/json' },
         method: 'GET',
       });
+      if (!response.ok) {
+        const error = await response.json();
+        showErrorToast(error.message || 'Failed to verify email');
+        return rejectWithValue(error.message || 'Failed to verify email');
+      }
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -143,8 +177,9 @@ const initialState = {
   isAuthenticated: false,
   isLoading: false,
   lastVisitedPage: null,
+  pendingVerificationEmail: null,
   user: null,
-  verificationStatus: 'idle', // 'idle' | 'pending' | 'verified' | 'failed'
+  verificationStatus: EMAIL_VERIFICATION_STATUS.IDLE,
 };
 
 const authSlice = createSlice({
@@ -171,8 +206,11 @@ const authSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state) => {
+      .addCase(registerUser.fulfilled, (state, action) => {
+        const { user, router } = action.payload;
         state.isLoading = false;
+        state.pendingVerificationEmail = user.email;
+        router.push(ROUTES.verifyEmail);
         state.error = null;
       })
       .addCase(registerUser.rejected, (state, action) => {
@@ -180,17 +218,31 @@ const authSlice = createSlice({
         state.error = action.payload?.message || 'Registration failed';
       })
 
+      .addCase(resendEmailVerification.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(resendEmailVerification.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(resendEmailVerification.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error =
+          action.payload?.message || 'Failed to resend verification link';
+      })
+
       // Email Verification
       .addCase(verifyEmail.pending, (state) => {
-        state.verificationStatus = 'pending';
+        state.verificationStatus = EMAIL_VERIFICATION_STATUS.PENDING;
         state.error = null;
       })
       .addCase(verifyEmail.fulfilled, (state) => {
-        state.verificationStatus = 'verified';
+        state.verificationStatus = EMAIL_VERIFICATION_STATUS.VERIFIED;
         state.error = null;
       })
       .addCase(verifyEmail.rejected, (state, action) => {
-        state.verificationStatus = 'failed';
+        state.verificationStatus = EMAIL_VERIFICATION_STATUS.FAILED;
         state.error = action.payload?.message || 'Email verification failed';
       })
 
@@ -256,11 +308,22 @@ const authSlice = createSlice({
     clearAuthError: (state) => {
       state.error = null;
     },
+    clearPendingVerificationEmail: (state) => {
+      state.pendingVerificationEmail = null;
+    },
     setLastVisitedPage: (state, action) => {
       state.lastVisitedPage = action.payload;
+    },
+    setPendingVerificationEmail: (state, action) => {
+      state.pendingVerificationEmail = action.payload;
     },
   },
 });
 
-export const { setLastVisitedPage, clearAuthError } = authSlice.actions;
-export default authSlice.reducer;
+export const {
+  setLastVisitedPage,
+  clearAuthError,
+  setPendingVerificationEmail,
+  clearPendingVerificationEmail,
+} = authSlice.actions;
+export const authReducer = authSlice.reducer;

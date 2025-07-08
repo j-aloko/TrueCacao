@@ -7,7 +7,7 @@ export const showErrorToast = (message) => {
     draggable: true,
     hideProgressBar: false,
     pauseOnHover: true,
-    position: 'bottom-right',
+    position: 'top-right',
     progress: undefined,
     theme: 'colored',
   });
@@ -20,7 +20,7 @@ export const showSuccessToast = (message) => {
     draggable: true,
     hideProgressBar: false,
     pauseOnHover: true,
-    position: 'bottom-right',
+    position: 'top-right',
     progress: undefined,
     theme: 'colored',
   });

@@ -1,16 +1,30 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-// import Cookies from 'js-cookie';
+import Cookies from 'js-cookie';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-// import { CookieStorage } from 'redux-persist-cookie-storage';
+import { CookieStorage } from 'redux-persist-cookie-storage';
 
+import { authReducer } from './features/auth/authSlice';
 import { cartReducer } from './features/cart/cartSlice';
 import { cartDrawerReducer } from './features/cart-drawer/cartDrawerSlice';
 import { cartExpirationMiddleware } from './middleware/cartMiddleware';
 
-// const sessionExpiry = 60 * 60 * 24 * 7; // 7 days
+const verificationExpiry = 60 * 60 * 24; // 24 hours expiration for verification
 
+const sessionCookieStorage = new CookieStorage(Cookies, {
+  expiration: {
+    default: verificationExpiry,
+  },
+  sameSite: 'Strict',
+  secure: process.env.NODE_ENV === 'production',
+});
+
+const authPersistConfig = {
+  key: 'auth',
+  storage: sessionCookieStorage,
+  whitelist: ['pendingVerificationEmail', 'user'],
+};
 // const sessionCookieStorage = new CookieStorage(Cookies, {
 //   expiration: {
 //     default: sessionExpiry,
@@ -33,6 +47,7 @@ const cartPersistConfig = {
 };
 
 const rootReducer = combineReducers({
+  auth: persistReducer(authPersistConfig, authReducer),
   cart: persistReducer(cartPersistConfig, cartReducer),
   cartDrawer: cartDrawerReducer,
 });
