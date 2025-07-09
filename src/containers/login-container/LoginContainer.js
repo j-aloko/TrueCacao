@@ -7,12 +7,14 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
 import TextBlock from '@/components/text-block/TextBlock';
 import { ROUTES } from '@/constants/routes';
+import { loginUser } from '@/services/redux/features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 import { formValidation, Yup } from '@/utils/formValidation';
 
 const loginValidationSchema = Yup.object().shape({
@@ -32,10 +34,9 @@ const loginValidationSchema = Yup.object().shape({
 });
 
 function LoginContainer() {
-  const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
   const router = useRouter();
-  const currentPath = usePathname();
-  const redirectPath = searchParams.get('redirect') || '/';
+  const isLoggingInLoading = useAppSelector((state) => state.auth.isLoading);
 
   const fields = [
     {
@@ -53,7 +54,7 @@ function LoginContainer() {
             size="small"
             sx={{ p: 0, textTransform: 'initial' }}
             component={Link}
-            href={`${ROUTES.forgotPassword}?redirect=${encodeURIComponent(currentPath)}`}
+            href={ROUTES.forgotPassword}
           >
             Forgot password?
           </Button>
@@ -65,10 +66,7 @@ function LoginContainer() {
   ];
 
   const handleLogin = (values) => {
-    console.log(values);
-    // TODO: Implement actual login logic
-    // After successful login:
-    router.push(redirectPath);
+    dispatch(loginUser({ ...values, router }));
   };
 
   return (
@@ -93,13 +91,14 @@ function LoginContainer() {
           validate={formValidation(loginValidationSchema)}
           buttonText="Login"
           buttonFullWidth
+          submitting={isLoggingInLoading}
           renderButtons={null}
         />
         <Typography variant="body1" component="div" textAlign="center">
           <>
             Don&apos;t have an account?
             <Link
-              href={`${ROUTES.signup}?redirect=${encodeURIComponent(currentPath)}`}
+              href={ROUTES.signup}
               style={{
                 color: 'inherit',
                 fontWeight: 'bold',

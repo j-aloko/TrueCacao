@@ -107,3 +107,7 @@ export const EMAIL_VERIFICATION_STATUS = {
   PENDING: 'PENDING',
   VERIFIED: 'VERIFIED',
 };
+
+export const EMAIL_VERIFICATION_EXPIRY = 60 * 60 * 24; // 24 hours
+export const ACCESS_TOKEN_MAX_AGE = 60 * 60; // 1 hour in seconds
+export const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds

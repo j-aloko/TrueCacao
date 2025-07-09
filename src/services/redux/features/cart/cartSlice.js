@@ -158,14 +158,13 @@ export const removeCartItem = createAsyncThunk(
 
 export const mergeCarts = createAsyncThunk(
   'cart/merge',
-  async (_, { getState, rejectWithValue }) => {
+  async ({ userId, sessionId }, { rejectWithValue }) => {
     try {
-      const { auth } = getState();
-      const sessionId = Cookies.get('sessionId');
-      if (auth.user?.id && sessionId) {
+      if (!userId || !sessionId) return null;
+      if (userId && sessionId) {
         const response = await fetch('/api/v1/cart/merge', {
           body: JSON.stringify({ sessionId }),
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
           method: 'POST',
         });
         if (!response.ok) {

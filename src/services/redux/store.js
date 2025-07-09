@@ -5,16 +5,16 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { CookieStorage } from 'redux-persist-cookie-storage';
 
+import { EMAIL_VERIFICATION_EXPIRY } from '@/constants/constants';
+
 import { authReducer } from './features/auth/authSlice';
 import { cartReducer } from './features/cart/cartSlice';
 import { cartDrawerReducer } from './features/cart-drawer/cartDrawerSlice';
 import { cartExpirationMiddleware } from './middleware/cartMiddleware';
 
-const verificationExpiry = 60 * 60 * 24; // 24 hours expiration for verification
-
 const sessionCookieStorage = new CookieStorage(Cookies, {
   expiration: {
-    default: verificationExpiry,
+    default: EMAIL_VERIFICATION_EXPIRY,
   },
   sameSite: 'Strict',
   secure: process.env.NODE_ENV === 'production',
@@ -23,21 +23,8 @@ const sessionCookieStorage = new CookieStorage(Cookies, {
 const authPersistConfig = {
   key: 'auth',
   storage: sessionCookieStorage,
-  whitelist: ['pendingVerificationEmail', 'user'],
+  whitelist: ['pendingVerificationEmail', 'user', 'verificationStatus'],
 };
-// const sessionCookieStorage = new CookieStorage(Cookies, {
-//   expiration: {
-//     default: sessionExpiry,
-//   },
-//   httpOnly: false,
-//   secure: process.env.NODE_ENV === 'production',
-// });
-
-// const sessionPersistConfig = {
-//   key: 'session',
-//   storage: sessionCookieStorage,
-//   whitelist: ['user', 'auth'],
-// };
 
 const cartPersistConfig = {
   blacklist: ['loading', 'loadingStates', 'error', 'itemLoadingStates'],

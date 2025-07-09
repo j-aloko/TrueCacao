@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useCallback } from 'react';
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -20,86 +20,76 @@ import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 
 function VerifyEmailContainer() {
   const searchParams = useSearchParams();
-
   const dispatch = useAppDispatch();
 
-  const pendingEmail =
-    useAppSelector((state) => state.auth.pendingVerificationEmail) ||
-    searchParams.get('email');
+  const token = useMemo(() => searchParams.get('token'), [searchParams]);
+  const urlEmail = useMemo(() => searchParams.get('email'), [searchParams]);
 
-  const isResendVerificationLoading = useAppSelector(
-    (state) => state.auth.isLoading
-  );
-  const emailVerifictionStatus = useAppSelector(
-    (state) => state.auth.verificationStatus
-  );
-
-  const token = searchParams.get('token');
-  const redirectPath = searchParams.get('redirect') || '/';
-
-  const handleResendVerificationLink = () => {
-    dispatch(resendEmailVerification({ email: pendingEmail }));
-  };
+  const auth = useAppSelector((state) => state.auth);
+  const pendingEmail = auth.pendingVerificationEmail || urlEmail;
+  const isResendVerificationLoading = auth.isLoading;
+  const emailVerificationStatus = auth.verificationStatus;
 
   useEffect(() => {
-    if (token) {
+    if (token && emailVerificationStatus === EMAIL_VERIFICATION_STATUS.IDLE) {
       dispatch(verifyEmail(token));
     }
-  }, [dispatch, token]);
+  }, [dispatch, token, emailVerificationStatus]);
 
-  if (token && emailVerifictionStatus === EMAIL_VERIFICATION_STATUS.PENDING) {
-    return (
-      <Box maxWidth={420} width="100%">
-        <Stack spacing={2} textAlign="center">
-          <TextBlock
-            text="Verifying Email..."
-            variant="h5"
-            component="h1"
-            textAlign="center"
-            sx={{ fontWeight: 600 }}
-          />
-          <TextBlock
-            text="Please wait while we verify your email address."
-            variant="body1"
-            component="p"
-          />
-        </Stack>
-      </Box>
-    );
-  }
+  const handleResendVerificationLink = useCallback(() => {
+    if (pendingEmail) {
+      dispatch(resendEmailVerification({ email: pendingEmail }));
+    }
+  }, [dispatch, pendingEmail]);
 
-  if (token && emailVerifictionStatus === EMAIL_VERIFICATION_STATUS.VERIFIED) {
-    return (
-      <Box maxWidth={420} width="100%">
-        <Stack spacing={2} textAlign="center">
-          <TextBlock
-            text="Email Verified"
-            variant="h5"
-            component="h1"
-            textAlign="center"
-            sx={{ fontWeight: 600 }}
-          />
-          <TextBlock
-            text="Your email has been successfully verified. You can now login to your account."
-            variant="body1"
-            component="p"
-          />
-          <Button
-            variant="contained"
-            component={Link}
-            href={`${ROUTES.login}?redirect=${encodeURIComponent(redirectPath)}`}
-            fullWidth
-            sx={{ mt: 2 }}
-          >
-            Continue to Login
-          </Button>
-        </Stack>
-      </Box>
-    );
-  }
+  const renderPending = () => (
+    <Box maxWidth={420} width="100%">
+      <Stack spacing={2} textAlign="center">
+        <TextBlock
+          text="Verifying Email..."
+          variant="h5"
+          component="h1"
+          textAlign="center"
+          sx={{ fontWeight: 600 }}
+        />
+        <TextBlock
+          text="Please wait while we verify your email address."
+          variant="body1"
+          component="p"
+        />
+      </Stack>
+    </Box>
+  );
 
-  // Default state when no token is present
-  return (
+  const renderVerified = () => (
+    <Box maxWidth={420} width="100%">
+      <Stack spacing={2} textAlign="center">
+        <TextBlock
+          text="Email Verified"
+          variant="h5"
+          component="h1"
+          textAlign="center"
+          sx={{ fontWeight: 600 }}
+        />
+        <TextBlock
+          text="Your email has been successfully verified. You can now login to your account."
+          variant="body1"
+          component="p"
+        />
+        <Button
+          variant="contained"
+          component={Link}
+          href={ROUTES.login}
+          fullWidth
+          sx={{ mt: 2 }}
+        >
+          Continue to Login
+        </Button>
+      </Stack>
+    </Box>
+  );
+
+  const renderDefault = () => (
     <Box maxWidth={420} width="100%">
       <Stack spacing={2} textAlign="center">
         <TextBlock
@@ -110,8 +100,8 @@ function VerifyEmailContainer() {
           sx={{ fontWeight: 600 }}
         />
         <Alert severity="info" sx={{ textAlign: 'left' }}>
-          We&apos;ve sent a verification link to your email address. Please your
-          inbox and click on the link to verify your email.
+          We&apos;ve sent a verification link to your email address. Please
+          check your inbox and click on the link to verify your email.
         </Alert>
         <TextBlock
           text="If you didn't receive the email, check your spam folder or request a new verification email."
@@ -131,6 +121,16 @@ function VerifyEmailContainer() {
       </Stack>
     </Box>
   );
+
+  if (token && emailVerificationStatus === EMAIL_VERIFICATION_STATUS.PENDING) {
+    return renderPending();
+  }
+
+  if (token && emailVerificationStatus === EMAIL_VERIFICATION_STATUS.VERIFIED) {
+    return renderVerified();
+  }
+
+  return renderDefault();
 }
 
 export default VerifyEmailContainer;

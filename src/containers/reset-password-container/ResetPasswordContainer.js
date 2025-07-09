@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
@@ -45,14 +45,10 @@ const validationSchema = Yup.object().shape({
 
 function ResetPasswordContainer() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const token = searchParams.get('token');
-  const redirectPath = searchParams.get('redirect') || '/';
 
   const handleSubmit = (values) => {
     console.log({ ...values, token });
-    // After successful password reset, redirect to login with original redirect
-    router.push(`${ROUTES.login}?redirect=${encodeURIComponent(redirectPath)}`);
   };
 
   return (
@@ -83,7 +79,7 @@ function ResetPasswordContainer() {
           <>
             Remember your password?
             <Link
-              href={`${ROUTES.login}?redirect=${encodeURIComponent(redirectPath)}`}
+              href={ROUTES.login}
               style={{
                 color: 'inherit',
                 fontWeight: 'bold',

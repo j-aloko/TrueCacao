@@ -1,0 +1,11 @@
+model VerificationToken {
+    id        String   @id @default(uuid())
+    token     String   @unique
+    expiresAt DateTime
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    createdAt DateTime @default(now())
+
+    @@index([token])
+    @@index([expiresAt])
+}

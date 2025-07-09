@@ -1,28 +1,31 @@
 import { USER_ROLE } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
-export function requireRole(role) {
-  return function handler(request) {
-    const userRole = request.headers.get('x-user-role');
+import { verifyAccessToken } from './jwt';
 
-    if (!userRole || !Object.values(USER_ROLE).includes(userRole)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+export function requireRole(requiredRole) {
+  return async function handler(request) {
+    try {
+      const accessToken = request.cookies.get('accessToken')?.value;
+      if (!accessToken) throw new Error('Missing access token');
+
+      const payload = await verifyAccessToken(accessToken);
+      const { role } = payload;
+
+      const roleIsValid = Object.values(USER_ROLE).includes(role);
+      if (!roleIsValid) throw new Error('Unauthorized');
+
+      if (requiredRole === 'ADMIN' && role !== 'ADMIN') {
+        throw new Error('Admin access required');
+      }
+
+      if (requiredRole === 'MANAGER' && role === 'CUSTOMER') {
+        throw new Error('Manager access required');
+      }
+
+      return NextResponse.next();
+    } catch (error) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
     }
-
-    if (role === 'ADMIN' && userRole !== 'ADMIN') {
-      return NextResponse.json(
-        { error: 'Admin access required' },
-        { status: 403 }
-      );
-    }
-
-    if (role === 'MANAGER' && userRole === 'CUSTOMER') {
-      return NextResponse.json(
-        { error: 'Manager access required' },
-        { status: 403 }
-      );
-    }
-
-    return NextResponse.next();
   };
 }

@@ -1,23 +1,38 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import Cookies from 'js-cookie';
 
 import { EMAIL_VERIFICATION_STATUS, USER_ROLE } from '@/constants/constants';
 import { ROUTES } from '@/constants/routes';
 import { sendVerificationEmail } from '@/lib/auth/email-service';
 import { showErrorToast, showSuccessToast } from '@/lib/toast/toast';
 
+import { mergeCarts } from '../cart/cartSlice';
+
 export const loginUser = createAsyncThunk(
   'auth/login',
-  async ({ email, password }, { rejectWithValue }) => {
+  async ({ email, password, router }, { rejectWithValue, dispatch }) => {
     try {
-      const response = await fetch('/api/v1/auth/login', {
+      const loginResponse = await fetch('/api/v1/auth/login', {
         body: JSON.stringify({ email, password }),
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
       });
-      return response.data;
+
+      if (!loginResponse.ok) {
+        const error = await loginResponse.json();
+        showErrorToast(error.message || 'Login failed');
+        return rejectWithValue(error.message || 'Login failed');
+      }
+
+      const { user } = await loginResponse.json();
+
+      const sessionId = Cookies.get('sessionId');
+      await dispatch(mergeCarts({ sessionId, userId: user?.id }));
+
+      return { router, user };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.message || 'Unexpected error during login');
     }
   }
 );
@@ -162,12 +177,39 @@ export const logoutUser = createAsyncThunk(
     try {
       const response = await fetch('/api/v1/auth/logout', {
         credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        return rejectWithValue(error.message || 'Logout failed');
+      }
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.message || 'Logout failed');
+    }
+  }
+);
+
+export const refreshAccessToken = createAsyncThunk(
+  'auth/refreshAccessToken',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await fetch('/api/v1/auth/refresh-token', {
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
       });
-      return response.data;
+
+      if (!response.ok) {
+        const error = await response.json();
+        return rejectWithValue(error.message || 'Refresh token expired');
+      }
+      return true;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.message || 'Session expired');
     }
   }
 );
@@ -191,10 +233,15 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
+        const { user, router } = action.payload;
         state.isLoading = false;
         state.isAuthenticated = true;
-        state.user = action.payload.user;
+        state.user = user;
+        state.verificationStatus = user.verified
+          ? EMAIL_VERIFICATION_STATUS.VERIFIED
+          : EMAIL_VERIFICATION_STATUS.IDLE;
         state.error = null;
+        router.push(ROUTES.home);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -210,8 +257,8 @@ const authSlice = createSlice({
         const { user, router } = action.payload;
         state.isLoading = false;
         state.pendingVerificationEmail = user.email;
-        router.push(ROUTES.verifyEmail);
         state.error = null;
+        router.push(ROUTES.verifyEmail);
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -290,16 +337,25 @@ const authSlice = createSlice({
       // Logout
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;
+        state.error = null;
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.isLoading = false;
         state.isAuthenticated = false;
         state.user = null;
+        state.pendingVerificationEmail = null;
+        state.verificationStatus = EMAIL_VERIFICATION_STATUS.IDLE;
+        state.lastVisitedPage = null;
         state.error = null;
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload?.message || 'Logout failed';
+        state.isAuthenticated = false;
+        state.user = null;
+        state.pendingVerificationEmail = null;
+        state.verificationStatus = EMAIL_VERIFICATION_STATUS.IDLE;
+        state.lastVisitedPage = null;
+        state.error = action.payload || 'Logout failed';
       });
   },
   initialState,

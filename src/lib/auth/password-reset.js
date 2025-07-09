@@ -5,44 +5,49 @@ import { hashPassword, generateToken, generateHash } from './security';
 
 export async function initiatePasswordReset(email) {
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return; // Don't reveal if user exists
+  if (!user) return;
 
-  const resetToken = generateToken();
-  const expiresAt = new Date(Date.now() + 3600000); // 1 hour
+  await prisma.resetToken.deleteMany({ where: { userId: user.id } });
 
-  await prisma.user.update({
+  const rawToken = await generateToken();
+  const hashedToken = await generateHash(rawToken);
+
+  await prisma.resetToken.create({
     data: {
-      resetToken: generateHash(resetToken),
-      resetTokenExpires: expiresAt,
+      expiresAt: new Date(Date.now() + 3600000),
+      token: hashedToken,
+      userId: user.id,
     },
-    where: { id: user.id },
   });
 
-  await sendPasswordResetEmail(email, resetToken);
+  await sendPasswordResetEmail(email, rawToken);
 }
 
 export async function completePasswordReset(token, newPassword) {
-  const hashedToken = generateHash(token);
+  const hashedToken = await generateHash(token);
 
-  const user = await prisma.user.findFirst({
+  const tokenRecord = await prisma.resetToken.findFirst({
+    include: { user: true },
     where: {
-      resetToken: hashedToken,
-      resetTokenExpires: { gt: new Date() },
+      expiresAt: { gt: new Date() },
+      token: hashedToken,
     },
   });
 
-  if (!user) {
+  if (!tokenRecord) {
     throw new Error('Invalid or expired token');
   }
 
   const hashedPassword = await hashPassword(newPassword);
 
-  return prisma.user.update({
+  await prisma.user.update({
     data: {
       passwordHash: hashedPassword,
-      resetToken: null,
-      resetTokenExpires: null,
     },
-    where: { id: user.id },
+    where: { id: tokenRecord.userId },
+  });
+
+  await prisma.resetToken.delete({
+    where: { id: tokenRecord.id },
   });
 }

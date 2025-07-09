@@ -1,12 +1,40 @@
-import { USER_ROLE } from '@/constants/constants';
+import { EMAIL_VERIFICATION_EXPIRY, USER_ROLE } from '@/constants/constants';
 import prisma from '@/lib/prisma';
 
-import { generateHash, generateToken, hashPassword } from './security';
+import {
+  generateHash,
+  generateToken,
+  hashPassword,
+  verifyPassword,
+} from './security';
+import { createSession } from './session-service';
 
-/**
- * Create a new user with a hashed password and a secure email verification token.
- * Returns the raw token for frontend email delivery (not stored).
- */
+export async function loginUser({ email, password, ipAddress, userAgent }) {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw new Error('Invalid credentials');
+
+  const isValid = await verifyPassword(password, user.passwordHash);
+  if (!isValid) throw new Error('Invalid credentials');
+
+  const { accessToken, refreshToken } = await createSession(
+    user,
+    ipAddress,
+    userAgent
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      email: user.email,
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      verified: user.verified,
+    },
+  };
+}
+
 export async function createUser(
   email,
   password,
@@ -14,11 +42,13 @@ export async function createUser(
   role = USER_ROLE.CUSTOMER
 ) {
   const existingUser = await prisma.user.findUnique({ where: { email } });
-  if (existingUser) throw new Error('Email already in use');
+  if (existingUser) {
+    throw new Error('Email already in use');
+  }
 
   const hashedPassword = await hashPassword(password);
-  const rawVerificationToken = await generateToken();
-  const hashedVerificationToken = await generateHash(rawVerificationToken);
+  const rawToken = await generateToken();
+  const hashedToken = await generateHash(rawToken);
 
   const user = await prisma.user.create({
     data: {
@@ -26,77 +56,81 @@ export async function createUser(
       name,
       passwordHash: hashedPassword,
       role,
-      verificationToken: hashedVerificationToken,
-      verificationTokenExpires: new Date(Date.now() + 86400000), // expires in 24h
-    },
-    select: {
-      email: true,
-      id: true,
-      verified: true,
     },
   });
 
-  return {
-    email: user.email,
-    verificationToken: rawVerificationToken,
-  };
+  await prisma.verificationToken.create({
+    data: {
+      expiresAt: new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY * 1000), // 24 hours
+      token: hashedToken,
+      userId: user.id,
+    },
+  });
+
+  return { email: user.email, verificationToken: rawToken };
 }
 
-/**
- * Resend a verification token for a user who hasn't verified yet.
- * Returns raw token for frontend delivery.
- */
 export async function resendVerification(email) {
-  const existingUser = await prisma.user.findUnique({ where: { email } });
-  if (!existingUser) throw new Error('User not found');
-  if (existingUser.verified) throw new Error('User already verified');
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new Error('User not found');
+  }
+  if (user.verified) {
+    throw new Error('User already verified');
+  }
+
+  await prisma.verificationToken.deleteMany({ where: { userId: user.id } });
 
   const rawToken = await generateToken();
   const hashedToken = await generateHash(rawToken);
 
-  const updatedUser = await prisma.user.update({
+  await prisma.verificationToken.create({
     data: {
-      verificationToken: hashedToken,
-      verificationTokenExpires: new Date(Date.now() + 86400000),
+      expiresAt: new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY * 1000), // 24 hours
+      token: hashedToken,
+      userId: user.id,
     },
-    select: {
-      email: true,
-      id: true,
-      verified: true,
-    },
-    where: { email },
   });
 
-  return {
-    email: updatedUser.email,
-    verificationToken: rawToken,
-  };
+  return { email: user.email, verificationToken: rawToken };
 }
 
-/**
- * Verifies user email by checking the hashed token and expiration.
- * Clears token fields upon success.
- */
 export async function verifyUserEmail(token) {
   const hashedToken = await generateHash(token);
-
-  const user = await prisma.user.findFirst({
+  const tokenRecord = await prisma.verificationToken.findFirst({
+    include: { user: true },
     where: {
-      verificationToken: hashedToken,
-      verificationTokenExpires: { gt: new Date() }, // token still valid
+      expiresAt: { gt: new Date() },
+      token: hashedToken,
     },
   });
-
-  if (!user) throw new Error('Invalid or expired token');
-
+  if (!tokenRecord) {
+    throw new Error('Invalid or expired token');
+  }
   await prisma.user.update({
-    data: {
-      verificationToken: null,
-      verificationTokenExpires: null,
-      verified: true,
+    data: { verified: true },
+    where: { id: tokenRecord.userId },
+  });
+  await prisma.verificationToken.delete({
+    where: { id: tokenRecord.id },
+  });
+  return { email: tokenRecord.user.email, verified: true };
+}
+
+export async function verifyToken(token) {
+  const hashedToken = await generateHash(token);
+
+  const tokenRecord = await prisma.verificationToken.findFirst({
+    include: { user: true },
+    where: {
+      expiresAt: { gt: new Date() },
+      token: hashedToken,
     },
-    where: { id: user.id },
   });
 
-  return { email: user.email, verified: true };
+  if (!tokenRecord) {
+    throw new Error('Invalid or expired token');
+  }
+
+  return tokenRecord;
 }

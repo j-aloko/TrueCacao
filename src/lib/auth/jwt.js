@@ -2,13 +2,13 @@ import jwt from 'jsonwebtoken';
 
 export async function generateAccessToken(payload) {
   return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRATION,
+    expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRATION, // e.g., '15m'
   });
 }
 
 export async function generateRefreshToken(payload) {
   return jwt.sign(payload, process.env.REFRESH_SECRET, {
-    expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION,
+    expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION, // e.g., '7d'
   });
 }
 
@@ -28,7 +28,7 @@ export async function createSessionTokens(user, session) {
   };
 
   return {
-    accessToken: generateAccessToken(payload),
-    refreshToken: generateRefreshToken(payload),
+    accessToken: await generateAccessToken(payload),
+    refreshToken: await generateRefreshToken(payload),
   };
 }

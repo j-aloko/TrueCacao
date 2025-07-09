@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
@@ -36,9 +36,7 @@ const signupValidationSchema = Yup.object().shape({
 function SignupContainer() {
   const dispatch = useAppDispatch();
   const isSigningUpLoading = useAppSelector((state) => state.auth.isLoading);
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const redirectPath = searchParams.get('redirect') || '/';
 
   const fields = [
     {
@@ -93,7 +91,7 @@ function SignupContainer() {
           <>
             Already have an account?
             <Link
-              href={`${ROUTES.login}?redirect=${encodeURIComponent(redirectPath)}`}
+              href={ROUTES.login}
               style={{
                 color: 'inherit',
                 fontWeight: 'bold',

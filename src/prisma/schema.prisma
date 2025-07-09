@@ -532,6 +532,19 @@ model ProductVariant {
 }
 
 
+model ResetToken {
+    id        String   @id @default(uuid())
+    token     String   @unique
+    expiresAt DateTime
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    createdAt DateTime @default(now())
+
+    @@index([token])
+    @@index([expiresAt])
+}
+
+
 model Review {
   id        String   @id @default(uuid())
   userId    String
@@ -634,35 +647,44 @@ model TrackingLog {
 
 
 model User {
-  id                       String          @id @default(uuid())
-  email                    String          @unique
-  passwordHash             String
-  name                     String
-  role                     USER_ROLE       @default(CUSTOMER)
-  verificationToken        String?         @unique
-  verificationTokenExpires DateTime?
-  verified                 Boolean         @default(false)
-  resetToken               String?         @unique
-  resetTokenExpires        DateTime?
-  sessions                 Session[]
-  orders                   Order[]
-  carts                    Cart[]          @relation("UserCarts")
-  abandonedCarts           AbandonedCart[]
-  auditLogs                AuditLog[]
-  reviews                  Review[]
-  wishlistItems            Wishlist[]
-  addresses                Address[]
-  notifications            Notification[]
-  createdAt                DateTime        @default(now())
-  updatedAt                DateTime        @updatedAt
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         USER_ROLE @default(CUSTOMER)
+  verified     Boolean   @default(false)
+
+  sessions           Session[]
+  orders             Order[]
+  carts              Cart[]              @relation("UserCarts")
+  abandonedCarts     AbandonedCart[]
+  auditLogs          AuditLog[]
+  reviews            Review[]
+  wishlistItems      Wishlist[]
+  addresses          Address[]
+  notifications      Notification[]
+  verificationTokens VerificationToken[]
+  resetTokens        ResetToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([email])
   @@index([role])
-  @@index([verificationToken])
-  @@index([verificationTokenExpires])
-  @@index([resetToken])
-  @@index([resetTokenExpires])
   @@index([createdAt])
+}
+
+
+model VerificationToken {
+    id        String   @id @default(uuid())
+    token     String   @unique
+    expiresAt DateTime
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    createdAt DateTime @default(now())
+
+    @@index([token])
+    @@index([expiresAt])
 }
 
 

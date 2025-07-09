@@ -116,9 +116,7 @@ function Navbar({
                     RS
                   </Avatar>
                 ) : (
-                  <Link
-                    href={`${ROUTES.login}?redirect=${encodeURIComponent(window.location.pathname)}`}
-                  >
+                  <Link href={ROUTES.login}>
                     <PersonIcon fontSize="large" color="primary" />
                   </Link>
                 )}

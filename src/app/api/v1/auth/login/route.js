@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 
-import { verifyPassword } from '@/lib/auth/security';
-import { createSession } from '@/lib/auth/session-service';
+import {
+  ACCESS_TOKEN_MAX_AGE,
+  REFRESH_TOKEN_MAX_AGE,
+} from '@/constants/constants';
+import { loginUser } from '@/lib/auth/user-service';
 import { validateLogin } from '@/lib/auth/validators';
-import prisma from '@/lib/prisma';
 
 export async function POST(request) {
   try {
@@ -11,44 +13,27 @@ export async function POST(request) {
     const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
 
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) throw new Error('Invalid credentials');
-
-    const validPassword = await verifyPassword(password, user.passwordHash);
-    if (!validPassword) throw new Error('Invalid credentials');
-
-    if (!user.verified) throw new Error('Please verify your email first');
-
-    const { accessToken, refreshToken } = await createSession(
-      user,
+    const { user, accessToken, refreshToken } = await loginUser({
+      email,
       ipAddress,
-      userAgent
-    );
+      password,
+      userAgent,
+    });
 
-    const response = NextResponse.json(
-      {
-        user: {
-          email: user.email,
-          id: user.id,
-          name: user.name,
-          role: user.role,
-        },
-      },
-      { status: 200 }
-    );
+    const response = NextResponse.json({ user }, { status: 200 });
 
     response.cookies.set('accessToken', accessToken, {
       httpOnly: true,
-      maxAge: 900,
+      maxAge: ACCESS_TOKEN_MAX_AGE, // 1 hour
       sameSite: 'strict',
-      secure: process.env.NODE_ENV === 'production', // 15 minutes
+      secure: process.env.NODE_ENV === 'production',
     });
 
     response.cookies.set('refreshToken', refreshToken, {
       httpOnly: true,
-      maxAge: 604800,
+      maxAge: REFRESH_TOKEN_MAX_AGE, // 7 days
       sameSite: 'strict',
-      secure: process.env.NODE_ENV === 'production', // 7 days
+      secure: process.env.NODE_ENV === 'production',
     });
 
     return response;

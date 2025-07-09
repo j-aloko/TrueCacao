@@ -340,6 +340,17 @@ CREATE TABLE "ProductVariant" (
 );
 
 -- CreateTable
+CREATE TABLE "ResetToken" (
+    "id" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ResetToken_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Review" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -433,15 +444,22 @@ CREATE TABLE "User" (
     "passwordHash" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "role" "USER_ROLE" NOT NULL DEFAULT 'CUSTOMER',
-    "verificationToken" TEXT,
-    "verificationTokenExpires" TIMESTAMP(3),
     "verified" BOOLEAN NOT NULL DEFAULT false,
-    "resetToken" TEXT,
-    "resetTokenExpires" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "VerificationToken" (
+    "id" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "VerificationToken_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -641,6 +659,15 @@ CREATE INDEX "ProductVariant_stock_idx" ON "ProductVariant"("stock");
 CREATE INDEX "ProductVariant_reservedStock_idx" ON "ProductVariant"("reservedStock");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "ResetToken_token_key" ON "ResetToken"("token");
+
+-- CreateIndex
+CREATE INDEX "ResetToken_token_idx" ON "ResetToken"("token");
+
+-- CreateIndex
+CREATE INDEX "ResetToken_expiresAt_idx" ON "ResetToken"("expiresAt");
+
+-- CreateIndex
 CREATE INDEX "Review_productId_idx" ON "Review"("productId");
 
 -- CreateIndex
@@ -686,31 +713,22 @@ CREATE INDEX "TrackingLog_timestamp_idx" ON "TrackingLog"("timestamp");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_verificationToken_key" ON "User"("verificationToken");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_resetToken_key" ON "User"("resetToken");
-
--- CreateIndex
 CREATE INDEX "User_email_idx" ON "User"("email");
 
 -- CreateIndex
 CREATE INDEX "User_role_idx" ON "User"("role");
 
 -- CreateIndex
-CREATE INDEX "User_verificationToken_idx" ON "User"("verificationToken");
-
--- CreateIndex
-CREATE INDEX "User_verificationTokenExpires_idx" ON "User"("verificationTokenExpires");
-
--- CreateIndex
-CREATE INDEX "User_resetToken_idx" ON "User"("resetToken");
-
--- CreateIndex
-CREATE INDEX "User_resetTokenExpires_idx" ON "User"("resetTokenExpires");
-
--- CreateIndex
 CREATE INDEX "User_createdAt_idx" ON "User"("createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token");
+
+-- CreateIndex
+CREATE INDEX "VerificationToken_token_idx" ON "VerificationToken"("token");
+
+-- CreateIndex
+CREATE INDEX "VerificationToken_expiresAt_idx" ON "VerificationToken"("expiresAt");
 
 -- CreateIndex
 CREATE INDEX "Wishlist_userId_idx" ON "Wishlist"("userId");
@@ -878,6 +896,9 @@ ALTER TABLE "ProductVariant" ADD CONSTRAINT "ProductVariant_productId_fkey" FORE
 ALTER TABLE "ProductVariant" ADD CONSTRAINT "ProductVariant_priceId_fkey" FOREIGN KEY ("priceId") REFERENCES "Money"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "ResetToken" ADD CONSTRAINT "ResetToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Review" ADD CONSTRAINT "Review_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -903,6 +924,9 @@ ALTER TABLE "ShopPayTransaction" ADD CONSTRAINT "ShopPayTransaction_paymentId_fk
 
 -- AddForeignKey
 ALTER TABLE "TrackingLog" ADD CONSTRAINT "TrackingLog_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "VerificationToken" ADD CONSTRAINT "VerificationToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Wishlist" ADD CONSTRAINT "Wishlist_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
