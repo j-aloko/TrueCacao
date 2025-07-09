@@ -6,6 +6,7 @@ import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import PropTypes from 'prop-types';
 
 import CartDrawerContainer from '@/containers/cart-drawer-container/CartDrawerContainer';
+import SessionBootProvider from '@/provider-components/SessionBootProvider';
 import StoreProvider from '@/provider-components/StoreProvider';
 import ToastProvider from '@/provider-components/ToastProvider';
 
@@ -26,10 +27,12 @@ export default function RootLayout({ children }) {
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <StoreProvider>
-              {children}
-              <Suspense fallback={<p>Loading cart...</p>}>
-                <CartDrawerContainer />
-              </Suspense>
+              <SessionBootProvider>
+                {children}
+                <Suspense fallback={<p>Loading cart...</p>}>
+                  <CartDrawerContainer />
+                </Suspense>
+              </SessionBootProvider>
               <ToastProvider />
             </StoreProvider>
           </ThemeProvider>
