@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 
+import { shallowEqual } from 'react-redux';
+
 import Navbar from '@/components/navbar/Navbar';
-import { useCart } from '@/hooks/useCart';
 import { toggleDrawer } from '@/services/redux/features/cart-drawer/cartDrawerSlice';
-import { useAppDispatch } from '@/services/redux/store';
+import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 
 const pages = ['Contact Us', 'Track Your Order'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
@@ -16,7 +17,12 @@ function NavbarContainer() {
 
   const user = false;
 
-  const { cart } = useCart();
+  const { cart } = useAppSelector(
+    (state) => ({
+      cart: state.cart.cart,
+    }),
+    shallowEqual
+  );
 
   const dispatch = useAppDispatch();
 

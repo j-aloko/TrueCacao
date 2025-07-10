@@ -4,14 +4,20 @@ import React from 'react';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid2';
+import { shallowEqual } from 'react-redux';
 
-import { useCart } from '@/hooks/useCart';
+import { useAppSelector } from '@/services/redux/store';
 
 import CheckoutOrderContainer from '../checkout-order-container/CheckoutOrderContainer';
 import ShippingInformationContainer from '../shpping-information-container/ShippingInformationContainer';
 
 function CheckoutContainer() {
-  const { cart } = useCart();
+  const { cart } = useAppSelector(
+    (state) => ({
+      cart: state.cart.cart,
+    }),
+    shallowEqual
+  );
 
   return (
     <Box p={2}>

@@ -6,13 +6,17 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Link from 'next/link';
+import { shallowEqual } from 'react-redux';
 
 import CartDrawerHeader from '@/components/cart-drawer-header/CartDrawerHeader';
 import CartItem from '@/components/cart-item/CartItem';
 import SwipeDrawer from '@/components/swipe-drawer/SwipeDrawer';
 import TextBlock from '@/components/text-block/TextBlock';
 import { ROUTES } from '@/constants/routes';
-import { useCart } from '@/hooks/useCart';
+import {
+  removeCartItem,
+  updateCartItem,
+} from '@/services/redux/features/cart/cartSlice';
 import {
   openDrawer,
   closeDrawer,
@@ -22,7 +26,14 @@ import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 function CartDrawerContainer() {
   const dispatch = useAppDispatch();
   const { isOpen } = useAppSelector((state) => state.cartDrawer);
-  const { cart, updateItem, removeItem, itemLoadingStates } = useCart();
+
+  const { cart, itemLoadingStates } = useAppSelector(
+    (state) => ({
+      cart: state.cart.cart,
+      itemLoadingStates: state.cart.itemLoadingStates,
+    }),
+    shallowEqual
+  );
 
   const handleOpen = useCallback(() => {
     dispatch(openDrawer());
@@ -36,31 +47,35 @@ function CartDrawerContainer() {
 
   const handleCartItemIncrement = useCallback(
     (id, currentQuantity) => {
-      updateItem({
-        id,
-        previousQuantity: currentQuantity,
-        quantity: currentQuantity + 1,
-      });
+      dispatch(
+        updateCartItem({
+          id,
+          previousQuantity: currentQuantity,
+          quantity: currentQuantity + 1,
+        })
+      );
     },
-    [updateItem]
+    [dispatch]
   );
 
   const handleCartItemDecrement = useCallback(
     (id, currentQuantity) => {
-      updateItem({
-        id,
-        previousQuantity: currentQuantity,
-        quantity: currentQuantity - 1,
-      });
+      dispatch(
+        updateCartItem({
+          id,
+          previousQuantity: currentQuantity,
+          quantity: currentQuantity - 1,
+        })
+      );
     },
-    [updateItem]
+    [dispatch]
   );
 
   const handleRemoveCartItem = useCallback(
     (id) => {
-      removeItem({ id });
+      dispatch(removeCartItem({ id }));
     },
-    [removeItem]
+    [dispatch]
   );
 
   const cartItems = useMemo(() => {

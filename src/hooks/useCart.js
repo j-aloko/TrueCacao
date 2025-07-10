@@ -2,53 +2,15 @@
 
 import { useEffect } from 'react';
 
-import { shallowEqual } from 'react-redux';
-
-import {
-  fetchCart,
-  addCartItem,
-  updateCartItem,
-  removeCartItem,
-} from '../services/redux/features/cart/cartSlice';
-import { useAppDispatch, useAppSelector } from '../services/redux/store';
-
-let cartInitialized = false;
+import { fetchCart } from '../services/redux/features/cart/cartSlice';
+import { useAppDispatch } from '../services/redux/store';
 
 export function useCart() {
   const dispatch = useAppDispatch();
-
-  const { cart, loading, loadingStates, itemLoadingStates, error } =
-    useAppSelector(
-      (state) => ({
-        cart: state.cart.cart,
-        error: state.cart.error,
-        itemLoadingStates: state.cart.itemLoadingStates,
-        loading: state.cart.loading,
-        loadingStates: state.cart.loadingStates,
-      }),
-      shallowEqual
-    );
-
-  // Singleton initialization
   useEffect(() => {
-    if (!cartInitialized) {
-      cartInitialized = true;
+    const cartBoot = async () => {
       dispatch(fetchCart());
-    }
+    };
+    cartBoot();
   }, [dispatch]);
-
-  const addItem = (payload) => dispatch(addCartItem(payload));
-  const updateItem = (payload) => dispatch(updateCartItem(payload));
-  const removeItem = (payload) => dispatch(removeCartItem(payload));
-
-  return {
-    addItem,
-    cart,
-    error,
-    itemLoadingStates,
-    loading,
-    loadingStates,
-    removeItem,
-    updateItem,
-  };
 }

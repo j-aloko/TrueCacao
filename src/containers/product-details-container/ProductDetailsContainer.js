@@ -7,6 +7,7 @@ import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
+import { shallowEqual } from 'react-redux';
 
 import CounterField from '@/components/counter-field/CounterField';
 import CustomTabs from '@/components/custom-tabs/CustomTabs';
@@ -19,8 +20,9 @@ import RenderProductButtons from '@/components/render-product-buttons/RenderProd
 import Review from '@/components/Review/Review';
 import TabHeading from '@/components/tab-heading/TabHeading';
 import TextBlock from '@/components/text-block/TextBlock';
-import { useCart } from '@/hooks/useCart';
 import { useProductSelection } from '@/hooks/useProductSelection';
+import { addCartItem } from '@/services/redux/features/cart/cartSlice';
+import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 import { formatString } from '@/utils/formatString';
 import { getNestedProperty } from '@/utils/getNestedProperty';
 
@@ -33,6 +35,8 @@ function ProductDetailsContainer({
   labels,
   disableOptions = {},
 }) {
+  const dispatch = useAppDispatch();
+
   const {
     state: {
       allVariantProperties,
@@ -47,10 +51,15 @@ function ProductDetailsContainer({
   } = useProductSelection();
 
   const {
-    addItem,
     loading: cartLoading,
     loadingStates: { add: addingItemToCart },
-  } = useCart();
+  } = useAppSelector(
+    (state) => ({
+      loading: state.cart.loading,
+      loadingStates: state.cart.loadingStates,
+    }),
+    shallowEqual
+  );
 
   const tabs = useMemo(
     () => [
@@ -93,14 +102,16 @@ function ProductDetailsContainer({
   );
 
   const onAddToCart = useCallback(() => {
-    addItem({
-      productVariant: {
-        ...selectedVariant,
-        product,
-      },
-      quantity,
-    });
-  }, [addItem, selectedVariant, product, quantity]);
+    dispatch(
+      addCartItem({
+        productVariant: {
+          ...selectedVariant,
+          product,
+        },
+        quantity,
+      })
+    );
+  }, [dispatch, selectedVariant, product, quantity]);
 
   return (
     <Box sx={{ flexGrow: 1, p: 2 }}>
