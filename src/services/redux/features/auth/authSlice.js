@@ -195,7 +195,7 @@ export const logoutUser = createAsyncThunk(
 
 export const refreshAccessToken = createAsyncThunk(
   'auth/refreshAccessToken',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
       const response = await fetch('/api/v1/auth/refresh-token', {
         credentials: 'include',
@@ -205,10 +205,12 @@ export const refreshAccessToken = createAsyncThunk(
 
       if (!response.ok) {
         const error = await response.json();
+        dispatch(logoutUser());
         return rejectWithValue(error.message || 'Refresh token expired');
       }
       return true;
     } catch (error) {
+      dispatch(logoutUser());
       return rejectWithValue(error.message || 'Session expired');
     }
   }
