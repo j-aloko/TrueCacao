@@ -8,6 +8,7 @@ import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { shallowEqual } from 'react-redux';
 
 import TextBlock from '@/components/text-block/TextBlock';
 import { EMAIL_VERIFICATION_STATUS } from '@/constants/constants';
@@ -23,18 +24,29 @@ function VerifyEmailContainer() {
   const dispatch = useAppDispatch();
 
   const token = useMemo(() => searchParams.get('token'), [searchParams]);
+  const encryptedUserId = useMemo(() => searchParams.get('id'), [searchParams]);
   const urlEmail = useMemo(() => searchParams.get('email'), [searchParams]);
 
-  const auth = useAppSelector((state) => state.auth);
-  const pendingEmail = auth.pendingVerificationEmail || urlEmail;
-  const isResendVerificationLoading = auth.isLoading;
-  const emailVerificationStatus = auth.verificationStatus;
+  const {
+    pendingEmail,
+    isResendVerificationLoading,
+    isVerified,
+    emailVerificationStatus,
+  } = useAppSelector(
+    (state) => ({
+      emailVerificationStatus: state.auth.emailVerificationStatus,
+      isResendVerificationLoading: state.auth.isLoading,
+      isVerified: state.auth.isVerified,
+      pendingEmail: state.auth.pendingVerificationEmail || urlEmail,
+    }),
+    shallowEqual
+  );
 
   useEffect(() => {
-    if (token && emailVerificationStatus === EMAIL_VERIFICATION_STATUS.IDLE) {
-      dispatch(verifyEmail(token));
+    if (token && !isVerified) {
+      dispatch(verifyEmail({ encryptedUserId, token }));
     }
-  }, [dispatch, token, emailVerificationStatus]);
+  }, [dispatch, token, isVerified, encryptedUserId]);
 
   const handleResendVerificationLink = useCallback(() => {
     if (pendingEmail) {
@@ -126,7 +138,7 @@ function VerifyEmailContainer() {
     return renderPending();
   }
 
-  if (token && emailVerificationStatus === EMAIL_VERIFICATION_STATUS.VERIFIED) {
+  if (token && isVerified) {
     return renderVerified();
   }
 

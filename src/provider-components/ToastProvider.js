@@ -18,6 +18,12 @@ export default function ToastProvider() {
       draggable
       pauseOnHover
       theme="colored"
+      style={{
+        width: '450px',
+      }}
+      toastStyle={{
+        width: '100%',
+      }}
     />
   );
 }

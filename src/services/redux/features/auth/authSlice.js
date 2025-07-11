@@ -56,13 +56,8 @@ export const registerUser = createAsyncThunk(
         showErrorToast(error.message || 'Failed to create user');
         return rejectWithValue(error.message || 'Failed to create user');
       }
-
-      const { user, message } = await response.json();
-
-      // Create verification link
-      const verificationLink = `${window.location.origin}${ROUTES.verifyEmail}?token=${user.verificationToken}&email=${encodeURIComponent(user.email)}`;
-      await sendVerificationEmail(user.email, verificationLink);
-      showSuccessToast(message);
+      const { user } = await response.json();
+      await sendVerificationEmail(user.email, user.verificationLink);
       return { router, user };
     } catch (error) {
       return rejectWithValue(error.message);
@@ -89,8 +84,7 @@ export const resendEmailVerification = createAsyncThunk(
       }
       const { message, user } = await response.json();
       // Create verification link
-      const verificationLink = `${window.location.origin}${ROUTES.verifyEmail}?token=${user.verificationToken}&email=${encodeURIComponent(user.email)}`;
-      await sendVerificationEmail(user.email, verificationLink);
+      await sendVerificationEmail(user.email, user.verificationLink);
       showSuccessToast(message);
       return message;
     } catch (error) {
@@ -101,19 +95,22 @@ export const resendEmailVerification = createAsyncThunk(
 
 export const verifyEmail = createAsyncThunk(
   'auth/verifyEmail',
-  async (token, { rejectWithValue }) => {
+  async ({ token, encryptedUserId }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`/api/v1/auth/verify-email?token=${token}`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        method: 'GET',
-      });
+      const response = await fetch(
+        `/api/v1/auth/verify-email?token=${token}&encryptedUserId=${encryptedUserId}`,
+        {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          method: 'GET',
+        }
+      );
       if (!response.ok) {
         const error = await response.json();
         showErrorToast(error.message || 'Failed to verify email');
         return rejectWithValue(error.message || 'Failed to verify email');
       }
-      return response.data;
+      return response.json();
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
@@ -217,13 +214,14 @@ export const refreshAccessToken = createAsyncThunk(
 );
 
 const initialState = {
+  emailVerificationStatus: EMAIL_VERIFICATION_STATUS.IDLE,
   error: null,
   isAuthenticated: false,
   isLoading: false,
+  isVerified: false,
   lastVisitedPage: null,
   pendingVerificationEmail: null,
   user: null,
-  verificationStatus: EMAIL_VERIFICATION_STATUS.IDLE,
 };
 
 const authSlice = createSlice({
@@ -239,9 +237,7 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.isAuthenticated = true;
         state.user = user;
-        state.verificationStatus = user.verified
-          ? EMAIL_VERIFICATION_STATUS.VERIFIED
-          : EMAIL_VERIFICATION_STATUS.IDLE;
+        state.isVerified = user.verified;
         state.error = null;
         router.push(ROUTES.home);
       })
@@ -283,16 +279,21 @@ const authSlice = createSlice({
 
       // Email Verification
       .addCase(verifyEmail.pending, (state) => {
-        state.verificationStatus = EMAIL_VERIFICATION_STATUS.PENDING;
         state.error = null;
+        state.emailVerificationStatus = EMAIL_VERIFICATION_STATUS.PENDING;
       })
-      .addCase(verifyEmail.fulfilled, (state) => {
-        state.verificationStatus = EMAIL_VERIFICATION_STATUS.VERIFIED;
+      .addCase(verifyEmail.fulfilled, (state, action) => {
+        const {
+          user: { verified },
+        } = action.payload;
+        state.isVerified = verified;
+        state.emailVerificationStatus = EMAIL_VERIFICATION_STATUS.VERIFIED;
         state.error = null;
       })
       .addCase(verifyEmail.rejected, (state, action) => {
-        state.verificationStatus = EMAIL_VERIFICATION_STATUS.FAILED;
         state.error = action.payload?.message || 'Email verification failed';
+        state.isVerified = false;
+        state.emailVerificationStatus = EMAIL_VERIFICATION_STATUS.FAILED;
       })
 
       // Password Reset
@@ -346,7 +347,8 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.user = null;
         state.pendingVerificationEmail = null;
-        state.verificationStatus = EMAIL_VERIFICATION_STATUS.IDLE;
+        state.emailVerificationStatus = EMAIL_VERIFICATION_STATUS.IDLE;
+        state.isVerified = false;
         state.lastVisitedPage = null;
         state.error = null;
       })
@@ -355,7 +357,8 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.user = null;
         state.pendingVerificationEmail = null;
-        state.verificationStatus = EMAIL_VERIFICATION_STATUS.IDLE;
+        state.emailVerificationStatus = EMAIL_VERIFICATION_STATUS.IDLE;
+        state.isVerified = false;
         state.lastVisitedPage = null;
         state.error = action.payload || 'Logout failed';
       });

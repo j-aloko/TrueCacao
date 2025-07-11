@@ -1,7 +1,10 @@
 import { EMAIL_VERIFICATION_EXPIRY, USER_ROLE } from '@/constants/constants';
+import { ROUTES } from '@/constants/routes';
 import prisma from '@/lib/prisma';
 
 import {
+  decrypt,
+  encrypt,
   generateHash,
   generateToken,
   hashPassword,
@@ -67,7 +70,15 @@ export async function createUser(
     },
   });
 
-  return { email: user.email, verificationToken: rawToken };
+  const encryptedId = await encrypt(user.id);
+  const verificationLink = `${process.env.APP_URL}${ROUTES.verifyEmail}?token=${rawToken}&id=${encryptedId}&email=${encodeURIComponent(user.email)}`;
+
+  return {
+    email: user.email,
+    id: user.id,
+    verificationLink,
+    verified: user.verified,
+  };
 }
 
 export async function resendVerification(email) {
@@ -91,30 +102,48 @@ export async function resendVerification(email) {
       userId: user.id,
     },
   });
-
-  return { email: user.email, verificationToken: rawToken };
+  const encryptedId = await encrypt(user.id);
+  const verificationLink = `${process.env.APP_URL}${ROUTES.verifyEmail}?token=${rawToken}&id=${encryptedId}&email=${encodeURIComponent(user.email)}`;
+  return { email: user.email, verificationLink };
 }
 
-export async function verifyUserEmail(token) {
+export async function verifyUserEmail(token, encryptedUserId) {
+  const userId = await decrypt(encryptedUserId);
   const hashedToken = await generateHash(token);
+
   const tokenRecord = await prisma.verificationToken.findFirst({
-    include: { user: true },
     where: {
       expiresAt: { gt: new Date() },
       token: hashedToken,
+      userId,
     },
   });
-  if (!tokenRecord) {
-    throw new Error('Invalid or expired token');
-  }
-  await prisma.user.update({
+
+  const user = await prisma.user.findUnique({
+    select: {
+      email: true,
+      id: true,
+      name: true,
+      role: true,
+      verified: true,
+    },
+    where: { id: userId },
+  });
+  if (user?.verified) return user;
+  if (!tokenRecord) throw new Error('Invalid or expired token');
+  const updatedUser = await prisma.user.update({
     data: { verified: true },
-    where: { id: tokenRecord.userId },
+    select: {
+      email: true,
+      id: true,
+      name: true,
+      role: true,
+      verified: true,
+    },
+    where: { id: userId },
   });
-  await prisma.verificationToken.delete({
-    where: { id: tokenRecord.id },
-  });
-  return { email: tokenRecord.user.email, verified: true };
+  await prisma.verificationToken.delete({ where: { id: tokenRecord.id } });
+  return updatedUser;
 }
 
 export async function verifyToken(token) {
