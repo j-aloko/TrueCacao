@@ -93,10 +93,8 @@ function SignupContainer() {
             <Link
               href={ROUTES.login}
               style={{
-                color: 'inherit',
                 fontWeight: 'bold',
                 marginLeft: '4px',
-                textDecoration: 'none',
               }}
             >
               Login

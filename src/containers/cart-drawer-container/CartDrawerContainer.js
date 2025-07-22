@@ -12,7 +12,6 @@ import CartDrawerHeader from '@/components/cart-drawer-header/CartDrawerHeader';
 import CartItem from '@/components/cart-item/CartItem';
 import SwipeDrawer from '@/components/swipe-drawer/SwipeDrawer';
 import TextBlock from '@/components/text-block/TextBlock';
-import { ROUTES } from '@/constants/routes';
 import {
   removeCartItem,
   updateCartItem,
@@ -181,7 +180,7 @@ function CartDrawerContainer() {
                   onClick={handleClose}
                   aria-label={checkoutTotal}
                   component={Link}
-                  href={ROUTES.checkout}
+                  href={cart?.checkoutUrl}
                 >
                   {checkoutTotal}
                 </Button>

@@ -1,9 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
@@ -38,36 +41,65 @@ function LoginContainer() {
   const router = useRouter();
   const isLoggingInLoading = useAppSelector((state) => state.auth.isLoading);
 
-  const fields = [
-    {
-      component: CustomTextField,
-      name: 'email',
-      props: { label: 'Email' },
-    },
-    {
-      component: CustomTextField,
-      name: 'password',
-      props: {
-        adornmentComponent: (
-          <Button
-            variant="text"
-            size="small"
-            sx={{ p: 0, textTransform: 'initial' }}
-            component={Link}
-            href={ROUTES.forgotPassword}
-          >
-            Forgot password?
-          </Button>
-        ),
-        label: 'Password',
-        showEndAdornment: true,
-      },
-    },
-  ];
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (event) => {
+    event.preventDefault();
+  };
 
   const handleLogin = (values) => {
     dispatch(loginUser({ ...values, router }));
   };
+
+  const fields = useMemo(
+    () => [
+      {
+        component: CustomTextField,
+        name: 'email',
+        props: { label: 'Email' },
+      },
+      {
+        component: CustomTextField,
+        name: 'password',
+        props: {
+          adornmentComponent: (
+            <Box display="flex" alignItems="center" gap={2}>
+              <IconButton
+                aria-label={
+                  showPassword ? 'hide the password' : 'display the password'
+                }
+                onClick={handleClickShowPassword}
+                onMouseDown={handleMouseDownPassword}
+                onMouseUp={handleMouseUpPassword}
+                edge="end"
+              >
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+              <Button
+                variant="text"
+                size="small"
+                sx={{ p: 0, textTransform: 'initial' }}
+                component={Link}
+                href={ROUTES.forgotPassword}
+              >
+                Forgot password?
+              </Button>
+            </Box>
+          ),
+          label: 'Password',
+          showEndAdornment: true,
+          type: showPassword ? 'text' : 'password',
+        },
+      },
+    ],
+    [showPassword]
+  );
 
   return (
     <Box maxWidth={420} width="100%">
@@ -100,13 +132,11 @@ function LoginContainer() {
             <Link
               href={ROUTES.signup}
               style={{
-                color: 'inherit',
                 fontWeight: 'bold',
                 marginLeft: '4px',
-                textDecoration: 'none',
               }}
             >
-              Create one
+              Register
             </Link>
           </>
         </Typography>

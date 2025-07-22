@@ -9,6 +9,7 @@ import { useField } from 'react-final-form';
 function CustomTextField({
   name,
   size = 'medium',
+  type = 'text',
   label,
   value,
   onChange,
@@ -36,6 +37,7 @@ function CustomTextField({
       label={label}
       name={input.name}
       value={input.value}
+      type={type}
       size={size}
       onChange={(e) => {
         input.onChange(e);

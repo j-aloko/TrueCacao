@@ -1,21 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
+import CircularProgress from '@mui/material/CircularProgress';
 import { shallowEqual } from 'react-redux';
 
 import Navbar from '@/components/navbar/Navbar';
+import { ROUTES } from '@/constants/routes';
+import { logoutUser } from '@/services/redux/features/auth/authSlice';
 import { toggleDrawer } from '@/services/redux/features/cart-drawer/cartDrawerSlice';
 import { useAppDispatch, useAppSelector } from '@/services/redux/store';
-
-const pages = ['Contact Us', 'Track Your Order'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 function NavbarContainer() {
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
-
-  const user = false;
+  const dispatch = useAppDispatch();
 
   const { cart } = useAppSelector(
     (state) => ({
@@ -24,22 +23,76 @@ function NavbarContainer() {
     shallowEqual
   );
 
-  const dispatch = useAppDispatch();
+  const { user, isLoading } = useAppSelector(
+    (state) => ({
+      isLoading: state.auth.isLoading,
+      user: state.auth.user,
+    }),
+    shallowEqual
+  );
 
-  const handleOpenNavMenu = (event) => {
+  const handleOpenNavMenu = useCallback((event) => {
     setAnchorElNav(event.currentTarget);
-  };
-  const handleOpenUserMenu = (event) => {
+  }, []);
+
+  const handleOpenUserMenu = useCallback((event) => {
     setAnchorElUser(event.currentTarget);
-  };
+  }, []);
 
-  const handleCloseNavMenu = () => {
+  const handleCloseNavMenu = useCallback(() => {
     setAnchorElNav(null);
-  };
+  }, []);
 
-  const handleCloseUserMenu = () => {
+  const handleCloseUserMenu = useCallback(() => {
     setAnchorElUser(null);
-  };
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    await dispatch(logoutUser()).unwrap();
+    setAnchorElUser(null);
+  }, [dispatch]);
+
+  const pages = useMemo(
+    () => [
+      {
+        id: 'contact-us',
+        link: ROUTES.contactUs,
+        name: 'Contact Us',
+        onClick: handleCloseNavMenu,
+      },
+      {
+        id: 'track-your-order',
+        link: ROUTES.trackOrder,
+        name: 'Track Your Order',
+        onClick: handleCloseNavMenu,
+      },
+    ],
+    [handleCloseNavMenu]
+  );
+
+  const settings = useMemo(
+    () => [
+      {
+        id: 'account',
+        link: ROUTES.account,
+        name: 'Account',
+        onClick: handleCloseUserMenu,
+      },
+      {
+        id: 'settings',
+        link: ROUTES.settings,
+        name: 'Settings',
+        onClick: handleCloseUserMenu,
+      },
+      {
+        id: 'logout',
+        link: null,
+        name: isLoading ? <CircularProgress size="18px" /> : 'Logout',
+        onClick: handleLogout,
+      },
+    ],
+    [handleCloseUserMenu, handleLogout, isLoading]
+  );
 
   return (
     <Navbar
@@ -58,4 +111,4 @@ function NavbarContainer() {
   );
 }
 
-export default NavbarContainer;
+export default React.memo(NavbarContainer);

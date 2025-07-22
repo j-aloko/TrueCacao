@@ -2,7 +2,7 @@ import React from 'react';
 
 import MenuIcon from '@mui/icons-material/Menu';
 import PersonIcon from '@mui/icons-material/Person';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
@@ -16,6 +16,7 @@ import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 
 import { ROUTES } from '@/constants/routes';
+import { truncateAvatar } from '@/utils/truncateAvatar';
 
 import Logo from '../logo/Logo';
 import Tooltip from '../tooltip/Tooltip';
@@ -72,11 +73,22 @@ function Navbar({
               onClose={onCloseNavMenu}
               sx={{ display: { md: 'none', xs: 'block' } }}
             >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={onCloseNavMenu}>
-                  <Typography color="primary" sx={{ textAlign: 'center' }}>
-                    {page}
-                  </Typography>
+              {pages.map(({ id, name, onClick, link }) => (
+                <MenuItem key={id} onClick={onClick}>
+                  {link ? (
+                    <Typography
+                      component={Link}
+                      href={link}
+                      color="primary"
+                      sx={{ textAlign: 'center' }}
+                    >
+                      {name}
+                    </Typography>
+                  ) : (
+                    <Typography color="primary" sx={{ textAlign: 'center' }}>
+                      {name}
+                    </Typography>
+                  )}
                 </MenuItem>
               ))}
             </Menu>
@@ -90,34 +102,61 @@ function Navbar({
               justifyContent: 'center',
             }}
           >
-            {pages.map((page) => (
-              <Typography
-                variant="subtitle1"
-                color="primary"
-                key={page}
-                onClick={onCloseNavMenu}
-                sx={{ cursor: 'pointer' }}
-              >
-                {page}
-              </Typography>
+            {pages.map(({ id, name, onClick, link }) => (
+              <Box key={id} component="div">
+                {link ? (
+                  <Typography
+                    component={Link}
+                    href={link}
+                    variant="subtitle1"
+                    color="primary"
+                    onClick={onClick}
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    {name}
+                  </Typography>
+                ) : (
+                  <Typography
+                    variant="subtitle1"
+                    color="primary"
+                    onClick={onClick}
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    {name}
+                  </Typography>
+                )}
+              </Box>
             ))}
           </Box>
 
-          <Box sx={{ display: 'flex', flexGrow: 0, gap: 2 }}>
+          <Box
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              flexGrow: 0,
+              gap: 1,
+            }}
+          >
             <Tooltip title={user ? 'Open settings' : 'Login'}>
               <IconButton onClick={user ? onOpenUserMenu : null} sx={{ p: 0 }}>
                 {user ? (
                   <Avatar
+                    {...truncateAvatar(user.name)}
                     sx={{
                       bgcolor: 'primary.main',
                       color: 'primary.contrastText',
                     }}
-                  >
-                    RS
-                  </Avatar>
+                  />
                 ) : (
                   <Link href={ROUTES.login}>
-                    <PersonIcon fontSize="large" color="primary" />
+                    <Avatar
+                      sx={{
+                        bgcolor: 'primary.main',
+                        color: 'primary.contrastText',
+                      }}
+                    >
+                      <PersonIcon fontSize="medium" />
+                    </Avatar>
                   </Link>
                 )}
               </IconButton>
@@ -134,7 +173,7 @@ function Navbar({
                     },
                   }}
                 >
-                  <ShoppingCartIcon fontSize="large" color="primary" />
+                  <ShoppingBasketIcon fontSize="large" color="primary" />
                 </Badge>
               </IconButton>
             </Tooltip>
@@ -155,11 +194,19 @@ function Navbar({
               open={Boolean(anchorElUser)}
               onClose={onCloseUserMenu}
             >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={onCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>
-                    {setting}
-                  </Typography>
+              {settings.map(({ id, name, onClick, link }) => (
+                <MenuItem key={id} onClick={onClick}>
+                  {link ? (
+                    <Typography
+                      sx={{ textAlign: 'center' }}
+                      component={Link}
+                      href={link}
+                    >
+                      {name}
+                    </Typography>
+                  ) : (
+                    <Typography sx={{ textAlign: 'center' }}>{name}</Typography>
+                  )}
                 </MenuItem>
               ))}
             </Menu>

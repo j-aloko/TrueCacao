@@ -43,6 +43,13 @@ const baseTheme = createTheme({
     },
     MuiCssBaseline: {
       styleOverrides: {
+        a: {
+          '&:hover': {
+            textDecoration: 'none',
+          },
+          color: 'inherit',
+          textDecoration: 'none',
+        },
         body: {
           '&::-webkit-scrollbar': {
             backgroundColor: 'var(--background-paper)',

@@ -1,8 +1,11 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
@@ -16,19 +19,6 @@ import { ROUTES } from '@/constants/routes';
 import { resetPassword } from '@/services/redux/features/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 import { formValidation, Yup } from '@/utils/formValidation';
-
-const fields = [
-  {
-    component: CustomTextField,
-    name: 'password',
-    props: { label: 'New Password' },
-  },
-  {
-    component: CustomTextField,
-    name: 'confirmPassword',
-    props: { label: 'Confirm New Password' },
-  },
-];
 
 const validationSchema = Yup.object().shape({
   confirmPassword: Yup.string()
@@ -57,11 +47,77 @@ function ResetPasswordContainer() {
     shallowEqual
   );
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const token = useMemo(() => searchParams.get('token'), [searchParams]);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (event) => {
+    event.preventDefault();
+  };
 
   const handleSubmit = (values) => {
     dispatch(resetPassword({ ...values, router, token }));
   };
+
+  const fields = useMemo(
+    () => [
+      {
+        component: CustomTextField,
+        name: 'password',
+        props: {
+          adornmentComponent: (
+            <Box display="flex">
+              <IconButton
+                aria-label={
+                  showPassword ? 'hide the password' : 'display the password'
+                }
+                onClick={handleClickShowPassword}
+                onMouseDown={handleMouseDownPassword}
+                onMouseUp={handleMouseUpPassword}
+                edge="end"
+              >
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </Box>
+          ),
+          label: 'New Password',
+          showEndAdornment: true,
+          type: showPassword ? 'text' : 'password',
+        },
+      },
+      {
+        component: CustomTextField,
+        name: 'confirmPassword',
+        props: {
+          adornmentComponent: (
+            <Box display="flex">
+              <IconButton
+                aria-label={
+                  showPassword ? 'hide the password' : 'display the password'
+                }
+                onClick={handleClickShowPassword}
+                onMouseDown={handleMouseDownPassword}
+                onMouseUp={handleMouseUpPassword}
+                edge="end"
+              >
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </Box>
+          ),
+          label: 'Confirm New Password',
+          showEndAdornment: true,
+          type: showPassword ? 'text' : 'password',
+        },
+      },
+    ],
+    [showPassword]
+  );
 
   return (
     <Box maxWidth={420} width="100%">
