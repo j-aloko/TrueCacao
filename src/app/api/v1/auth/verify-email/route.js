@@ -6,7 +6,6 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const token = searchParams.get('token');
-    const encryptedUserId = searchParams.get('encryptedUserId');
 
     if (!token) {
       return NextResponse.json(
@@ -15,14 +14,7 @@ export async function GET(request) {
       );
     }
 
-    if (!encryptedUserId) {
-      return NextResponse.json(
-        { message: 'UserId is required' },
-        { status: 400 }
-      );
-    }
-
-    const user = await verifyUserEmail(token, encryptedUserId);
+    const user = await verifyUserEmail(token);
     return NextResponse.json(
       { message: 'Email verified successfully', user },
       { status: 200 }

@@ -24,7 +24,6 @@ function VerifyEmailContainer() {
   const dispatch = useAppDispatch();
 
   const token = useMemo(() => searchParams.get('token'), [searchParams]);
-  const encryptedUserId = useMemo(() => searchParams.get('id'), [searchParams]);
   const urlEmail = useMemo(() => searchParams.get('email'), [searchParams]);
 
   const {
@@ -44,9 +43,9 @@ function VerifyEmailContainer() {
 
   useEffect(() => {
     if (token && !isVerified) {
-      dispatch(verifyEmail({ encryptedUserId, token }));
+      dispatch(verifyEmail(token));
     }
-  }, [dispatch, token, isVerified, encryptedUserId]);
+  }, [dispatch, token, isVerified]);
 
   const handleResendVerificationLink = useCallback(() => {
     if (pendingEmail) {

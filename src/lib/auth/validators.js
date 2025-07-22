@@ -35,7 +35,6 @@ export const newPasswordSchema = z.object({
       passwordRegex,
       'Password must contain at least 8 characters, one uppercase, one lowercase and one number'
     ),
-  token: z.string().min(1, 'Token is required'),
 });
 
 export async function validateRegistration(request) {

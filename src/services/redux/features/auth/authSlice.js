@@ -3,7 +3,11 @@ import Cookies from 'js-cookie';
 
 import { EMAIL_VERIFICATION_STATUS, USER_ROLE } from '@/constants/constants';
 import { ROUTES } from '@/constants/routes';
-import { sendVerificationEmail } from '@/lib/auth/email-service';
+import {
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+  sendPasswordResetConfirmationEmail,
+} from '@/lib/auth/email-service';
 import { showErrorToast, showSuccessToast } from '@/lib/toast/toast';
 
 import { mergeCarts } from '../cart/cartSlice';
@@ -21,8 +25,7 @@ export const loginUser = createAsyncThunk(
 
       if (!loginResponse.ok) {
         const error = await loginResponse.json();
-        showErrorToast(error.message || 'Login failed');
-        return rejectWithValue(error.message || 'Login failed');
+        return rejectWithValue(error);
       }
 
       const { user } = await loginResponse.json();
@@ -32,7 +35,7 @@ export const loginUser = createAsyncThunk(
 
       return { router, user };
     } catch (error) {
-      return rejectWithValue(error.message || 'Unexpected error during login');
+      return rejectWithValue(error);
     }
   }
 );
@@ -53,14 +56,13 @@ export const registerUser = createAsyncThunk(
 
       if (!response.ok) {
         const error = await response.json();
-        showErrorToast(error.message || 'Failed to create user');
-        return rejectWithValue(error.message || 'Failed to create user');
+        return rejectWithValue(error);
       }
       const { user } = await response.json();
       await sendVerificationEmail(user.email, user.verificationLink);
       return { router, user };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error);
     }
   }
 );
@@ -69,50 +71,44 @@ export const resendEmailVerification = createAsyncThunk(
   'auth/resendEmailverification',
   async ({ email }, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/v1/auth/resend-verification', {
-        body: JSON.stringify({ email }),
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        method: 'POST',
-      });
+      const response = await fetch(
+        '/api/v1/auth/resend-email-verification-link',
+        {
+          body: JSON.stringify({ email }),
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        }
+      );
       if (!response.ok) {
         const error = await response.json();
-        showErrorToast(error.message || 'Failed to resend verification');
-        return rejectWithValue(
-          error.message || 'Failed to resend verification'
-        );
+        return rejectWithValue(error);
       }
       const { message, user } = await response.json();
-      // Create verification link
       await sendVerificationEmail(user.email, user.verificationLink);
-      showSuccessToast(message);
-      return message;
+      return { message };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error);
     }
   }
 );
 
 export const verifyEmail = createAsyncThunk(
   'auth/verifyEmail',
-  async ({ token, encryptedUserId }, { rejectWithValue }) => {
+  async (token, { rejectWithValue }) => {
     try {
-      const response = await fetch(
-        `/api/v1/auth/verify-email?token=${token}&encryptedUserId=${encryptedUserId}`,
-        {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          method: 'GET',
-        }
-      );
+      const response = await fetch(`/api/v1/auth/verify-email?token=${token}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        method: 'GET',
+      });
       if (!response.ok) {
         const error = await response.json();
-        showErrorToast(error.message || 'Failed to verify email');
-        return rejectWithValue(error.message || 'Failed to verify email');
+        return rejectWithValue(error);
       }
       return response.json();
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error);
     }
   }
 );
@@ -121,49 +117,48 @@ export const forgotPassword = createAsyncThunk(
   'auth/forgotPassword',
   async (email, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/v1/auth/forgot-password', {
+      const response = await fetch('/api/v1/auth/request-password-reset-link', {
         body: JSON.stringify({ email }),
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
       });
-      return response.data;
+      if (!response.ok) {
+        const error = await response.json();
+
+        return rejectWithValue(error);
+      }
+      const { message, user } = await response.json();
+      await sendPasswordResetEmail(user.email, user.verificationLink);
+      return { message };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error);
     }
   }
 );
 
 export const resetPassword = createAsyncThunk(
   'auth/resetPassword',
-  async ({ token, newPassword }, { rejectWithValue }) => {
+  async ({ token, password, router }, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/v1/auth/reset-password', {
-        body: JSON.stringify({ newPassword, token }),
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        method: 'POST',
-      });
-      return response.data;
+      const response = await fetch(
+        `/api/v1/auth/reset-password?token=${token}`,
+        {
+          body: JSON.stringify({ password }),
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          method: 'POST',
+        }
+      );
+      if (!response.ok) {
+        const error = await response.json();
+        return rejectWithValue(error);
+      }
+      const { message, user } = await response.json();
+      await sendPasswordResetConfirmationEmail(user.email);
+      return { message, router };
     } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
-  }
-);
-
-export const changePassword = createAsyncThunk(
-  'auth/changePassword',
-  async ({ currentPassword, newPassword }, { rejectWithValue }) => {
-    try {
-      const response = await fetch('/api/v1/auth/change-password', {
-        body: JSON.stringify({ currentPassword, newPassword }),
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        method: 'POST',
-      });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error);
     }
   }
 );
@@ -181,11 +176,11 @@ export const logoutUser = createAsyncThunk(
       });
       if (!response.ok) {
         const error = await response.json();
-        return rejectWithValue(error.message || 'Logout failed');
+        return rejectWithValue(error);
       }
       return true;
     } catch (error) {
-      return rejectWithValue(error.message || 'Logout failed');
+      return rejectWithValue(error);
     }
   }
 );
@@ -203,12 +198,12 @@ export const refreshAccessToken = createAsyncThunk(
       if (!response.ok) {
         const error = await response.json();
         dispatch(logoutUser());
-        return rejectWithValue(error.message || 'Refresh token expired');
+        return rejectWithValue(error);
       }
       return true;
     } catch (error) {
       dispatch(logoutUser());
-      return rejectWithValue(error.message || 'Session expired');
+      return rejectWithValue(error);
     }
   }
 );
@@ -242,8 +237,10 @@ const authSlice = createSlice({
         router.push(ROUTES.home);
       })
       .addCase(loginUser.rejected, (state, action) => {
+        const { text, message } = action.payload;
         state.isLoading = false;
-        state.error = action.payload?.message || 'Login failed';
+        state.error = text || message;
+        showErrorToast(text || message);
       })
 
       // Registration
@@ -259,22 +256,27 @@ const authSlice = createSlice({
         router.push(ROUTES.verifyEmail);
       })
       .addCase(registerUser.rejected, (state, action) => {
+        const { text, message } = action.payload;
         state.isLoading = false;
-        state.error = action.payload?.message || 'Registration failed';
+        state.error = text || message;
+        showErrorToast(text || message);
       })
 
       .addCase(resendEmailVerification.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(resendEmailVerification.fulfilled, (state) => {
+      .addCase(resendEmailVerification.fulfilled, (state, action) => {
+        const { message } = action.payload;
         state.isLoading = false;
         state.error = null;
+        showSuccessToast(message);
       })
       .addCase(resendEmailVerification.rejected, (state, action) => {
+        const { text, message } = action.payload;
         state.isLoading = false;
-        state.error =
-          action.payload?.message || 'Failed to resend verification link';
+        state.error = text || message;
+        showErrorToast(text || message);
       })
 
       // Email Verification
@@ -291,8 +293,10 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(verifyEmail.rejected, (state, action) => {
-        state.error = action.payload?.message || 'Email verification failed';
-        state.isVerified = false;
+        const { text, message } = action.payload;
+        state.isLoading = false;
+        state.error = text || message;
+        showErrorToast(text || message);
         state.emailVerificationStatus = EMAIL_VERIFICATION_STATUS.FAILED;
       })
 
@@ -301,40 +305,35 @@ const authSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(forgotPassword.fulfilled, (state) => {
+      .addCase(forgotPassword.fulfilled, (state, action) => {
+        const { message } = action.payload;
         state.isLoading = false;
         state.error = null;
+        showSuccessToast(message);
       })
       .addCase(forgotPassword.rejected, (state, action) => {
+        const { text, message } = action.payload;
         state.isLoading = false;
-        state.error = action.payload?.message || 'Password reset failed';
+        state.error = text || message;
+        showErrorToast(text || message);
       })
 
       .addCase(resetPassword.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(resetPassword.fulfilled, (state) => {
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        const { router, message } = action.payload;
         state.isLoading = false;
         state.error = null;
+        showSuccessToast(message);
+        router.push(ROUTES.login);
       })
       .addCase(resetPassword.rejected, (state, action) => {
+        const { text, message } = action.payload;
         state.isLoading = false;
-        state.error = action.payload?.message || 'Password reset failed';
-      })
-
-      // Change Password
-      .addCase(changePassword.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(changePassword.fulfilled, (state) => {
-        state.isLoading = false;
-        state.error = null;
-      })
-      .addCase(changePassword.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload?.message || 'Password change failed';
+        state.error = text || message;
+        showErrorToast(text || message);
       })
 
       // Logout
@@ -353,6 +352,7 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(logoutUser.rejected, (state, action) => {
+        const { text, message } = action.payload;
         state.isLoading = false;
         state.isAuthenticated = false;
         state.user = null;
@@ -360,7 +360,8 @@ const authSlice = createSlice({
         state.emailVerificationStatus = EMAIL_VERIFICATION_STATUS.IDLE;
         state.isVerified = false;
         state.lastVisitedPage = null;
-        state.error = action.payload || 'Logout failed';
+        state.error = text || message;
+        showErrorToast(text || message);
       });
   },
   initialState,

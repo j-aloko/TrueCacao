@@ -109,5 +109,6 @@ export const EMAIL_VERIFICATION_STATUS = {
 };
 
 export const EMAIL_VERIFICATION_EXPIRY = 60 * 60 * 24; // 24 hours
+export const PASSWORD_RESET_LINK_EXPIRY = 60 * 30; // 30 minutes in seconds
 export const ACCESS_TOKEN_MAX_AGE = 60 * 60; // 1 hour in seconds
 export const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 7; // 7 days in seconds

@@ -1,18 +1,23 @@
 import { NextResponse } from 'next/server';
 
-import { initiatePasswordReset } from '@/lib/auth/password-reset';
-import { validatePasswordReset } from '@/lib/auth/validators';
+import { completePasswordReset } from '@/lib/auth/password-reset';
+import { validateNewPassword } from '@/lib/auth/validators';
 
 export async function POST(request) {
   try {
-    const { email } = await validatePasswordReset(request);
-    await initiatePasswordReset(email);
+    const { searchParams } = new URL(request.url);
+    const token = searchParams.get('token');
+    if (!token) {
+      return NextResponse.json(
+        { message: 'Token is required' },
+        { status: 400 }
+      );
+    }
+    const { password } = await validateNewPassword(request);
+    const user = await completePasswordReset(token, password);
 
     return NextResponse.json(
-      {
-        message:
-          'If an account exists with this email, a reset link has been sent',
-      },
+      { message: 'Password changed successfully', user },
       { status: 200 }
     );
   } catch (error) {

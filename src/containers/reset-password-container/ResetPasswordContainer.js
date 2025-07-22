@@ -1,17 +1,20 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { shallowEqual } from 'react-redux';
 
 import CustomTextField from '@/components/custom-text-field/CustomTextField';
 import GenericForm from '@/components/generic-form/GenericForm';
 import TextBlock from '@/components/text-block/TextBlock';
 import { ROUTES } from '@/constants/routes';
+import { resetPassword } from '@/services/redux/features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 import { formValidation, Yup } from '@/utils/formValidation';
 
 const fields = [
@@ -44,11 +47,20 @@ const validationSchema = Yup.object().shape({
 });
 
 function ResetPasswordContainer() {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+  const { isLoading } = useAppSelector(
+    (state) => ({
+      isLoading: state.auth.isLoading,
+    }),
+    shallowEqual
+  );
+
+  const token = useMemo(() => searchParams.get('token'), [searchParams]);
 
   const handleSubmit = (values) => {
-    console.log({ ...values, token });
+    dispatch(resetPassword({ ...values, router, token }));
   };
 
   return (
@@ -73,6 +85,7 @@ function ResetPasswordContainer() {
           validate={formValidation(validationSchema)}
           buttonText="Reset Password"
           buttonFullWidth
+          submitting={isLoading}
           renderButtons={null}
         />
         <Typography variant="body1" component="div" textAlign="center">

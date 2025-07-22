@@ -71,7 +71,8 @@ export async function createUser(
   });
 
   const encryptedId = await encrypt(user.id);
-  const verificationLink = `${process.env.APP_URL}${ROUTES.verifyEmail}?token=${rawToken}&id=${encryptedId}&email=${encodeURIComponent(user.email)}`;
+  const encryptedRawToken = await encrypt(rawToken);
+  const verificationLink = `${process.env.APP_URL}${ROUTES.verifyEmail}?token=${encryptedRawToken}&id=${encryptedId}&email=${encodeURIComponent(user.email)}`;
 
   return {
     email: user.email,
@@ -103,33 +104,20 @@ export async function resendVerification(email) {
     },
   });
   const encryptedId = await encrypt(user.id);
-  const verificationLink = `${process.env.APP_URL}${ROUTES.verifyEmail}?token=${rawToken}&id=${encryptedId}&email=${encodeURIComponent(user.email)}`;
+  const encryptedRawToken = await encrypt(rawToken);
+  const verificationLink = `${process.env.APP_URL}${ROUTES.verifyEmail}?token=${encryptedRawToken}&id=${encryptedId}&email=${encodeURIComponent(user.email)}`;
   return { email: user.email, verificationLink };
 }
 
-export async function verifyUserEmail(token, encryptedUserId) {
-  const userId = await decrypt(encryptedUserId);
-  const hashedToken = await generateHash(token);
-
+export async function verifyUserEmail(token) {
+  const decryptedToken = await decrypt(token);
+  const hashedToken = await generateHash(decryptedToken);
   const tokenRecord = await prisma.verificationToken.findFirst({
     where: {
       expiresAt: { gt: new Date() },
       token: hashedToken,
-      userId,
     },
   });
-
-  const user = await prisma.user.findUnique({
-    select: {
-      email: true,
-      id: true,
-      name: true,
-      role: true,
-      verified: true,
-    },
-    where: { id: userId },
-  });
-  if (user?.verified) return user;
   if (!tokenRecord) throw new Error('Invalid or expired token');
   const updatedUser = await prisma.user.update({
     data: { verified: true },
@@ -140,26 +128,8 @@ export async function verifyUserEmail(token, encryptedUserId) {
       role: true,
       verified: true,
     },
-    where: { id: userId },
+    where: { id: tokenRecord.userId },
   });
   await prisma.verificationToken.delete({ where: { id: tokenRecord.id } });
   return updatedUser;
-}
-
-export async function verifyToken(token) {
-  const hashedToken = await generateHash(token);
-
-  const tokenRecord = await prisma.verificationToken.findFirst({
-    include: { user: true },
-    where: {
-      expiresAt: { gt: new Date() },
-      token: hashedToken,
-    },
-  });
-
-  if (!tokenRecord) {
-    throw new Error('Invalid or expired token');
-  }
-
-  return tokenRecord;
 }

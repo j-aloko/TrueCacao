@@ -1,6 +1,5 @@
 export const ROUTES = {
   cart: '/cart',
-  changePassword: '/account/auth/change-password',
   checkout: '/cart/checkout',
   forgotPassword: '/account/auth/forgot-password',
   home: '/',
