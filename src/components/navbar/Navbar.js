@@ -134,9 +134,25 @@ function Navbar({
               alignItems: 'center',
               display: 'flex',
               flexGrow: 0,
-              gap: 1,
+              gap: 3,
             }}
           >
+            <Tooltip title="Cart">
+              <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
+                <Badge
+                  badgeContent={cart?.lines?.length || 0}
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      fontSize: '0.85rem',
+                      top: 2,
+                    },
+                  }}
+                >
+                  <ShoppingBasketIcon fontSize="large" color="primary" />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+
             <Tooltip title={user ? 'Open settings' : 'Login'}>
               <IconButton onClick={user ? onOpenUserMenu : null} sx={{ p: 0 }}>
                 {user ? (
@@ -159,22 +175,6 @@ function Navbar({
                     </Avatar>
                   </Link>
                 )}
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Cart">
-              <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
-                <Badge
-                  badgeContent={cart?.lines?.length || 0}
-                  sx={{
-                    '& .MuiBadge-badge': {
-                      fontSize: '0.85rem',
-                      top: 2,
-                    },
-                  }}
-                >
-                  <ShoppingBasketIcon fontSize="large" color="primary" />
-                </Badge>
               </IconButton>
             </Tooltip>
 
