@@ -43,5 +43,11 @@ export const fullCartIncludes = {
       quantity: true,
     },
   },
-  user: true,
+  user: {
+    select: {
+      email: true,
+      id: true,
+      name: true,
+    },
+  },
 };

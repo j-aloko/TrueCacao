@@ -114,6 +114,7 @@ export async function mergeCarts(sessionId, userId) {
   }
   return prisma.$transaction(async (tx) => {
     const guestCart = await tx.cart.findUnique({
+      include: fullCartIncludes,
       where: { sessionId },
     });
     if (!guestCart) {
@@ -124,6 +125,7 @@ export async function mergeCarts(sessionId, userId) {
     }
     return tx.cart.update({
       data: { userId },
+      include: fullCartIncludes,
       where: { id: guestCart.id },
     });
   });

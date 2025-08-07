@@ -161,6 +161,7 @@ function Navbar({
                     sx={{
                       bgcolor: 'primary.main',
                       color: 'primary.contrastText',
+                      fontSize: '16px',
                     }}
                   />
                 ) : (

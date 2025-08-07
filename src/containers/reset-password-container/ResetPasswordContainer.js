@@ -5,6 +5,7 @@ import React, { useMemo, useState } from 'react';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -144,20 +145,25 @@ function ResetPasswordContainer() {
           submitting={isLoading}
           renderButtons={null}
         />
-        <Typography variant="body1" component="div" textAlign="center">
+        <Typography variant="body2" component="div" textAlign="center">
           <>
-            Remember your password?
-            <Link
-              href={ROUTES.login}
-              style={{
-                color: 'inherit',
+            Remember your password ? &nbsp;
+            <Button
+              variant="text"
+              sx={{
                 fontWeight: 'bold',
-                marginLeft: '4px',
-                textDecoration: 'none',
+                lineHeight: 0,
+                m: 0,
+                minWidth: 'auto',
+                p: 0,
+                textTransform: 'capitalize',
               }}
+              component={Link}
+              href={ROUTES.login}
+              disabled={isLoading}
             >
               Login
-            </Link>
+            </Button>
           </>
         </Typography>
       </Stack>

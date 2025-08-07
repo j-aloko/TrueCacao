@@ -1,8 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
@@ -38,6 +42,18 @@ function SignupContainer() {
   const isSigningUpLoading = useAppSelector((state) => state.auth.isLoading);
   const router = useRouter();
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (event) => {
+    event.preventDefault();
+  };
+
   const fields = [
     {
       component: CustomTextField,
@@ -53,7 +69,24 @@ function SignupContainer() {
       component: CustomTextField,
       name: 'password',
       props: {
+        adornmentComponent: (
+          <Box display="flex">
+            <IconButton
+              aria-label={
+                showPassword ? 'hide the password' : 'display the password'
+              }
+              onClick={handleClickShowPassword}
+              onMouseDown={handleMouseDownPassword}
+              onMouseUp={handleMouseUpPassword}
+              edge="end"
+            >
+              {showPassword ? <VisibilityOff /> : <Visibility />}
+            </IconButton>
+          </Box>
+        ),
         label: 'Password',
+        showEndAdornment: true,
+        type: showPassword ? 'text' : 'password',
       },
     },
   ];
@@ -87,18 +120,25 @@ function SignupContainer() {
           submitting={isSigningUpLoading}
           renderButtons={null}
         />
-        <Typography variant="body1" component="div" textAlign="center">
+        <Typography variant="body2" component="div" textAlign="center">
           <>
-            Already have an account?
-            <Link
-              href={ROUTES.login}
-              style={{
+            Already have an account ? &nbsp;
+            <Button
+              variant="text"
+              sx={{
                 fontWeight: 'bold',
-                marginLeft: '4px',
+                lineHeight: 0,
+                m: 0,
+                minWidth: 'auto',
+                p: 0,
+                textTransform: 'capitalize',
               }}
+              component={Link}
+              href={ROUTES.login}
+              disabled={isSigningUpLoading}
             >
               Login
-            </Link>
+            </Button>
           </>
         </Typography>
       </Stack>

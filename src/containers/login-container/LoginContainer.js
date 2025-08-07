@@ -87,6 +87,7 @@ function LoginContainer() {
                 sx={{ p: 0, textTransform: 'initial' }}
                 component={Link}
                 href={ROUTES.forgotPassword}
+                disabled={isLoggingInLoading}
               >
                 Forgot password?
               </Button>
@@ -98,7 +99,7 @@ function LoginContainer() {
         },
       },
     ],
-    [showPassword]
+    [isLoggingInLoading, showPassword]
   );
 
   return (
@@ -126,18 +127,25 @@ function LoginContainer() {
           submitting={isLoggingInLoading}
           renderButtons={null}
         />
-        <Typography variant="body1" component="div" textAlign="center">
+        <Typography variant="body2" component="div" textAlign="center">
           <>
-            Don&apos;t have an account?
-            <Link
+            Don&apos;t have an account ?
+            <Button
+              component={Link}
               href={ROUTES.signup}
+              variant="text"
+              disabled={isLoggingInLoading}
               style={{
                 fontWeight: 'bold',
-                marginLeft: '4px',
+                lineHeight: 0,
+                m: 0,
+                minWidth: 'auto',
+                p: 0,
+                textTransform: 'capitalize',
               }}
             >
               Register
-            </Link>
+            </Button>
           </>
         </Typography>
       </Stack>

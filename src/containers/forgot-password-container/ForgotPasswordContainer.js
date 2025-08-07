@@ -111,20 +111,25 @@ function ForgotPasswordContainer() {
             </Button>
           </Stack>
         )}
-        <Typography variant="body1" component="div" textAlign="center">
+        <Typography variant="body2" component="div" textAlign="center">
           <>
-            Remember your password?
-            <Link
-              href={ROUTES.login}
-              style={{
-                color: 'inherit',
+            Remember your password ? &nbsp;
+            <Button
+              variant="text"
+              sx={{
                 fontWeight: 'bold',
-                marginLeft: '4px',
-                textDecoration: 'none',
+                lineHeight: 0,
+                m: 0,
+                minWidth: 'auto',
+                p: 0,
+                textTransform: 'capitalize',
               }}
+              component={Link}
+              href={ROUTES.login}
+              disabled={isLoading}
             >
               Login
-            </Link>
+            </Button>
           </>
         </Typography>
       </Stack>
