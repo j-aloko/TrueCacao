@@ -1,53 +1,50 @@
-import Cookies from 'js-cookie';
 import { NextResponse } from 'next/server';
 
-import {
-  ACCESS_TOKEN_MAX_AGE,
-  REFRESH_TOKEN_MAX_AGE,
-} from '@/constants/constants';
 import { loginUser } from '@/lib/auth/user-service';
-import { validateLogin } from '@/lib/auth/validators';
 
 export async function POST(request) {
   try {
+    // Validate CSRF token
     const csrfToken = request.headers.get('X-CSRF-Token');
-    const storedCsrfToken = Cookies.get('csrfToken');
-    if (csrfToken !== storedCsrfToken) {
+    const storedCsrfToken = request.cookies.get('csrfToken')?.value;
+    if (!csrfToken || csrfToken !== storedCsrfToken) {
       return NextResponse.json(
-        { message: 'Invalid CSRF token' },
+        { code: 'INVALID_CSRF_TOKEN', message: 'Invalid CSRF token' },
         { status: 403 }
       );
     }
 
-    const { email, password } = await validateLogin(request);
-    const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
-    const userAgent = request.headers.get('user-agent') || 'unknown';
+    const { email, password } = await request.json();
+    const user = await loginUser({ email, password });
+    const response = NextResponse.json(
+      { message: 'Logged in successfully', user },
+      { status: 200 }
+    );
 
-    const { user, accessToken, refreshToken } = await loginUser({
-      email,
-      ipAddress,
-      password,
-      userAgent,
-    });
-
-    const response = NextResponse.json({ user }, { status: 200 });
-
-    response.cookies.set('accessToken', accessToken, {
+    response.cookies.set('accessToken', user.accessToken, {
       httpOnly: true,
-      maxAge: ACCESS_TOKEN_MAX_AGE, // 1 hour
+      maxAge: 15 * 60,
+      // 15 minutes
+      path: '/',
+
       sameSite: 'strict',
       secure: process.env.NODE_ENV === 'production',
     });
-
-    response.cookies.set('refreshToken', refreshToken, {
+    response.cookies.set('refreshToken', user.refreshToken, {
       httpOnly: true,
-      maxAge: REFRESH_TOKEN_MAX_AGE, // 7 days
+      maxAge: 7 * 24 * 60 * 60,
+      // 7 days
+      path: '/',
+
       sameSite: 'strict',
       secure: process.env.NODE_ENV === 'production',
     });
 
     return response;
   } catch (error) {
-    return NextResponse.json({ message: error.message }, { status: 400 });
+    return NextResponse.json(
+      { code: error.cause || 'UNKNOWN_ERROR', message: error.message },
+      { status: 400 }
+    );
   }
 }
