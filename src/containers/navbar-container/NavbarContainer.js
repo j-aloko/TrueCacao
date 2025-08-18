@@ -3,6 +3,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
 import CircularProgress from '@mui/material/CircularProgress';
+import { useRouter } from 'next/navigation';
 import { shallowEqual } from 'react-redux';
 
 import Navbar from '@/components/navbar/Navbar';
@@ -15,6 +16,7 @@ function NavbarContainer() {
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const { cart } = useAppSelector(
     (state) => ({
@@ -48,9 +50,9 @@ function NavbarContainer() {
   }, []);
 
   const handleLogout = useCallback(async () => {
-    await dispatch(logoutUser()).unwrap();
+    await dispatch(logoutUser({ router })).unwrap();
     setAnchorElUser(null);
-  }, [dispatch]);
+  }, [dispatch, router]);
 
   const pages = useMemo(
     () => [

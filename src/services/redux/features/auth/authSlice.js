@@ -3,6 +3,7 @@ import Cookies from 'js-cookie';
 
 import { EMAIL_VERIFICATION_STATUS, USER_ROLE } from '@/constants/constants';
 import { ROUTES } from '@/constants/routes';
+import { getCsrfToken } from '@/lib/auth/csrf';
 import {
   sendPasswordResetEmail,
   sendVerificationEmail,
@@ -14,12 +15,19 @@ import { mergeCarts } from '../cart/cartSlice';
 
 export const loginUser = createAsyncThunk(
   'auth/login',
-  async ({ email, password, router }, { rejectWithValue, dispatch }) => {
+  async (
+    { email, password, router },
+    { rejectWithValue, dispatch, getState }
+  ) => {
     try {
+      const csrfToken = await getCsrfToken();
       const loginResponse = await fetch('/api/v1/auth/login', {
         body: JSON.stringify({ email, password }),
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
         method: 'POST',
       });
 
@@ -29,11 +37,14 @@ export const loginUser = createAsyncThunk(
       }
 
       const { user } = await loginResponse.json();
-
       const sessionId = Cookies.get('sessionId');
       await dispatch(mergeCarts({ sessionId, userId: user?.id }));
 
-      return { router, user };
+      const state = getState();
+      const redirectUrl = state.auth.lastVisitedPage || ROUTES.home;
+      router.push(redirectUrl);
+
+      return { user };
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -95,7 +106,7 @@ export const resendEmailVerification = createAsyncThunk(
 
 export const verifyEmail = createAsyncThunk(
   'auth/verifyEmail',
-  async (token, { rejectWithValue }) => {
+  async ({ token, router }, { rejectWithValue }) => {
     try {
       const response = await fetch(`/api/v1/auth/verify-email?token=${token}`, {
         credentials: 'include',
@@ -106,7 +117,9 @@ export const verifyEmail = createAsyncThunk(
         const error = await response.json();
         return rejectWithValue(error);
       }
-      return response.json();
+      const { user } = await response.json();
+      const redirectUrl = ROUTES.login;
+      return { redirectUrl, router, user };
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -165,19 +178,22 @@ export const resetPassword = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk(
   'auth/logout',
-  async (_, { rejectWithValue }) => {
+  async ({ router }, { rejectWithValue }) => {
     try {
       const response = await fetch('/api/v1/auth/logout', {
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         method: 'POST',
       });
       if (!response.ok) {
         const error = await response.json();
         return rejectWithValue(error);
       }
+      Cookies.remove('accessToken');
+      Cookies.remove('refreshToken');
+      Cookies.remove('sessionId');
+      showSuccessToast('Logged out successfully');
+      router.push(ROUTES.home);
       return true;
     } catch (error) {
       return rejectWithValue(error);
@@ -228,13 +244,12 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        const { user, router } = action.payload;
+        const { user } = action.payload;
         state.isLoading = false;
         state.isAuthenticated = true;
         state.user = user;
         state.isVerified = user.verified;
         state.error = null;
-        router.push(ROUTES.home);
       })
       .addCase(loginUser.rejected, (state, action) => {
         const { text, message } = action.payload;
@@ -285,12 +300,12 @@ const authSlice = createSlice({
         state.emailVerificationStatus = EMAIL_VERIFICATION_STATUS.PENDING;
       })
       .addCase(verifyEmail.fulfilled, (state, action) => {
-        const {
-          user: { verified },
-        } = action.payload;
-        state.isVerified = verified;
+        const { user, router, redirectUrl } = action.payload;
+        state.isVerified = user.verified;
         state.emailVerificationStatus = EMAIL_VERIFICATION_STATUS.VERIFIED;
         state.error = null;
+        state.isAuthenticated = true;
+        router.push(redirectUrl); // Redirect to intended page
       })
       .addCase(verifyEmail.rejected, (state, action) => {
         const { text, message } = action.payload;

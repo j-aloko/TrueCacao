@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { default: prisma } = require('@/lib/prisma');
 
 const seedCategories = require('./category');

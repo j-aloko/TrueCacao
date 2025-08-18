@@ -23,7 +23,12 @@ const sessionCookieStorage = new CookieStorage(Cookies, {
 const authPersistConfig = {
   key: 'auth',
   storage: sessionCookieStorage,
-  whitelist: ['pendingVerificationEmail', 'user', 'verificationStatus'],
+  whitelist: [
+    'pendingVerificationEmail',
+    'user',
+    'verificationStatus',
+    'lastVisitedPage',
+  ],
 };
 
 const cartPersistConfig = {

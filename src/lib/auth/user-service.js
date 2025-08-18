@@ -17,13 +17,38 @@ export async function loginUser({ email, password, ipAddress, userAgent }) {
   if (!user) throw new Error('Invalid credentials');
 
   const isValid = await verifyPassword(password, user.passwordHash);
-  if (!isValid) throw new Error('Invalid credentials');
+  if (!isValid) {
+    // Log failed login attempt
+    await prisma.auditLog.create({
+      data: {
+        action: 'LOGIN_FAILED',
+        createdAt: new Date(),
+        details: { email, ipAddress, userAgent },
+        model: 'User',
+        modelId: user.id,
+        userId: user.id,
+      },
+    });
+    throw new Error('Invalid credentials');
+  }
 
   const { accessToken, refreshToken } = await createSession(
     user,
     ipAddress,
     userAgent
   );
+
+  // Log successful login
+  await prisma.auditLog.create({
+    data: {
+      action: 'LOGIN_SUCCESS',
+      createdAt: new Date(),
+      details: { email, ipAddress, userAgent },
+      model: 'User',
+      modelId: user.id,
+      userId: user.id,
+    },
+  });
 
   return {
     accessToken,
@@ -53,23 +78,35 @@ export async function createUser(
   const rawToken = await generateToken();
   const hashedToken = await generateHash(rawToken);
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      name,
-      passwordHash: hashedPassword,
-      role,
-    },
+  // Use sequential transaction for atomicity and ESLint compliance
+  const user = await prisma.$transaction(async (tx) => {
+    const createdUser = await tx.user.create({
+      data: {
+        email,
+        name,
+        passwordHash: hashedPassword,
+        role,
+      },
+    });
+    await tx.verificationToken.create({
+      data: {
+        expiresAt: new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY * 1000),
+        token: hashedToken,
+        user: { connect: { id: createdUser.id } },
+      },
+    });
+    await tx.auditLog.create({
+      data: {
+        action: 'USER_REGISTER',
+        createdAt: new Date(),
+        details: { email, role },
+        model: 'User',
+        modelId: createdUser.id,
+        userId: createdUser.id,
+      },
+    });
+    return createdUser;
   });
-
-  await prisma.verificationToken.create({
-    data: {
-      expiresAt: new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY * 1000), // 24 hours
-      token: hashedToken,
-      userId: user.id,
-    },
-  });
-
   const encryptedId = await encrypt(user.id);
   const encryptedRawToken = await encrypt(rawToken);
   const verificationLink = `${process.env.APP_URL}${ROUTES.verifyEmail}?token=${encryptedRawToken}&id=${encryptedId}&email=${encodeURIComponent(user.email)}`;
@@ -96,13 +133,26 @@ export async function resendVerification(email) {
   const rawToken = await generateToken();
   const hashedToken = await generateHash(rawToken);
 
-  await prisma.verificationToken.create({
-    data: {
-      expiresAt: new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY * 1000), // 24 hours
-      token: hashedToken,
-      userId: user.id,
-    },
-  });
+  await prisma.$transaction([
+    prisma.verificationToken.create({
+      data: {
+        expiresAt: new Date(Date.now() + EMAIL_VERIFICATION_EXPIRY * 1000),
+        token: hashedToken,
+        userId: user.id,
+      },
+    }),
+    prisma.auditLog.create({
+      data: {
+        action: 'RESEND_VERIFICATION',
+        createdAt: new Date(),
+        details: { email },
+        model: 'User',
+        modelId: user.id,
+        userId: user.id,
+      },
+    }),
+  ]);
+
   const encryptedId = await encrypt(user.id);
   const encryptedRawToken = await encrypt(rawToken);
   const verificationLink = `${process.env.APP_URL}${ROUTES.verifyEmail}?token=${encryptedRawToken}&id=${encryptedId}&email=${encodeURIComponent(user.email)}`;
@@ -119,17 +169,31 @@ export async function verifyUserEmail(token) {
     },
   });
   if (!tokenRecord) throw new Error('Invalid or expired token');
-  const updatedUser = await prisma.user.update({
-    data: { verified: true },
-    select: {
-      email: true,
-      id: true,
-      name: true,
-      role: true,
-      verified: true,
-    },
-    where: { id: tokenRecord.userId },
-  });
-  await prisma.verificationToken.delete({ where: { id: tokenRecord.id } });
+
+  const [updatedUser] = await prisma.$transaction([
+    prisma.user.update({
+      data: { verified: true },
+      select: {
+        email: true,
+        id: true,
+        name: true,
+        role: true,
+        verified: true,
+      },
+      where: { id: tokenRecord.userId },
+    }),
+    prisma.verificationToken.delete({ where: { id: tokenRecord.id } }),
+    prisma.auditLog.create({
+      data: {
+        action: 'EMAIL_VERIFIED',
+        createdAt: new Date(),
+        details: { email: prisma.user.fields.email },
+        model: 'User',
+        modelId: tokenRecord.userId,
+        userId: tokenRecord.userId,
+      },
+    }),
+  ]);
+
   return updatedUser;
 }

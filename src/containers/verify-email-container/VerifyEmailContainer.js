@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { shallowEqual } from 'react-redux';
 
 import TextBlock from '@/components/text-block/TextBlock';
@@ -22,6 +22,8 @@ import { useAppDispatch, useAppSelector } from '@/services/redux/store';
 function VerifyEmailContainer() {
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
+
+  const router = useRouter();
 
   const token = useMemo(() => searchParams.get('token'), [searchParams]);
   const urlEmail = useMemo(() => searchParams.get('email'), [searchParams]);
@@ -43,9 +45,9 @@ function VerifyEmailContainer() {
 
   useEffect(() => {
     if (token && !isVerified) {
-      dispatch(verifyEmail(token));
+      dispatch(verifyEmail({ router, token }));
     }
-  }, [dispatch, token, isVerified]);
+  }, [dispatch, token, isVerified, router]);
 
   const handleResendVerificationLink = useCallback(() => {
     if (pendingEmail) {

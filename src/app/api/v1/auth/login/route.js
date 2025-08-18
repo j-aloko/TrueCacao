@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { NextResponse } from 'next/server';
 
 import {
@@ -9,6 +10,15 @@ import { validateLogin } from '@/lib/auth/validators';
 
 export async function POST(request) {
   try {
+    const csrfToken = request.headers.get('X-CSRF-Token');
+    const storedCsrfToken = Cookies.get('csrfToken');
+    if (csrfToken !== storedCsrfToken) {
+      return NextResponse.json(
+        { message: 'Invalid CSRF token' },
+        { status: 403 }
+      );
+    }
+
     const { email, password } = await validateLogin(request);
     const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
