@@ -1,21 +1,26 @@
 model CartCost {
-  id             String   @id @default(uuid())
-  cartId         String   @unique
-  cart           Cart     @relation(fields: [cartId], references: [id])
-  subtotal       Money    @relation("SubtotalMoney", fields: [subtotalId], references: [id])
-  subtotalId     String
-  subtotalAmount Decimal
-  totalTax       Money    @relation("TotalTaxMoney", fields: [totalTaxId], references: [id])
-  totalTaxId     String
-  totalTaxAmount Decimal
-  total          Money    @relation("TotalMoney", fields: [totalId], references: [id])
-  totalId        String
-  totalAmount    Decimal
-  shipping       Money?   @relation("ShippingMoney", fields: [shippingId], references: [id])
-  shippingId     String?
-  shippingAmount Decimal?
-  discount       Money?   @relation("DiscountMoney", fields: [discountId], references: [id])
-  discountId     String?
-  discountAmount Decimal?
-  createdAt      DateTime @default(now())
+  id                   String   @id @default(uuid())
+  cartId               String   @unique
+  cart                 Cart     @relation(fields: [cartId], references: [id])
+  subtotal             Money    @relation("SubtotalMoney", fields: [subtotalId], references: [id])
+  subtotalId           String
+  subtotalAmount       Decimal
+  totalTax             Money    @relation("TotalTaxMoney", fields: [totalTaxId], references: [id])
+  totalTaxId           String
+  totalTaxAmount       Decimal
+  total                Money    @relation("TotalMoney", fields: [totalId], references: [id])
+  totalId              String
+  totalAmount          Decimal
+  shipping             Money?   @relation("ShippingMoney", fields: [shippingId], references: [id])
+  shippingId           String?
+  shippingAmount       Decimal?
+  discount             Money?   @relation("DiscountMoney", fields: [discountId], references: [id])
+  discountId           String?
+  discountAmount       Decimal?
+  estimatedTax         Money?   @relation("EstimatedTaxMoney", fields: [estimatedTaxId], references: [id])
+  estimatedTaxId       String?
+  estimatedShipping    Money?   @relation("EstimatedShippingMoney", fields: [estimatedShippingId], references: [id])
+  estimatedShippingId  String?
+  calculationVersion   Int      @default(1)
+  createdAt            DateTime @default(now())
 }

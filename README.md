@@ -24,6 +24,40 @@ This project demonstrates a **Smart Variants Selection** feature built with **Ne
 
 ---
 
+# Authentication Middleware
+
+This middleware handles authentication and authorization for the Next.js application.
+
+## Features
+
+- **Authentication Flow**:
+
+  - Validates JWT access tokens
+  - Handles token refresh automatically
+  - Manages session validation
+
+- **Authorization**:
+
+  - Role-based access control (Customer, Manager, Admin)
+  - Route-based permission checks
+
+- **Security**:
+  - Automatic token invalidation
+  - Secure cookie settings
+  - Protection against token reuse
+
+## Configuration
+
+### Environment Variables
+
+````env
+JWT_SECRET=your_jwt_secret_key
+REFRESH_SECRET=your_refresh_token_secret
+NEXTAUTH_URL=your_app_url
+
+
+---
+
 ## Getting Started
 
 ### Prerequisites
@@ -37,7 +71,7 @@ This project demonstrates a **Smart Variants Selection** feature built with **Ne
 
    ```bash
    git clone https://github.com/your-username/your-repo.git
-   ```
+````
 
 2. Navigate to the project directory:
 

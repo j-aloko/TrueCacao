@@ -1,4 +1,3 @@
-/// ORDER STATUS LOGS
 model TrackingLog {
   id        String       @id @default(uuid())
   orderId   String
@@ -7,4 +6,8 @@ model TrackingLog {
   details   String?
   location  String?
   timestamp DateTime     @default(now())
+
+  @@index([orderId])
+  @@index([status])
+  @@index([timestamp])
 }

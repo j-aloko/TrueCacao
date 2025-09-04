@@ -5,8 +5,12 @@ model GiftCard {
   initialValueId String
   balance        Money             @relation("GiftCardBalanceMoney", fields: [balanceId], references: [id])
   balanceId      String
+  usageCount     Int               @default(0)
   expiresAt      DateTime?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   appliedToCarts AppliedGiftCard[]
+
+  @@index([code])
+  @@index([expiresAt])
 }

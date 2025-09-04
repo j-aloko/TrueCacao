@@ -1,4 +1,3 @@
-/// CATEGORIES
 model Category {
   id          String        @id @default(uuid())
   name        CATEGORY_TYPE @unique

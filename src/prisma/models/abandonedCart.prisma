@@ -1,11 +1,15 @@
-/// ABANDONED CART TRACKING
 model AbandonedCart {
-  id          String    @id @default(uuid())
-  cartId      String    @unique
-  cart        Cart      @relation(fields: [cartId], references: [id])
-  userId      String?
-  user        User?     @relation(fields: [userId], references: [id])
-  lastUpdated DateTime  @default(now())
-  recovered   Boolean   @default(false)
-  recoveredAt DateTime?
+  id              String    @id @default(uuid())
+  cartId          String    @unique
+  cart            Cart      @relation(fields: [cartId], references: [id])
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+  lastUpdated     DateTime  @default(now())
+  recovered       Boolean   @default(false)
+  recoveredAt     DateTime?
+  recoveryAttempts Int      @default(0)
+  recoveryToken   String?   @unique
+
+  @@index([userId])
+  @@index([lastUpdated])
 }

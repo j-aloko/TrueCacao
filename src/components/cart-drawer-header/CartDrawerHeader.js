@@ -16,7 +16,7 @@ function CartDrawerHeader({ title = 'Cart', onClose = null }) {
         p: 2,
       }}
     >
-      <TextBlock text={title} variant="h5" sx={{ fontWeight: 600 }} />
+      <TextBlock text={title} variant="h5" />
       <IconButton
         onClick={onClose}
         aria-label="close cart"

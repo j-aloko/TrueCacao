@@ -1,0 +1,156 @@
+'use client';
+
+import React, { useMemo, useState } from 'react';
+
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+import CustomTextField from '@/components/custom-text-field/CustomTextField';
+import GenericForm from '@/components/generic-form/GenericForm';
+import TextBlock from '@/components/text-block/TextBlock';
+import { ROUTES } from '@/constants/routes';
+import { loginUser } from '@/services/redux/features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '@/services/redux/store';
+import { formValidation, Yup } from '@/utils/formValidation';
+
+const loginValidationSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Please enter a valid email address')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .matches(/[a-z]/, 'Password must include at least one lowercase letter')
+    .matches(/[A-Z]/, 'Password must include at least one uppercase letter')
+    .matches(/[0-9]/, 'Password must include at least one number')
+    .matches(
+      /[!@#$%^&*]/,
+      'Password must include at least one special character (!@#$%^&*)'
+    )
+    .required('Password is required'),
+});
+
+function LoginContainer() {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const isLoggingInLoading = useAppSelector((state) => state.auth.isLoading);
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (event) => {
+    event.preventDefault();
+  };
+
+  const handleLogin = (values) => {
+    dispatch(loginUser({ ...values, router }));
+  };
+
+  const fields = useMemo(
+    () => [
+      {
+        component: CustomTextField,
+        name: 'email',
+        props: { label: 'Email' },
+      },
+      {
+        component: CustomTextField,
+        name: 'password',
+        props: {
+          adornmentComponent: (
+            <Box display="flex" alignItems="center" gap={2}>
+              <IconButton
+                aria-label={
+                  showPassword ? 'hide the password' : 'display the password'
+                }
+                onClick={handleClickShowPassword}
+                onMouseDown={handleMouseDownPassword}
+                onMouseUp={handleMouseUpPassword}
+                edge="end"
+              >
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+              <Button
+                variant="text"
+                size="small"
+                sx={{ p: 0, textTransform: 'initial' }}
+                component={Link}
+                href={ROUTES.forgotPassword}
+                disabled={isLoggingInLoading}
+              >
+                Forgot password?
+              </Button>
+            </Box>
+          ),
+          label: 'Password',
+          showEndAdornment: true,
+          type: showPassword ? 'text' : 'password',
+        },
+      },
+    ],
+    [isLoggingInLoading, showPassword]
+  );
+
+  return (
+    <Box maxWidth={420} width="100%">
+      <Stack spacing={2}>
+        <TextBlock
+          text="Login"
+          variant="h5"
+          component="h1"
+          textAlign="center"
+          sx={{ fontWeight: 600 }}
+        />
+        <TextBlock
+          text="Please enter your e-mail and password"
+          variant="body1"
+          component="p"
+          textAlign="center"
+        />
+        <GenericForm
+          fields={fields}
+          onSubmit={handleLogin}
+          validate={formValidation(loginValidationSchema)}
+          buttonText="Login"
+          buttonFullWidth
+          submitting={isLoggingInLoading}
+          renderButtons={null}
+        />
+        <Typography variant="body2" component="div" textAlign="center">
+          <>
+            Don&apos;t have an account ?
+            <Button
+              component={Link}
+              href={ROUTES.signup}
+              variant="text"
+              disabled={isLoggingInLoading}
+              style={{
+                fontWeight: 'bold',
+                lineHeight: 0,
+                m: 0,
+                minWidth: 'auto',
+                p: 0,
+                textTransform: 'capitalize',
+              }}
+            >
+              Register
+            </Button>
+          </>
+        </Typography>
+      </Stack>
+    </Box>
+  );
+}
+
+export default LoginContainer;

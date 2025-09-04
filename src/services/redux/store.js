@@ -2,46 +2,53 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { persistReducer, persistStore } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
 import { CookieStorage } from 'redux-persist-cookie-storage';
 
+import { EMAIL_VERIFICATION_EXPIRY } from '@/constants/constants';
+
+import { authReducer } from './features/auth/authSlice';
 import { cartReducer } from './features/cart/cartSlice';
 import { cartDrawerReducer } from './features/cart-drawer/cartDrawerSlice';
-import { productSelectionReducer } from './features/product-selection/productSelectionSlice';
+import { cartExpirationMiddleware } from './middleware/cartMiddleware';
 
-const cookieStorage = new CookieStorage(Cookies, {
+const sessionCookieStorage = new CookieStorage(Cookies, {
   expiration: {
-    default: 60 * 60, // 1 hour
+    default: EMAIL_VERIFICATION_EXPIRY,
   },
-  httpOnly: false,
+  sameSite: 'Strict',
   secure: process.env.NODE_ENV === 'production',
 });
 
-// Persistence configurations at store level
-const productSelectionPersistConfig = {
-  key: 'productSelection',
-  storage: cookieStorage,
+const authPersistConfig = {
+  key: 'auth',
+  storage: sessionCookieStorage,
+  whitelist: [
+    'pendingVerificationEmail',
+    'user',
+    'verificationStatus',
+    'lastVisitedPage',
+  ],
 };
 
 const cartPersistConfig = {
-  blacklist: ['loading', 'error'],
+  blacklist: ['loading', 'loadingStates', 'error', 'itemLoadingStates'],
   key: 'cart',
-  storage: cookieStorage,
+  storage,
+  whitelist: ['cart'],
 };
 
 const rootReducer = combineReducers({
+  auth: persistReducer(authPersistConfig, authReducer),
   cart: persistReducer(cartPersistConfig, cartReducer),
   cartDrawer: cartDrawerReducer,
-  productSelection: persistReducer(
-    productSelectionPersistConfig,
-    productSelectionReducer
-  ),
 });
 
 export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: false,
-    }),
+    getDefaultMiddleware({ serializableCheck: false }).concat(
+      cartExpirationMiddleware
+    ),
   reducer: rootReducer,
 });
 

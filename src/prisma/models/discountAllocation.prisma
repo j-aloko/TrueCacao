@@ -7,4 +7,7 @@ model DiscountAllocation {
   amount     Money    @relation("DiscountAllocationMoney", fields: [amountId], references: [id])
   amountId   String
   createdAt  DateTime @default(now())
+
+  @@index([cartLineId])
+  @@index([discountId])
 }

@@ -1,7 +1,8 @@
 import React from 'react';
 
 import MenuIcon from '@mui/icons-material/Menu';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import PersonIcon from '@mui/icons-material/Person';
+import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Badge from '@mui/material/Badge';
@@ -11,10 +12,17 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import Link from 'next/link';
+
+import { ROUTES } from '@/constants/routes';
+import { truncateAvatar } from '@/utils/truncateAvatar';
+
+import Logo from '../logo/Logo';
+import Tooltip from '../tooltip/Tooltip';
 
 function Navbar({
+  user,
   pages,
   cart,
   settings,
@@ -27,26 +35,17 @@ function Navbar({
   onToggleCartDrawer,
 }) {
   return (
-    <AppBar position="fixed">
+    <AppBar
+      position="fixed"
+      sx={{
+        bgcolor: (theme) => theme.palette.common.white,
+        boxShadow: 'none',
+        zIndex: 999,
+      }}
+    >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <Typography
-            variant="h4"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              color: 'inherit',
-              display: { md: 'flex', xs: 'none' },
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              mr: 2,
-              textDecoration: 'none',
-            }}
-          >
-            COCOAHUB
-          </Typography>
+          <Logo variant="desktop" />
           <Box sx={{ display: { md: 'none', xs: 'flex' }, flexGrow: 1 }}>
             <IconButton
               size="large"
@@ -74,31 +73,27 @@ function Navbar({
               onClose={onCloseNavMenu}
               sx={{ display: { md: 'none', xs: 'block' } }}
             >
-              {pages.map((page) => (
-                <MenuItem key={page} onClick={onCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
+              {pages.map(({ id, name, onClick, link }) => (
+                <MenuItem key={id} onClick={onClick}>
+                  {link ? (
+                    <Typography
+                      component={Link}
+                      href={link}
+                      color="primary"
+                      sx={{ textAlign: 'center' }}
+                    >
+                      {name}
+                    </Typography>
+                  ) : (
+                    <Typography color="primary" sx={{ textAlign: 'center' }}>
+                      {name}
+                    </Typography>
+                  )}
                 </MenuItem>
               ))}
             </Menu>
           </Box>
-          <Typography
-            variant="h4"
-            noWrap
-            component="a"
-            href="#app-bar-with-responsive-menu"
-            sx={{
-              color: 'inherit',
-              display: { md: 'none', xs: 'flex' },
-              flexGrow: 1,
-              fontFamily: 'monospace',
-              fontWeight: 700,
-              letterSpacing: '.3rem',
-              mr: 2,
-              textDecoration: 'none',
-            }}
-          >
-            COCOAHUB
-          </Typography>
+          <Logo variant="mobile" />
           <Box
             sx={{
               display: { md: 'flex', xs: 'none' },
@@ -107,33 +102,83 @@ function Navbar({
               justifyContent: 'center',
             }}
           >
-            {pages.map((page) => (
-              <Typography
-                variant="subtitle1"
-                key={page}
-                onClick={onCloseNavMenu}
-                sx={{ cursor: 'pointer' }}
-              >
-                {page}
-              </Typography>
+            {pages.map(({ id, name, onClick, link }) => (
+              <Box key={id} component="div">
+                {link ? (
+                  <Typography
+                    component={Link}
+                    href={link}
+                    variant="subtitle1"
+                    color="primary"
+                    onClick={onClick}
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    {name}
+                  </Typography>
+                ) : (
+                  <Typography
+                    variant="subtitle1"
+                    color="primary"
+                    onClick={onClick}
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    {name}
+                  </Typography>
+                )}
+              </Box>
             ))}
           </Box>
-          <Box sx={{ display: 'flex', flexGrow: 0, gap: 2 }}>
-            <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
-              <Badge badgeContent={cart?.lines?.length || 0} color="secondary">
-                <ShoppingCartIcon
-                  fontSize="medium"
-                  sx={(theme) => ({
-                    color: theme.palette.primary.contrastText,
-                  })}
-                />
-              </Badge>
-            </IconButton>
-            <Tooltip title="Open settings">
-              <IconButton onClick={onOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar>RS</Avatar>
+
+          <Box
+            sx={{
+              alignItems: 'center',
+              display: 'flex',
+              flexGrow: 0,
+              gap: 3,
+            }}
+          >
+            <Tooltip title="Cart">
+              <IconButton aria-label="cart" onClick={onToggleCartDrawer}>
+                <Badge
+                  badgeContent={cart?.lines?.length || 0}
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      fontSize: '0.85rem',
+                      top: 2,
+                    },
+                  }}
+                >
+                  <ShoppingBasketIcon fontSize="large" color="primary" />
+                </Badge>
               </IconButton>
             </Tooltip>
+
+            <Tooltip title={user ? 'Open settings' : 'Login'}>
+              <IconButton onClick={user ? onOpenUserMenu : null} sx={{ p: 0 }}>
+                {user ? (
+                  <Avatar
+                    {...truncateAvatar(user.name)}
+                    sx={{
+                      bgcolor: 'primary.main',
+                      color: 'primary.contrastText',
+                      fontSize: '16px',
+                    }}
+                  />
+                ) : (
+                  <Link href={ROUTES.login}>
+                    <Avatar
+                      sx={{
+                        bgcolor: 'primary.main',
+                        color: 'primary.contrastText',
+                      }}
+                    >
+                      <PersonIcon fontSize="medium" />
+                    </Avatar>
+                  </Link>
+                )}
+              </IconButton>
+            </Tooltip>
+
             <Menu
               sx={{ mt: '45px' }}
               id="menu-appbar"
@@ -150,11 +195,19 @@ function Navbar({
               open={Boolean(anchorElUser)}
               onClose={onCloseUserMenu}
             >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={onCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>
-                    {setting}
-                  </Typography>
+              {settings.map(({ id, name, onClick, link }) => (
+                <MenuItem key={id} onClick={onClick}>
+                  {link ? (
+                    <Typography
+                      sx={{ textAlign: 'center' }}
+                      component={Link}
+                      href={link}
+                    >
+                      {name}
+                    </Typography>
+                  ) : (
+                    <Typography sx={{ textAlign: 'center' }}>{name}</Typography>
+                  )}
                 </MenuItem>
               ))}
             </Menu>

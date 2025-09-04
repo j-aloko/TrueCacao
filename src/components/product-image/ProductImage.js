@@ -6,4 +6,4 @@ function ProductImage({ image }) {
   return <AspectRatioImage src={image} priority />;
 }
 
-export default ProductImage;
+export default React.memo(ProductImage);

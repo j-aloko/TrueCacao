@@ -1,4 +1,3 @@
-/// USER SESSION TRACKING
 model Session {
   id        String   @id @default(uuid())
   userId    String?
@@ -7,6 +6,9 @@ model Session {
   userAgent String?
   expiresAt DateTime
   createdAt DateTime @default(now())
-  cart      Cart?    @relation("CartSessions", fields: [cartId], references: [id]) // Updated relation
+  cart      Cart?    @relation("CartSessions", fields: [cartId], references: [id])
   cartId    String?  @unique
+
+  @@index([userId])
+  @@index([expiresAt])
 }

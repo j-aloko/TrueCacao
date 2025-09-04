@@ -1,0 +1,12 @@
+model TaxRate {
+  id          String    @id @default(uuid())
+  country     String
+  state       String?
+  postalCode  String?
+  rate        Decimal
+  appliesTo   Product[] @relation("ProductTaxRates")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([country, state, postalCode])
+}

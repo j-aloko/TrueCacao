@@ -1,4 +1,3 @@
-/// AUDIT LOGS
 model AuditLog {
   id        String   @id @default(uuid())
   action    String
@@ -8,4 +7,8 @@ model AuditLog {
   user      User?    @relation(fields: [userId], references: [id])
   details   Json?
   createdAt DateTime @default(now())
+
+  @@index([model, modelId])
+  @@index([userId])
+  @@index([createdAt])
 }

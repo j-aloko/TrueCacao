@@ -11,16 +11,20 @@ datasource db {
 enum USER_ROLE {
   CUSTOMER
   ADMIN
+  MANAGER
 }
 
 enum ORDER_STATUS {
+  DRAFT
   CONFIRMED
   PROCESSING
-  PACKAGING_DISPATCH
-  IN_TRANSIT
+  FULFILLED
+  SHIPPED
   OUT_FOR_DELIVERY
   DELIVERED
+  RETURNED
   CANCELED
+  REFUNDED
 }
 
 enum CATEGORY_TYPE {
@@ -44,6 +48,11 @@ enum COCOA_BAR_PACKAGING {
   CARTON_90_PERCENT
 }
 
+enum PRODUCT_TAG {
+  BEST_SELLER
+  NEW_ARRIVAL
+}
+
 enum DISCOUNT_TYPE {
   PERCENTAGE
   FIXED_AMOUNT
@@ -54,6 +63,7 @@ enum PAYMENT_STATUS {
   COMPLETED
   FAILED
   REFUNDED
+  PARTIALLY_REFUNDED
 }
 
 enum PAYMENT_METHOD {
@@ -67,4 +77,23 @@ enum CURRENCY_CODE {
   GHS
   NGN
   USD
+}
+
+enum DiscountCodeStatus {
+  ACTIVE
+  EXPIRED
+  DISABLED
+}
+
+enum TRANSACTION_TYPE {
+  PURCHASE // When inventory is purchased from supplier
+  SALE // When sold to customer
+  RETURN // When customer returns item
+  ADJUSTMENT // Manual inventory adjustment
+  RESERVATION // When reserved for cart/order
+  RELEASE // When reservation is released
+  DAMAGE // When items are marked as damaged
+  LOSS // When items are lost
+  TRANSFER_IN // Inventory transferred in from another location
+  TRANSFER_OUT // Inventory transferred out to another location
 }

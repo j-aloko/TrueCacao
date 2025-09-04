@@ -1,0 +1,16 @@
+export const ROUTES = {
+  account: '/account',
+  cart: '/cart',
+  checkout: '/cart/checkout',
+  contactUs: '/contact-us',
+  forgotPassword: '/account/auth/forgot-password',
+  home: '/',
+  login: '/account/auth/login',
+  products: '/products',
+  resendVerification: '/account/auth/resend-verification',
+  resetPassword: '/account/auth/reset-password',
+  settings: '/account/settings',
+  signup: '/account/auth/signup',
+  trackOrder: '/track-order',
+  verifyEmail: '/account/auth/verify-email',
+};

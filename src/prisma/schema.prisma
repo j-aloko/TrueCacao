@@ -13,16 +13,20 @@ datasource db {
 enum USER_ROLE {
   CUSTOMER
   ADMIN
+  MANAGER
 }
 
 enum ORDER_STATUS {
+  DRAFT
   CONFIRMED
   PROCESSING
-  PACKAGING_DISPATCH
-  IN_TRANSIT
+  FULFILLED
+  SHIPPED
   OUT_FOR_DELIVERY
   DELIVERED
+  RETURNED
   CANCELED
+  REFUNDED
 }
 
 enum CATEGORY_TYPE {
@@ -46,6 +50,11 @@ enum COCOA_BAR_PACKAGING {
   CARTON_90_PERCENT
 }
 
+enum PRODUCT_TAG {
+  BEST_SELLER
+  NEW_ARRIVAL
+}
+
 enum DISCOUNT_TYPE {
   PERCENTAGE
   FIXED_AMOUNT
@@ -56,6 +65,7 @@ enum PAYMENT_STATUS {
   COMPLETED
   FAILED
   REFUNDED
+  PARTIALLY_REFUNDED
 }
 
 enum PAYMENT_METHOD {
@@ -71,21 +81,43 @@ enum CURRENCY_CODE {
   USD
 }
 
+enum DiscountCodeStatus {
+  ACTIVE
+  EXPIRED
+  DISABLED
+}
 
-/// ABANDONED CART TRACKING
-model AbandonedCart {
-  id          String    @id @default(uuid())
-  cartId      String    @unique
-  cart        Cart      @relation(fields: [cartId], references: [id])
-  userId      String?
-  user        User?     @relation(fields: [userId], references: [id])
-  lastUpdated DateTime  @default(now())
-  recovered   Boolean   @default(false)
-  recoveredAt DateTime?
+enum TRANSACTION_TYPE {
+  PURCHASE // When inventory is purchased from supplier
+  SALE // When sold to customer
+  RETURN // When customer returns item
+  ADJUSTMENT // Manual inventory adjustment
+  RESERVATION // When reserved for cart/order
+  RELEASE // When reservation is released
+  DAMAGE // When items are marked as damaged
+  LOSS // When items are lost
+  TRANSFER_IN // Inventory transferred in from another location
+  TRANSFER_OUT // Inventory transferred out to another location
 }
 
 
-/// ADDRESS MANAGEMENT
+model AbandonedCart {
+  id              String    @id @default(uuid())
+  cartId          String    @unique
+  cart            Cart      @relation(fields: [cartId], references: [id])
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+  lastUpdated     DateTime  @default(now())
+  recovered       Boolean   @default(false)
+  recoveredAt     DateTime?
+  recoveryAttempts Int      @default(0)
+  recoveryToken   String?   @unique
+
+  @@index([userId])
+  @@index([lastUpdated])
+}
+
+
 model Address {
   id             String   @id @default(uuid())
   userId         String
@@ -95,12 +127,15 @@ model Address {
   city           String
   state          String
   postalCode     String
-  country        String
+  country        String   @default("US")
   isDefault      Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   shippingOrders Order[]  @relation("OrderShippingAddress")
   billingOrders  Order[]  @relation("OrderBillingAddress")
+
+  @@index([userId, isDefault])
+  @@index([postalCode, country])
 }
 
 
@@ -121,7 +156,6 @@ model AppliedGiftCard {
 }
 
 
-/// AUDIT LOGS
 model AuditLog {
   id        String   @id @default(uuid())
   action    String
@@ -131,16 +165,19 @@ model AuditLog {
   user      User?    @relation(fields: [userId], references: [id])
   details   Json?
   createdAt DateTime @default(now())
+
+  @@index([model, modelId])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 
-/// CART SYSTEM
 model Cart {
   id            String             @id @default(uuid())
   userId        String?
   user          User?              @relation("UserCarts", fields: [userId], references: [id])
   sessionId     String?            @unique
-  checkoutUrl   String             @unique
+  checkoutUrl   String?            @unique
   lines         CartLine[]
   giftCards     AppliedGiftCard[]
   discountCodes CartDiscountCode[]
@@ -148,42 +185,60 @@ model Cart {
   totalQuantity Int                @default(0)
   abandonedCart AbandonedCart?
   cost          CartCost?
+  order         Order?             @relation(fields: [orderId], references: [id])
+  orderId       String?            @unique
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
-  sessions      Session[]          @relation("CartSessions") // Add this
+  sessions      Session[]          @relation("CartSessions")
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([updatedAt])
+  @@index([orderId])
 }
 
 
 model CartCost {
-  id             String   @id @default(uuid())
-  cartId         String   @unique
-  cart           Cart     @relation(fields: [cartId], references: [id])
-  subtotal       Money    @relation("SubtotalMoney", fields: [subtotalId], references: [id])
-  subtotalId     String
-  subtotalAmount Decimal
-  totalTax       Money    @relation("TotalTaxMoney", fields: [totalTaxId], references: [id])
-  totalTaxId     String
-  totalTaxAmount Decimal
-  total          Money    @relation("TotalMoney", fields: [totalId], references: [id])
-  totalId        String
-  totalAmount    Decimal
-  shipping       Money?   @relation("ShippingMoney", fields: [shippingId], references: [id])
-  shippingId     String?
-  shippingAmount Decimal?
-  discount       Money?   @relation("DiscountMoney", fields: [discountId], references: [id])
-  discountId     String?
-  discountAmount Decimal?
-  createdAt      DateTime @default(now())
+  id                   String   @id @default(uuid())
+  cartId               String   @unique
+  cart                 Cart     @relation(fields: [cartId], references: [id])
+  subtotal             Money    @relation("SubtotalMoney", fields: [subtotalId], references: [id])
+  subtotalId           String
+  subtotalAmount       Decimal
+  totalTax             Money    @relation("TotalTaxMoney", fields: [totalTaxId], references: [id])
+  totalTaxId           String
+  totalTaxAmount       Decimal
+  total                Money    @relation("TotalMoney", fields: [totalId], references: [id])
+  totalId              String
+  totalAmount          Decimal
+  shipping             Money?   @relation("ShippingMoney", fields: [shippingId], references: [id])
+  shippingId           String?
+  shippingAmount       Decimal?
+  discount             Money?   @relation("DiscountMoney", fields: [discountId], references: [id])
+  discountId           String?
+  discountAmount       Decimal?
+  estimatedTax         Money?   @relation("EstimatedTaxMoney", fields: [estimatedTaxId], references: [id])
+  estimatedTaxId       String?
+  estimatedShipping    Money?   @relation("EstimatedShippingMoney", fields: [estimatedShippingId], references: [id])
+  estimatedShippingId  String?
+  calculationVersion   Int      @default(1)
+  createdAt            DateTime @default(now())
 }
 
 
 model CartDiscountCode {
-  id         String   @id @default(uuid())
+  id         String             @id @default(uuid())
   cartId     String
-  cart       Cart     @relation(fields: [cartId], references: [id])
-  code       String
-  applicable Boolean  @default(false)
-  createdAt  DateTime @default(now())
+  cart       Cart               @relation(fields: [cartId], references: [id])
+  code       String             @unique
+  applicable Boolean            @default(false)
+  usageCount Int                @default(0)
+  expiresAt  DateTime?
+  status     DiscountCodeStatus @default(ACTIVE)
+  createdAt  DateTime           @default(now())
+
+  @@index([cartId])
+  @@index([code])
 }
 
 
@@ -198,12 +253,16 @@ model CartLine {
   priceId             String
   discountAllocations DiscountAllocation[]
   attributes          Json?
+  position            Int                  @default(0)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
+
+  @@index([cartId])
+  @@index([productVariantId])
+  @@index([cartId, position])
 }
 
 
-/// CATEGORIES
 model Category {
   id          String        @id @default(uuid())
   name        CATEGORY_TYPE @unique
@@ -214,7 +273,6 @@ model Category {
 }
 
 
-/// DISCOUNTS AND PROMOTIONS
 model Discount {
   id          String               @id @default(uuid())
   code        String               @unique
@@ -232,6 +290,9 @@ model Discount {
   createdAt   DateTime             @default(now())
   updatedAt   DateTime             @updatedAt
   allocations DiscountAllocation[]
+
+  @@index([code])
+  @@index([startDate, endDate])
 }
 
 
@@ -244,6 +305,9 @@ model DiscountAllocation {
   amount     Money    @relation("DiscountAllocationMoney", fields: [amountId], references: [id])
   amountId   String
   createdAt  DateTime @default(now())
+
+  @@index([cartLineId])
+  @@index([discountId])
 }
 
 
@@ -254,17 +318,38 @@ model GiftCard {
   initialValueId String
   balance        Money             @relation("GiftCardBalanceMoney", fields: [balanceId], references: [id])
   balanceId      String
+  usageCount     Int               @default(0)
   expiresAt      DateTime?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
   appliedToCarts AppliedGiftCard[]
+
+  @@index([code])
+  @@index([expiresAt])
 }
 
 
-/// MONEY OBJECT
+model InventoryTransaction {
+    id        String           @id @default(uuid())
+    variantId String
+    variant   ProductVariant   @relation(fields: [variantId], references: [id])
+    quantity  Int // Positive for additions, negative for deductions
+    type      TRANSACTION_TYPE
+    reference String? // Order ID, PO number, etc.
+    notes     String? // Additional information about the transaction
+    createdAt DateTime         @default(now())
+    createdBy String? // User ID or system process that created this
+
+    @@index([variantId])
+    @@index([type])
+    @@index([reference])
+    @@index([createdAt])
+}
+
+
 model Money {
   id                     String               @id @default(uuid())
-  amount                 Decimal
+  amount                 Decimal              @db.Decimal(10, 2)
   currencyCode           CURRENCY_CODE
   createdAt              DateTime             @default(now())
   cartCosts              CartCost[]           @relation("SubtotalMoney")
@@ -289,10 +374,14 @@ model Money {
   taxAmountMoney         Order[]              @relation("OrderTaxAmount")
   totalOrderMoney        Order[]              @relation("OrderTotal")
   lineTotalMoney         OrderItem[]          @relation("OrderItemTotal")
+  estimatedTaxMoney      CartCost[]           @relation("EstimatedTaxMoney")
+  estimatedShippingMoney CartCost[]           @relation("EstimatedShippingMoney")
+  shippingRatePrices     ShippingRate[]       @relation("ShippingRatePrice")
+  shippingRateMinAmounts ShippingRate[]       @relation("ShippingRateMinAmount")
+  refundedAmounts        Payment[]            @relation("RefundedAmount")
 }
 
 
-/// CUSTOMER NOTIFICATIONS
 model Notification {
   id      String   @id @default(uuid())
   userId  String
@@ -302,15 +391,19 @@ model Notification {
   message String
   sentAt  DateTime @default(now())
   read    Boolean  @default(false)
+  type    String   // e.g., "order", "promotion", "system"
+
+  @@index([userId, read])
+  @@index([orderId])
+  @@index([sentAt])
 }
 
 
-/// ORDER TRACKING
 model Order {
   id                String         @id @default(uuid())
   userId            String
   user              User           @relation(fields: [userId], references: [id])
-  status            ORDER_STATUS   @default(CONFIRMED)
+  status            ORDER_STATUS   @default(DRAFT)
   trackingCode      String?        @unique
   carrier           String?
   trackingUrl       String?
@@ -333,12 +426,18 @@ model Order {
   subtotalId        String
   total             Money          @relation("OrderTotal", fields: [totalId], references: [id])
   totalId           String
+  fulfillmentDate   DateTime?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+  cart              Cart?
+  cartId            String?
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 
-/// ORDER ITEMS
 model OrderItem {
   id               String         @id @default(uuid())
   orderId          String
@@ -352,10 +451,12 @@ model OrderItem {
   lineTotalId      String
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+
+  @@index([orderId])
+  @@index([productVariantId])
 }
 
 
-/// PAYMENT TRACKING (WITH SHOP PAY INTEGRATION)
 model Payment {
   id                 String              @id @default(uuid())
   orderId            String
@@ -366,51 +467,84 @@ model Payment {
   method             PAYMENT_METHOD
   transactionId      String?
   shopPayTransaction ShopPayTransaction?
+  refundedAmount     Money?              @relation("RefundedAmount", fields: [refundedAmountId], references: [id])
+  refundedAmountId   String?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+  @@index([transactionId])
 }
 
 
-/// PRODUCT MODEL
 model Product {
-  id                String           @id @default(uuid())
-  name              String
-  description       String?
-  stock             Int              @default(0) // Total stock across all variants
-  lowStockThreshold Int?             @default(10)
-  categoryId        String
-  category          Category         @relation(fields: [categoryId], references: [id])
-  variants          ProductVariant[]
-  images            String[]
-  reviews           Review[]
-  discounts         Discount[]
-  wishlistItems     Wishlist[]
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  deletedAt         DateTime?
+  id                     String           @id @default(uuid())
+  name                   String
+  slug                   String           @unique
+  descriptionSummary     String?          @db.Text
+  descriptionHtml        String?          @db.Text
+  tag                    PRODUCT_TAG?
+  categoryId             String
+  category               Category         @relation(fields: [categoryId], references: [id])
+  variants               ProductVariant[]
+  images                 String[]
+  reviews                Review[]
+  totalReviews           Int              @default(0)
+  averageRating          Float            @default(0.0)
+  averageRatingPrecision Float            @default(0.0)
+  discounts              Discount[]
+  wishlistItems          Wishlist[]
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  deletedAt              DateTime?
+  taxRates               TaxRate[]        @relation("ProductTaxRates")
+
+  @@index([categoryId])
+  @@index([slug])
 }
 
 
-/// PRODUCT VARIANTS
 model ProductVariant {
-  id            String      @id @default(uuid())
-  productId     String
-  product       Product     @relation(fields: [productId], references: [id])
-  weight        Int
-  packaging     Json
-  price         Money       @relation("VariantPrice", fields: [priceId], references: [id])
-  priceId       String
-  stock         Int
-  images        String[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  cartLines     CartLine[]
-  orderItems    OrderItem[]
-  wishlistItems Wishlist[]
+  id                String                 @id @default(uuid())
+  productId         String
+  product           Product                @relation(fields: [productId], references: [id])
+  weight            Int // In grams
+  packaging         Json
+  price             Money                  @relation("VariantPrice", fields: [priceId], references: [id])
+  priceId           String
+  stock             Int                    @default(0)
+  reservedStock     Int                    @default(0)
+  lowStockThreshold Int?                   @default(10)
+  sku               String?                @unique
+  images            String[]
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  cartLines         CartLine[]
+  orderItems        OrderItem[]
+  wishlistItems     Wishlist[]
+  transactions      InventoryTransaction[]
+
+  @@index([productId])
+  @@index([sku])
+  @@index([stock])
+  @@index([reservedStock])
 }
 
 
-/// REVIEWS AND RATINGS
+model ResetToken {
+    id        String   @id @default(uuid())
+    token     String   @unique
+    expiresAt DateTime
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    createdAt DateTime @default(now())
+
+    @@index([token])
+    @@index([expiresAt])
+}
+
+
 model Review {
   id        String   @id @default(uuid())
   userId    String
@@ -421,10 +555,13 @@ model Review {
   comment   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@index([userId])
+  @@index([rating])
 }
 
 
-/// USER SESSION TRACKING
 model Session {
   id        String   @id @default(uuid())
   userId    String?
@@ -433,12 +570,43 @@ model Session {
   userAgent String?
   expiresAt DateTime
   createdAt DateTime @default(now())
-  cart      Cart?    @relation("CartSessions", fields: [cartId], references: [id]) // Updated relation
+  cart      Cart?    @relation("CartSessions", fields: [cartId], references: [id])
   cartId    String?  @unique
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 
-/// SHOP PAY TRANSACTIONS
+model ShippingRate {
+  id             String        @id @default(uuid())
+  zoneId         String
+  zone           ShippingZone  @relation(fields: [zoneId], references: [id])
+  name           String
+  minOrderAmount Money?        @relation("ShippingRateMinAmount", fields: [minOrderAmountId], references: [id])
+  minOrderAmountId String?
+  price          Money         @relation("ShippingRatePrice", fields: [priceId], references: [id])
+  priceId        String
+  maxDeliveryDays Int?
+  createdAt      DateTime      @default(now())
+
+  @@index([zoneId])
+}
+
+
+model ShippingZone {
+  id          String          @id @default(uuid())
+  name        String
+  countries   String[]
+  rates       ShippingRate[]
+  isDefault   Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([isDefault])
+}
+
+
 model ShopPayTransaction {
   id             String   @id @default(uuid())
   paymentId      String   @unique
@@ -449,7 +617,20 @@ model ShopPayTransaction {
 }
 
 
-/// ORDER STATUS LOGS
+model TaxRate {
+  id          String    @id @default(uuid())
+  country     String
+  state       String?
+  postalCode  String?
+  rate        Decimal
+  appliesTo   Product[] @relation("ProductTaxRates")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([country, state, postalCode])
+}
+
+
 model TrackingLog {
   id        String       @id @default(uuid())
   orderId   String
@@ -458,31 +639,55 @@ model TrackingLog {
   details   String?
   location  String?
   timestamp DateTime     @default(now())
+
+  @@index([orderId])
+  @@index([status])
+  @@index([timestamp])
 }
 
 
-/// USER AUTHENTICATION
 model User {
-  id             String          @id @default(uuid())
-  email          String          @unique
-  passwordHash   String
-  name           String
-  role           USER_ROLE       @default(CUSTOMER)
-  sessions       Session[]
-  orders         Order[]
-  carts          Cart[]          @relation("UserCarts")
-  abandonedCarts AbandonedCart[]
-  auditLogs      AuditLog[]
-  reviews        Review[]
-  wishlistItems  Wishlist[]
-  addresses      Address[]
-  notifications  Notification[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         USER_ROLE @default(CUSTOMER)
+  verified     Boolean   @default(false)
+
+  sessions           Session[]
+  orders             Order[]
+  carts              Cart[]              @relation("UserCarts")
+  abandonedCarts     AbandonedCart[]
+  auditLogs          AuditLog[]
+  reviews            Review[]
+  wishlistItems      Wishlist[]
+  addresses          Address[]
+  notifications      Notification[]
+  verificationTokens VerificationToken[]
+  resetTokens        ResetToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+  @@index([createdAt])
 }
 
 
-/// WISHLIST
+model VerificationToken {
+    id        String   @id @default(uuid())
+    token     String   @unique
+    expiresAt DateTime
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    createdAt DateTime @default(now())
+
+    @@index([token])
+    @@index([expiresAt])
+}
+
+
 model Wishlist {
   id               String         @id @default(uuid())
   userId           String
@@ -493,4 +698,7 @@ model Wishlist {
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([productId])
 }
